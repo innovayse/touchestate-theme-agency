@@ -155,4 +155,6 @@ return [
     // Feature Locations
     'properties' => 'Объектов',
     'more_locations' => 'Больше Локаций',
+    'coming_soon' => 'Скоро',
+    'coming_soon_sub' => 'Новые локации на подходе',
 ];
