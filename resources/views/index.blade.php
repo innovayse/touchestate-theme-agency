@@ -88,18 +88,22 @@
                     </div>
                     <div class="col-12 col-md-6 col-lg-4 col-xl">
                         <label class="form-label">{{ __('index.search_min_price') }}</label>
-                        <div class="input-group">
-                            <button type="button" class="btn btn-outline-secondary" data-price-step="-1000" data-target="minPrice">−</button>
-                            <input type="number" name="minPrice" id="minPriceIndex" min="0" placeholder="0" class="form-control text-center">
-                            <button type="button" class="btn btn-outline-secondary" data-price-step="1000" data-target="minPrice">+</button>
+                        <div class="filter-stepper">
+                            <input type="number" name="minPrice" id="minPriceIndex" min="0" placeholder="{{ __('index.search_currency_symbol') }}">
+                            <div class="stepper-btns">
+                                <button type="button" onclick="this.closest('.filter-stepper').querySelector('input').stepUp()">+</button>
+                                <button type="button" onclick="this.closest('.filter-stepper').querySelector('input').stepDown()">−</button>
+                            </div>
                         </div>
                     </div>
                     <div class="col-12 col-md-6 col-lg-4 col-xl">
                         <label class="form-label">{{ __('index.search_max_price') }}</label>
-                        <div class="input-group">
-                            <button type="button" class="btn btn-outline-secondary" data-price-step="-1000" data-target="maxPrice">−</button>
-                            <input type="number" name="maxPrice" id="maxPriceIndex" min="0" placeholder="0" class="form-control text-center">
-                            <button type="button" class="btn btn-outline-secondary" data-price-step="1000" data-target="maxPrice">+</button>
+                        <div class="filter-stepper">
+                            <input type="number" name="maxPrice" id="maxPriceIndex" min="0" placeholder="{{ __('index.search_currency_symbol') }}">
+                            <div class="stepper-btns">
+                                <button type="button" onclick="this.closest('.filter-stepper').querySelector('input').stepUp()">+</button>
+                                <button type="button" onclick="this.closest('.filter-stepper').querySelector('input').stepDown()">−</button>
+                            </div>
                         </div>
                     </div>
                     <div class="col-12 col-md-6 col-lg-4 col-xl-auto">
@@ -152,63 +156,6 @@
             </div>
             <!-- end row -->
 
-            <div class="counter-list">
-
-                <!-- start row -->
-                <div class="row">
-
-                    <div class="col-lg-3 col-sm-6 d-flex" data-aos="fade-up" data-aos-duration="1000">
-                        <div class="counting-item flex-fill">
-                            <span class="count-icon">
-                                <img src="{{URL::asset('build/img/icons/count-01.svg')}}" alt="">
-                            </span>
-                            <div>
-                                <h4 class="mb-1"><span class="counter-up">{{ $stats['propertiesListed'] ?? 0 }}</span>+</h4>
-                                <p class="mb-0">{{ __('index.counter_rentals') }}</p>
-                            </div>
-                        </div>
-                    </div> <!-- end col -->
-
-                    <div class="col-lg-3 col-sm-6 d-flex" data-aos="fade-up" data-aos-duration="1500">
-                        <div class="counting-item flex-fill">
-                            <span class="count-icon">
-                                <img src="{{URL::asset('build/img/icons/count-02.svg')}}" alt="">
-                            </span>
-                            <div>
-                                <h4 class="mb-1"><span class="counter-up">{{ $stats['happyClients'] ?? 0 }}</span>+</h4>
-                                <p class="mb-0">{{ __('index.counter_owners') }}</p>
-                            </div>
-                        </div>
-                    </div> <!-- end col -->
-
-                    <div class="col-lg-3 col-sm-6 d-flex" data-aos="fade-up" data-aos-duration="2000">
-                        <div class="counting-item flex-fill">
-                            <span class="count-icon">
-                                <img src="{{URL::asset('build/img/icons/count-03.svg')}}" alt="">
-                            </span>
-                            <div>
-                                <h4 class="mb-1"><span class="counter-up">{{ $stats['citiesCovered'] ?? 0 }}</span>+</h4>
-                                <p class="mb-0">{{ __('index.counter_clients') }}</p>
-                            </div>
-                        </div>
-                    </div> <!-- end col -->
-
-                    <div class="col-lg-3 col-sm-6 d-flex" data-aos="fade-up" data-aos-duration="2500">
-                        <div class="counting-item flex-fill">
-                            <span class="count-icon">
-                                <img src="{{URL::asset('build/img/icons/count-02.svg')}}" alt="">
-                            </span>
-                            <div>
-                                <h4 class="mb-1"><span class="counter-up">{{ $stats['satisfactionRate'] ?? 0 }}</span>%</h4>
-                                <p class="mb-0">{{ __('index.counter_bookings') }}</p>
-                            </div>
-                        </div>
-                    </div> <!-- end col -->
-
-                </div>
-                <!-- end row -->
-
-            </div>
         </div>
     </section>
     <!-- About Us Section End -->
@@ -803,18 +750,21 @@ document.addEventListener('DOMContentLoaded', function () {
     var lang  = '{{ app()->getLocale() }}';
     var shown = {};
 
-    function resolveEnglishName(localName, cb) {
-        if (lang === 'en') { cb(localName); return; }
-        fetch('/api/suggest?q=' + encodeURIComponent(localName) + '&lang=en')
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-                var first = (data.results || [])[0];
-                cb(first ? first.name : localName);
-            })
-            .catch(function () { cb(localName); });
+    function parseYandex(body) {
+        var m = (body || '').trim().match(/suggest\.apply\(([\s\S]+)\)/);
+        if (!m) return [];
+        try { var data = JSON.parse(m[1]); } catch (e) { return []; }
+        return (data.results || []).map(function (item) {
+            var title = (item.title || {}).text || '';
+            var where = ((item.log_id || {}).where) || {};
+            if (!title || title !== (where.title || '')) return null;
+            var parts = (where.name || '').split(',').map(function (p) { return p.trim(); }).filter(Boolean);
+            var desc = parts.filter(function (p) { return p !== title; }).join(', ');
+            return { name: title, desc: desc };
+        }).filter(Boolean);
     }
 
-    function makeLi(name, desc) {
+    function makeLi(name, desc, enName) {
         var li = document.createElement('li');
         li.innerHTML = '<i class="material-icons-outlined city-item-icon">location_on</i>'
             + '<span class="city-item-text">'
@@ -824,12 +774,11 @@ document.addEventListener('DOMContentLoaded', function () {
         li.addEventListener('mousedown', function (e) {
             e.preventDefault();
             input.value = name;
-            if (hidden) hidden.value = name;
+            if (hidden) hidden.value = enName || name;
             if (clearBtn) clearBtn.style.display = 'flex';
             list.style.display = 'none';
             list.innerHTML = '';
             shown = {};
-            resolveEnglishName(name, function (en) { if (hidden) hidden.value = en; });
         });
         return li;
     }
@@ -849,7 +798,7 @@ document.addEventListener('DOMContentLoaded', function () {
         items.forEach(function (it) {
             if (shown[it.name]) return;
             shown[it.name] = true;
-            list.appendChild(makeLi(it.name, it.desc));
+            list.appendChild(makeLi(it.name, it.desc, it.enName));
         });
         list.style.display = 'block';
     }
@@ -866,22 +815,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
         timer = setTimeout(function () {
             var yLang = lang === 'en' ? 'en_US' : lang === 'hy' ? 'hy_AM' : 'ru_RU';
-            fetch('https://suggest-maps.yandex.ru/suggest-geo?apikey={{ config('services.yandex.maps_key') }}&text=' + encodeURIComponent(q) + '&lang=' + yLang + '&results=7&highlight=0&v=9')
-                .then(function (r) { return r.text(); })
-                .then(function (body) {
-                    var m = body.match(/^suggest\.apply\((.+)\)$/);
-                    var data = m ? JSON.parse(m[1]) : {};
-                    var results = (data.results || []).map(function (item) {
-                        var title = (item.title || {}).text || '';
-                        var where = ((item.log_id || {}).where) || {};
-                        if (!title || title !== (where.title || '')) return null;
-                        var parts = (where.name || '').split(',').map(function (p) { return p.trim(); }).filter(Boolean);
-                        var desc = parts.filter(function (p) { return p !== title; }).join(', ');
-                        return { name: title, desc: desc };
-                    }).filter(Boolean);
-                    showSuggestions(results);
-                })
-                .catch(function () { list.style.display = 'none'; });
+            var base  = 'https://suggest-maps.yandex.ru/suggest-geo?apikey={{ config('services.yandex.maps_key') }}&text=' + encodeURIComponent(q) + '&results=7&highlight=0&v=9';
+            var pLocal = fetch(base + '&lang=' + yLang).then(function (r) { return r.text(); }).catch(function () { return ''; });
+            var pEn    = lang === 'en' ? Promise.resolve(null) : fetch(base + '&lang=en_US').then(function (r) { return r.text(); }).catch(function () { return ''; });
+            Promise.all([pLocal, pEn]).then(function (texts) {
+                var local = parseYandex(texts[0]);
+                var en    = texts[1] !== null ? parseYandex(texts[1]) : local;
+                var combined = local.map(function (it, i) {
+                    return { name: it.name, desc: it.desc, enName: (en[i] || {}).name || it.name };
+                });
+                showSuggestions(combined);
+            }).catch(function () { list.style.display = 'none'; });
         }, 150);
     });
 
@@ -902,6 +846,35 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     updateClearBtn();
+}());
+
+// ── City: гарантированный резолв English имени перед submit ──────────
+(function () {
+    var form    = document.querySelector('.home-search-2 form');
+    var display = document.getElementById('cityInputIndex');
+    var hidden  = document.getElementById('cityHiddenIndex');
+    var lang    = '{{ app()->getLocale() }}';
+    if (!form || !display || !hidden) return;
+
+    form.addEventListener('submit', function (e) {
+        var q = display.value.trim();
+        if (!q) { hidden.value = ''; return; }
+        if (lang === 'en') { hidden.value = q; return; }
+        // Если hidden уже содержит другое (резолвленное) значение — доверяем ему
+        if (hidden.value && hidden.value !== q) return;
+        // Иначе резолвим перед отправкой
+        e.preventDefault();
+        fetch('https://suggest-maps.yandex.ru/suggest-geo?apikey={{ config('services.yandex.maps_key') }}&text=' + encodeURIComponent(q) + '&lang=en_US&results=1&highlight=0&v=9')
+            .then(function (r) { return r.text(); })
+            .then(function (body) {
+                var m = body.trim().match(/suggest\.apply\(([\s\S]+)\)/);
+                var data = m ? JSON.parse(m[1]) : {};
+                var first = (data.results || [])[0];
+                hidden.value = first ? ((first.title || {}).text || q) : q;
+            })
+            .catch(function () { hidden.value = q; })
+            .finally(function () { form.submit(); });
+    });
 }());
 
 // ── Price inputs: block negative, ±1000 buttons ──────────────────────
