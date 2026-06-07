@@ -24,7 +24,6 @@
 
                 <div class="col-lg-5">
                     <div class="banner-users d-flex align-items-center flex-wrap gap-2 mb-3">
-                        <img src="{{URL::asset('build/img/bg/banner-shape.svg')}}" class="banner-shape-mobile d-lg-none" alt="">
                         @if(!empty($stats['propertiesListed']))
                         <div>
                             <div class="d-flex align-items-center mb-1">
@@ -54,17 +53,18 @@
     <div class="home-search-2">
         <div class="container">
             <form action="/{{ app()->getLocale() }}/property" method="GET">
-                <div class="d-flex align-items-end flex-wrap flex-md-nowrap gap-3">
-                    <div class="flex-fill select-field">
+                <!-- start search grid -->
+                <div class="row g-3 align-items-end">
+                    <div class="col-12 col-md-6 col-lg-4 col-xl">
                         <label class="form-label">{{ __('index.search_buy_sell') }}</label>
                         <select name="transactionType" class="select">
                             <option value="">{{ __('index.search_select') }}</option>
                             <option value="Sale">{{ __('map.sale') }}</option>
-                            <option value="RentMonthly">{{ __('map.rent_monthly') }}</option>
+                            <option value="Rent">{{ __('map.rent_monthly') }}</option>
                             <option value="RentDaily">{{ __('map.rent_daily') }}</option>
                         </select>
                     </div>
-                    <div class="flex-fill select-field">
+                    <div class="col-12 col-md-6 col-lg-4 col-xl">
                         <label class="form-label">{{ __('index.search_type') }}</label>
                         <select name="propertyType" class="select">
                             <option value="">{{ __('index.search_select') }}</option>
@@ -76,29 +76,39 @@
                             <option value="Office">{{ __('property.office') }}</option>
                         </select>
                     </div>
-                    <div class="flex-fill select-field">
+                    <div class="col-12 col-md-6 col-lg-4 col-xl">
                         <label class="form-label">{{ __('index.search_location') }}</label>
                         <div class="filter-input-icon" style="position:relative">
-                            <input type="text" name="city" id="cityInputIndex" placeholder="{{ __('map.enter_city') }}" class="form-control" autocomplete="off">
-                            <button type="button" id="cityClearBtnIndex" class="city-clear-btn"><i class="material-icons-outlined">close</i></button>
+                            <input type="text" id="cityInputIndex" placeholder="{{ __('map.enter_city') }}" class="form-control" autocomplete="off">
+                            <input type="hidden" name="city" id="cityHiddenIndex">
+                            <button type="button" id="cityClearBtnIndex" class="city-clear-btn"><x-icon name="close" size="18"/></button>
                             <span id="citySpinnerIndex" class="city-loading-spinner"></span>
                             <ul id="citySuggestionsIndex" class="city-suggestions"></ul>
                         </div>
                     </div>
-                    <div class="flex-fill select-field">
+                    <div class="col-12 col-md-6 col-lg-4 col-xl">
                         <label class="form-label">{{ __('index.search_min_price') }}</label>
-                        <input type="number" name="minPrice" class="form-control" placeholder="{{ __('index.search_currency_symbol') }} ">
+                        <div class="input-group">
+                            <button type="button" class="btn btn-outline-secondary" data-price-step="-1000" data-target="minPrice">−</button>
+                            <input type="number" name="minPrice" id="minPriceIndex" min="0" placeholder="0" class="form-control text-center">
+                            <button type="button" class="btn btn-outline-secondary" data-price-step="1000" data-target="minPrice">+</button>
+                        </div>
                     </div>
-                    <div class="flex-fill select-field">
+                    <div class="col-12 col-md-6 col-lg-4 col-xl">
                         <label class="form-label">{{ __('index.search_max_price') }}</label>
-                        <input type="number" name="maxPrice" class="form-control" placeholder="{{ __('index.search_currency_symbol') }} ">
+                        <div class="input-group">
+                            <button type="button" class="btn btn-outline-secondary" data-price-step="-1000" data-target="maxPrice">−</button>
+                            <input type="number" name="maxPrice" id="maxPriceIndex" min="0" placeholder="0" class="form-control text-center">
+                            <button type="button" class="btn btn-outline-secondary" data-price-step="1000" data-target="maxPrice">+</button>
+                        </div>
                     </div>
-                    <div class="select-btn">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="material-icons-outlined">search</i>
+                    <div class="col-12 col-md-6 col-lg-4 col-xl-auto">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <x-icon name="search" size="20"/>
                         </button>
                     </div>
                 </div>
+                <!-- end search grid -->
             </form>
         </div>
     </div>
@@ -781,6 +791,7 @@ document.addEventListener('DOMContentLoaded', function () {
 // ── City autocomplete (index) ────────────────
 (function () {
     var input    = document.getElementById('cityInputIndex');
+    var hidden   = document.getElementById('cityHiddenIndex');
     var list     = document.getElementById('citySuggestionsIndex');
     var clearBtn = document.getElementById('cityClearBtnIndex');
     var spinner  = document.getElementById('citySpinnerIndex');
@@ -792,6 +803,17 @@ document.addEventListener('DOMContentLoaded', function () {
     var lang  = '{{ app()->getLocale() }}';
     var shown = {};
 
+    function resolveEnglishName(localName, cb) {
+        if (lang === 'en') { cb(localName); return; }
+        fetch('/api/suggest?q=' + encodeURIComponent(localName) + '&lang=en')
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                var first = (data.results || [])[0];
+                cb(first ? first.name : localName);
+            })
+            .catch(function () { cb(localName); });
+    }
+
     function makeLi(name, desc) {
         var li = document.createElement('li');
         li.innerHTML = '<i class="material-icons-outlined city-item-icon">location_on</i>'
@@ -802,10 +824,12 @@ document.addEventListener('DOMContentLoaded', function () {
         li.addEventListener('mousedown', function (e) {
             e.preventDefault();
             input.value = name;
+            if (hidden) hidden.value = name;
             if (clearBtn) clearBtn.style.display = 'flex';
             list.style.display = 'none';
             list.innerHTML = '';
             shown = {};
+            resolveEnglishName(name, function (en) { if (hidden) hidden.value = en; });
         });
         return li;
     }
@@ -864,6 +888,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (clearBtn) {
         clearBtn.addEventListener('click', function () {
             input.value = '';
+            if (hidden) hidden.value = '';
             clearBtn.style.display = 'none';
             list.style.display = 'none';
             list.innerHTML = '';
@@ -877,6 +902,32 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     updateClearBtn();
+}());
+
+// ── Price inputs: block negative, ±1000 buttons ──────────────────────
+(function () {
+    ['minPriceIndex', 'maxPriceIndex'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('keydown', function (e) {
+            if (e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault();
+        });
+    });
+    document.querySelectorAll('[data-price-step]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var target = document.querySelector('[name="' + btn.dataset.target + '"]');
+            if (!target) return;
+            var step = parseInt(btn.dataset.priceStep, 10);
+            target.value = Math.max(0, (parseInt(target.value, 10) || 0) + step);
+        });
+    });
+    // Strip negative values before submit
+    document.querySelector('.home-search-2 form') && document.querySelector('.home-search-2 form').addEventListener('submit', function () {
+        ['minPriceIndex', 'maxPriceIndex'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el && parseInt(el.value, 10) < 0) el.value = '';
+        });
+    });
 }());
 </script>
 

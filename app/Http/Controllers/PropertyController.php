@@ -20,7 +20,7 @@ class PropertyController extends Controller
             'status'           => 'prohibited',
 
             // Enum singles
-            'propertyType'     => ['nullable', Rule::in(['Apartment','House','Studio','Villa','Townhouse','Penthouse','Room','Complex','Land','Commercial','Office','Warehouse','Garage','Pavilion','EventVenue','Dacha','Cottage'])],
+            'propertyType'     => ['nullable', Rule::in(['Apartment','House','Studio','Villa','Townhouse','Penthouse','Room','Complex','Land','Commercial','Office','Warehouse','Garage','Pavilion','EventVenue','Dacha','Cottage','Condo'])],
             'transactionType'  => ['nullable', Rule::in(['Sale','Rent','RentDaily'])],
             'renovationType'   => ['nullable', Rule::in(['Capital','Designer','Euro','Cosmetic','Partial','Old','Unrenovated'])],
             'constructionType' => ['nullable', Rule::in(['Wood','Strip','Brick','Monolithic','Panel','Stone'])],
@@ -191,13 +191,31 @@ class PropertyController extends Controller
 
     public function index()
     {
-        $properties = ['items' => [], 'totalCount' => 0, 'hasNextPage' => false];
+        $this->validateFilters();
+
+        try {
+            $properties = $this->client->properties()->list($this->buildFilters());
+        } catch (\Exception $e) {
+            $properties = ['items' => [], 'totalCount' => 0, 'hasNextPage' => false];
+        }
+
         return view('property', compact('properties'));
     }
 
     public function map()
     {
-        $properties = ['items' => [], 'totalCount' => 0, 'hasNextPage' => false];
+        try {
+            $result = $this->client->properties()->list([
+                'pageNumber' => 1,
+                'pageSize'   => 100,
+                'status'     => 'Active',
+            ]);
+            $items = $this->enrichWithCoordinates($result['items'] ?? []);
+            $properties = array_merge($result, ['items' => $items]);
+        } catch (\Exception $e) {
+            $properties = ['items' => [], 'totalCount' => 0, 'hasNextPage' => false];
+        }
+
         return view('map', compact('properties'));
     }
 

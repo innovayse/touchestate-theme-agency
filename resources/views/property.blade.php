@@ -115,7 +115,8 @@
                                 <div class="col-lg-3 col-md-6" style="position:relative">
                                     <label class="filter-label">{{ __('map.city') }}</label>
                                     <div style="position:relative">
-                                        <input type="text" name="city" id="cityInput" value="{{ request('city') }}" placeholder="{{ __('map.enter_city') }}" class="filter-input" autocomplete="off">
+                                        <input type="text" id="cityInput" value="{{ request('city') }}" placeholder="{{ __('map.enter_city') }}" class="filter-input" autocomplete="off">
+                                        <input type="hidden" name="city" id="cityHidden" value="{{ request('city') }}">
                                         <button type="button" id="cityClearBtn" class="city-clear-btn"><i class="material-icons-outlined">close</i></button>
                                         <span id="citySpinner" class="city-loading-spinner"></span>
                                         <ul id="citySuggestions" class="city-suggestions"></ul>
@@ -769,9 +770,10 @@
         }
     });
 
-    // ── City autocomplete: Nominatim + Overpass nearby cities ────────────────
+    // ── City autocomplete ────────────────────────────────────────────────────
     (function () {
         var input    = document.getElementById('cityInput');
+        var hidden   = document.getElementById('cityHidden');
         var list     = document.getElementById('citySuggestions');
         var clearBtn = document.getElementById('cityClearBtn');
         var spinner  = document.getElementById('citySpinner');
@@ -791,6 +793,17 @@
             if (d) d.addEventListener('input', function () { districtAutoFilled = false; });
         }());
 
+        function resolveEnglishName(localName, cb) {
+            if (lang === 'en') { cb(localName); return; }
+            fetch('/api/suggest?q=' + encodeURIComponent(localName) + '&lang=en')
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    var first = (data.results || [])[0];
+                    cb(first ? first.name : localName);
+                })
+                .catch(function () { cb(localName); });
+        }
+
         function makeLi(name, desc) {
             var li = document.createElement('li');
             li.innerHTML = '<i class="material-icons-outlined city-item-icon">location_on</i>'
@@ -801,28 +814,30 @@
             li.addEventListener('mousedown', function (e) {
                 e.preventDefault();
                 input.value = name;
-                if (clearBtn) clearBtn.style.display = 'flex';
+                if (hidden) hidden.value = name;
+                if (clearBtn) clearBtn.style.display = 'none';
+                if (spinner)  spinner.style.display  = 'block';
                 list.style.display = 'none';
                 list.innerHTML = '';
                 shown = {};
-                // Show spinner while district is loading
-                if (clearBtn) clearBtn.style.display = 'none';
-                if (spinner)  spinner.style.display  = 'block';
                 var districtEl = document.querySelector('[name="district"]');
                 if (districtEl) districtEl.value = '';
-                fetch('/api/central-district?city=' + encodeURIComponent(name) + '&lang=' + encodeURIComponent(lang))
-                    .then(function (r) { return r.json(); })
-                    .then(function (data) {
-                        if (data.district && districtEl) {
-                            districtEl.value = data.district;
-                            districtAutoFilled = true;
-                        }
-                    })
-                    .catch(function () {})
-                    .finally(function () {
-                        if (spinner)  spinner.style.display  = 'none';
-                        if (clearBtn) clearBtn.style.display = 'flex';
-                    });
+                resolveEnglishName(name, function (enName) {
+                    if (hidden) hidden.value = enName;
+                    fetch('/api/central-district?city=' + encodeURIComponent(enName) + '&lang=' + encodeURIComponent(lang))
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            if (data.district && districtEl) {
+                                districtEl.value = data.district;
+                                districtAutoFilled = true;
+                            }
+                        })
+                        .catch(function () {})
+                        .finally(function () {
+                            if (spinner)  spinner.style.display  = 'none';
+                            if (clearBtn) clearBtn.style.display = 'flex';
+                        });
+                });
             });
             return li;
         }
@@ -883,6 +898,7 @@
         if (clearBtn) {
             clearBtn.addEventListener('click', function () {
                 input.value = '';
+                if (hidden) hidden.value = '';
                 clearBtn.style.display = 'none';
                 list.style.display = 'none';
                 list.innerHTML = '';
