@@ -31,3 +31,5 @@ Thumbs.db
 .cache/
 dist/
 
+.php-cs-fixer.cache
+.claude/
