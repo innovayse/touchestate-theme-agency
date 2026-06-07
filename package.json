@@ -11,7 +11,7 @@
     "devDependencies": {
         "laravel-vite-plugin": "^2.0.1",
         "vite": "^7.3.1",
-        "vite-plugin-static-copy": "^3.1.5"
+        "vite-plugin-static-copy": "^4.1.1"
     },
     "dependencies": {
         "run": "^1.5.0"
