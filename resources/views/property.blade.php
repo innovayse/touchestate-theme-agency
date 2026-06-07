@@ -115,7 +115,8 @@
                                 <div class="col-lg-3 col-md-6" style="position:relative">
                                     <label class="filter-label">{{ __('map.city') }}</label>
                                     <div style="position:relative">
-                                        <input type="text" name="city" id="cityInput" value="{{ request('city') }}" placeholder="{{ __('map.enter_city') }}" class="filter-input" autocomplete="off">
+                                        <input type="text" id="cityInput" value="{{ request('city') }}" placeholder="{{ __('map.enter_city') }}" class="filter-input" autocomplete="off">
+                                        <input type="hidden" name="city" id="cityHidden" value="{{ request('city') }}">
                                         <button type="button" id="cityClearBtn" class="city-clear-btn"><i class="material-icons-outlined">close</i></button>
                                         <span id="citySpinner" class="city-loading-spinner"></span>
                                         <ul id="citySuggestions" class="city-suggestions"></ul>
@@ -713,41 +714,65 @@
         if (filterFormEl) {
             filterFormEl.addEventListener('submit', function (e) {
                 e.preventDefault();
-                var params = new URLSearchParams(new FormData(filterFormEl)).toString();
-                var url = filterFormEl.action + '?' + params;
 
-                var skeleton = document.getElementById('prop-grid-skeleton');
-                var grid = document.getElementById('prop-grid');
-                if (skeleton) skeleton.style.display = '';
-                if (grid) { grid.style.display = 'none'; grid.style.opacity = '0'; }
+                var cityDisplay = document.getElementById('cityInput');
+                var cityHidden  = document.getElementById('cityHidden');
+                var filterLang  = '{{ app()->getLocale() }}';
 
-                history.pushState(null, '', url);
-                sessionStorage.setItem('propertyFilters', '?' + params);
+                function doSubmit() {
+                    var params = new URLSearchParams(new FormData(filterFormEl)).toString();
+                    var url = filterFormEl.action + '?' + params;
 
-                fetch(url)
-                    .then(function (r) { return r.text(); })
-                    .then(function (html) {
-                        var doc = new DOMParser().parseFromString(html, 'text/html');
+                    var skeleton = document.getElementById('prop-grid-skeleton');
+                    var grid = document.getElementById('prop-grid');
+                    if (skeleton) skeleton.style.display = '';
+                    if (grid) { grid.style.display = 'none'; grid.style.opacity = '0'; }
 
-                        var newGrid = doc.getElementById('prop-grid');
-                        if (grid && newGrid) grid.innerHTML = newGrid.innerHTML;
+                    history.pushState(null, '', url);
+                    sessionStorage.setItem('propertyFilters', '?' + params);
 
-                        var newLoaded = doc.getElementById('result-loaded');
-                        var newTotal = doc.getElementById('result-total');
-                        if (newLoaded) document.getElementById('result-loaded').textContent = newLoaded.textContent;
-                        if (newTotal) document.getElementById('result-total').textContent = newTotal.textContent;
+                    fetch(url)
+                        .then(function (r) { return r.text(); })
+                        .then(function (html) {
+                            var doc = new DOMParser().parseFromString(html, 'text/html');
 
-                        if (skeleton) skeleton.style.display = 'none';
-                        if (grid) {
-                            grid.style.display = '';
-                            requestAnimationFrame(function () { grid.style.opacity = '1'; });
-                        }
+                            var newGrid = doc.getElementById('prop-grid');
+                            if (grid && newGrid) grid.innerHTML = newGrid.innerHTML;
 
-                        reinitLoadMore();
-                    })
-                    .catch(function () {
-                        filterFormEl.submit();
-                    });
+                            var newLoaded = doc.getElementById('result-loaded');
+                            var newTotal  = doc.getElementById('result-total');
+                            if (newLoaded) document.getElementById('result-loaded').textContent = newLoaded.textContent;
+                            if (newTotal)  document.getElementById('result-total').textContent  = newTotal.textContent;
+
+                            if (skeleton) skeleton.style.display = 'none';
+                            if (grid) {
+                                grid.style.display = '';
+                                requestAnimationFrame(function () { grid.style.opacity = '1'; });
+                            }
+
+                            reinitLoadMore();
+                        })
+                        .catch(function () {
+                            filterFormEl.submit();
+                        });
+                }
+
+                // Гарантируем English название города перед отправкой
+                var q = cityDisplay ? cityDisplay.value.trim() : '';
+                if (q && filterLang !== 'en' && cityHidden && (!cityHidden.value || cityHidden.value === q)) {
+                    fetch('https://suggest-maps.yandex.ru/suggest-geo?apikey={{ config('services.yandex.maps_key') }}&text=' + encodeURIComponent(q) + '&lang=en_US&results=1&highlight=0&v=9')
+                        .then(function (r) { return r.text(); })
+                        .then(function (body) {
+                            var m = body.trim().match(/suggest\.apply\(([\s\S]+)\)/);
+                            var data = m ? JSON.parse(m[1]) : {};
+                            var first = (data.results || [])[0];
+                            cityHidden.value = first ? ((first.title || {}).text || q) : q;
+                        })
+                        .catch(function () { if (cityHidden) cityHidden.value = q; })
+                        .finally(doSubmit);
+                } else {
+                    doSubmit();
+                }
             });
         }
 
@@ -769,9 +794,28 @@
         }
     });
 
-    // ── City autocomplete: Nominatim + Overpass nearby cities ────────────────
+    // ── On-load: resolve pre-filled city to English (handles ?city=Ереван from URL) ──
+    (function () {
+        var h    = document.getElementById('cityHidden');
+        var lang = '{{ app()->getLocale() }}';
+        if (!h || !h.value || lang === 'en') return;
+        var localCity = h.value;
+        fetch('https://suggest-maps.yandex.ru/suggest-geo?apikey={{ config('services.yandex.maps_key') }}&text=' + encodeURIComponent(localCity) + '&lang=en_US&results=1&highlight=0&v=9')
+            .then(function (r) { return r.text(); })
+            .then(function (body) {
+                var m = body.trim().match(/suggest\.apply\(([\s\S]+)\)/);
+                if (!m) return;
+                var data = JSON.parse(m[1]);
+                var first = (data.results || [])[0];
+                if (first) h.value = (first.title || {}).text || localCity;
+            })
+            .catch(function () {});
+    }());
+
+    // ── City autocomplete ────────────────────────────────────────────────────
     (function () {
         var input    = document.getElementById('cityInput');
+        var hidden   = document.getElementById('cityHidden');
         var list     = document.getElementById('citySuggestions');
         var clearBtn = document.getElementById('cityClearBtn');
         var spinner  = document.getElementById('citySpinner');
@@ -791,7 +835,21 @@
             if (d) d.addEventListener('input', function () { districtAutoFilled = false; });
         }());
 
-        function makeLi(name, desc) {
+        function parseYandex(body) {
+            var m = (body || '').trim().match(/suggest\.apply\(([\s\S]+)\)/);
+            if (!m) return [];
+            try { var data = JSON.parse(m[1]); } catch (e) { return []; }
+            return (data.results || []).map(function (item) {
+                var title = (item.title || {}).text || '';
+                var where = ((item.log_id || {}).where) || {};
+                if (!title || title !== (where.title || '')) return null;
+                var parts = (where.name || '').split(',').map(function (p) { return p.trim(); }).filter(Boolean);
+                var desc = parts.filter(function (p) { return p !== title; }).join(', ');
+                return { name: title, desc: desc };
+            }).filter(Boolean);
+        }
+
+        function makeLi(name, desc, enName) {
             var li = document.createElement('li');
             li.innerHTML = '<i class="material-icons-outlined city-item-icon">location_on</i>'
                 + '<span class="city-item-text">'
@@ -801,16 +859,16 @@
             li.addEventListener('mousedown', function (e) {
                 e.preventDefault();
                 input.value = name;
-                if (clearBtn) clearBtn.style.display = 'flex';
+                var cityEn = enName || name;
+                if (hidden) hidden.value = cityEn;
+                if (clearBtn) clearBtn.style.display = 'none';
+                if (spinner)  spinner.style.display  = 'block';
                 list.style.display = 'none';
                 list.innerHTML = '';
                 shown = {};
-                // Show spinner while district is loading
-                if (clearBtn) clearBtn.style.display = 'none';
-                if (spinner)  spinner.style.display  = 'block';
                 var districtEl = document.querySelector('[name="district"]');
                 if (districtEl) districtEl.value = '';
-                fetch('/api/central-district?city=' + encodeURIComponent(name) + '&lang=' + encodeURIComponent(lang))
+                fetch('/api/central-district?city=' + encodeURIComponent(cityEn) + '&lang=' + encodeURIComponent(lang))
                     .then(function (r) { return r.json(); })
                     .then(function (data) {
                         if (data.district && districtEl) {
@@ -843,7 +901,7 @@
             items.forEach(function (it) {
                 if (shown[it.name]) return;
                 shown[it.name] = true;
-                list.appendChild(makeLi(it.name, it.desc));
+                list.appendChild(makeLi(it.name, it.desc, it.enName));
             });
             list.style.display = 'block';
         }
@@ -861,28 +919,24 @@
 
             timer = setTimeout(function () {
                 var yLang = lang === 'en' ? 'en_US' : lang === 'hy' ? 'hy_AM' : 'ru_RU';
-                fetch('https://suggest-maps.yandex.ru/suggest-geo?apikey={{ config('services.yandex.maps_key') }}&text=' + encodeURIComponent(q) + '&lang=' + yLang + '&results=7&highlight=0&v=9')
-                    .then(function (r) { return r.text(); })
-                    .then(function (body) {
-                        var m = body.match(/^suggest\.apply\((.+)\)$/);
-                        var data = m ? JSON.parse(m[1]) : {};
-                        var results = (data.results || []).map(function (item) {
-                            var title = (item.title || {}).text || '';
-                            var where = ((item.log_id || {}).where) || {};
-                            if (!title || title !== (where.title || '')) return null;
-                            var parts = (where.name || '').split(',').map(function (p) { return p.trim(); }).filter(Boolean);
-                            var desc = parts.filter(function (p) { return p !== title; }).join(', ');
-                            return { name: title, desc: desc };
-                        }).filter(Boolean);
-                        showSuggestions(results);
-                    })
-                    .catch(function () { list.style.display = 'none'; });
+                var base  = 'https://suggest-maps.yandex.ru/suggest-geo?apikey={{ config('services.yandex.maps_key') }}&text=' + encodeURIComponent(q) + '&results=7&highlight=0&v=9';
+                var pLocal = fetch(base + '&lang=' + yLang).then(function (r) { return r.text(); }).catch(function () { return ''; });
+                var pEn    = lang === 'en' ? Promise.resolve(null) : fetch(base + '&lang=en_US').then(function (r) { return r.text(); }).catch(function () { return ''; });
+                Promise.all([pLocal, pEn]).then(function (texts) {
+                    var local = parseYandex(texts[0]);
+                    var en    = texts[1] !== null ? parseYandex(texts[1]) : local;
+                    var combined = local.map(function (it, i) {
+                        return { name: it.name, desc: it.desc, enName: (en[i] || {}).name || it.name };
+                    });
+                    showSuggestions(combined);
+                }).catch(function () { list.style.display = 'none'; });
             }, 150);
         });
 
         if (clearBtn) {
             clearBtn.addEventListener('click', function () {
                 input.value = '';
+                if (hidden) hidden.value = '';
                 clearBtn.style.display = 'none';
                 list.style.display = 'none';
                 list.innerHTML = '';
