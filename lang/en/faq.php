@@ -1,0 +1,52 @@
+<?php
+return [
+    'table_of_contents' => 'Table of Contents',
+    'general' => 'General',
+    'buying' => 'Buying',
+    'selling' => 'Selling',
+    'renting' => 'Renting',
+    'legal' => 'Legal',
+    'financial' => 'Financial',
+    // General
+    'q1' => 'What is real estate?',
+    'a1' => 'Real estate refers to land and any permanent structures on it, such as homes or buildings.',
+    'q2' => 'What types of properties are included in real estate?',
+    'a2' => 'Real estate includes residential, commercial, industrial, land, and special-purpose properties.',
+    'q3' => 'What is the role of a real estate agent?',
+    'a3' => 'A real estate agent assists clients in buying, selling, or renting properties by guiding them through the process.',
+    // Buying
+    'q4' => 'How do I start the home-buying process?',
+    'a4' => 'Start home-buying process by checking your budget, getting pre approved for a mortgage & consulting a real estate agent.',
+    'q5' => 'How much down payment do I need?',
+    'a5' => 'The down payment typically ranges from 3% to 20% of the home\'s price, depending on the loan type and requirements.',
+    'q6' => 'What is a home inspection?',
+    'a6' => 'A home inspection is a professional evaluation of a property\'s condition to identify any issues before finalizing the purchase.',
+    // Selling
+    'q7' => 'What\'s the best time to sell a home?',
+    'a7' => 'The best time to sell a home is usually in spring or early summer when buyer demand is strongest.',
+    'q8' => 'Should I renovate before selling?',
+    'a8' => 'Renovating before selling can increase your home\'s value, but focus on cost-effective updates that appeal to buyers.',
+    'q9' => 'How is the listing price determined?',
+    'a9' => 'The listing price is set by comparing the home to similar properties and current market conditions.',
+    // Renting
+    'q10' => 'What documents do I need to rent a property?',
+    'a10' => 'You typically need identification, proof of income, rental application, and references to rent a property.',
+    'q11' => 'What\'s included in the rent?',
+    'a11' => 'Rent typically covers the property cost and may include utilities, maintenance, or amenities.',
+    'q12' => 'How long is a typical lease agreement?',
+    'a12' => 'A typical lease agreement usually lasts 12 months, but can vary from month-to-month to several years.',
+    // Legal
+    'q13' => 'What is a title deed?',
+    'a13' => 'A title deed is an official document proving ownership of a property.',
+    'q14' => 'What is escrow?',
+    'a14' => 'Escrow is when a third party holds funds or documents until a transaction is complete.',
+    'q15' => 'What are property taxes?',
+    'a15' => 'Property taxes are fees paid to local governments based on the value of a property.',
+    // Financial
+    'q16' => 'What is a mortgage?',
+    'a16' => 'A mortgage is a loan used to buy a property, paid back over time with interest.',
+    'q17' => 'What are closing costs?',
+    'a17' => 'Closing costs are fees paid at the end of a property purchase for services and taxes.',
+    'q18' => 'Can I get assistance as a first-time homebuyer?',
+    'a18' => 'Yes, many programs offer assistance and benefits specifically for first-time homebuyers.',
+];

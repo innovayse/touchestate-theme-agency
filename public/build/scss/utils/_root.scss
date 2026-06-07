@@ -1,0 +1,56 @@
+@use 'colors' as *;
+@use 'sass:meta' as *;
+@use 'sass:color' as *;
+
+@function to-rgb($color) {
+    @return channel($color, "red") + ", " + channel($color, "green") + ", " + channel($color, "blue");
+}
+
+:root {
+
+    /**
+    @color declaration
+    */
+    @each $color, $value in $colors {
+        // If the value is a map, create custom properties for each shade
+        @if type-of($value) == 'map' {
+        @each $shade, $shade-value in $value {
+            --#{$color}-#{$shade}: #{$shade-value};
+        }
+        }
+        // If it's a flat value (not a map), define it directly
+        @else {
+        --#{$color}: #{$value};
+        }
+    }
+
+     @each $name, $color in $theme-colors {
+        --#{$name}: #{$color};
+        --#{$name}-rgb: #{to-rgb($color)};
+        --#{$name}-dark: #{mix(black, $color, 15%)};
+    }
+}
+
+[data-theme="dark"] {
+    /**
+    @color declaration
+    */
+    @each $color, $value in $dark-color {
+        // If the value is a map, create custom properties for each shade
+        @if type-of($value) == 'map' {
+        @each $shade, $shade-value in $value {
+            --#{$color}-#{$shade}: #{$shade-value};
+        }
+        }
+        // If it's a flat value (not a map), define it directly
+        @else {
+        --#{$color}: #{$value};
+        }
+    }
+
+     @each $name, $color in $theme-dark-color {
+        --#{$name}: #{$color};
+        --#{$name}-rgb: #{to-rgb($color)};
+        --#{$name}-dark: #{mix(black, $color, 15%)};
+    }
+}

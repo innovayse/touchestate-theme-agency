@@ -1,0 +1,379 @@
+@use '../utils/' as *;
+
+.form-control {
+    border-color: var(--input-border);
+    color: var(--gray-900);
+    background-color: var(--form-bg);
+    font-size: 14px;
+    font-weight: $font-weight-normal;
+    line-height: 1.6;
+    border-radius: 4px;
+    padding: 0.375rem 0.75rem;
+    min-height: 38px;
+    transition: all 0.5s;
+    &:focus {
+        box-shadow: none;
+        border-color: var(--input-border);
+    }
+    &:focus {
+        color: var(--gray-900);
+        background-color: var(--form-bg);
+        &::-webkit-input-placeholder,
+        &::placeholder {
+            color: var(--gray-300);
+            padding-inline-start: 0;
+        }
+    }
+    &::-webkit-input-placeholder {
+        color: var(--gray-300);
+        padding-inline-start: 0px;
+        transition: padding-inline-start 0.1s ease-in;
+    }
+    &:-moz-placeholder {
+        color: var(--gray-300);
+    }
+    &::-moz-placeholder {
+        color: var(--gray-300);
+    }
+    &:-ms-input-placeholder {
+        color: var(--gray-300);
+    }
+}
+.form-control-sm {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    height: auto;
+    min-height: 32px;
+}
+.form-control-lg {
+    font-size: 1rem;
+    padding: 0.5rem 0.75rem;
+    min-height: 40px;
+}
+textarea {
+    &.form-control {
+        min-height: 38px;
+        height: auto;
+    }
+    resize: none;
+}
+.form-control[type="file"] {
+    padding: 0.3rem 0.5rem;
+    &.form-control-sm {
+        padding: 0.25rem 0.5rem !important;
+    }
+    &.form-control-lg {
+        padding: 0.5rem 1rem !important;
+    }
+}
+
+input.form-control[type="color"],
+input.form-control[type="range"] {
+    min-height: 38px;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.form-check {
+    min-height: inherit !important;
+}
+.col-form-label-lg,
+.col-form-label-sm,
+.col-form-label {
+    font-weight: $font-weight-medium;
+}
+.col-form-label {
+    font-size: 14px;
+    font-weight: $font-weight-medium;
+    color: var(--heading-color);
+}
+.form-label {
+    font-size: 14px;
+    font-weight: $font-weight-medium;
+    color: var(--heading-color);
+}
+
+// Custom select
+
+.custom-select.is-invalid,
+.form-control.is-invalid,
+.custom-select:invalid,
+.form-control:invalid,
+.custom-select.is-valid,
+.form-control.is-valid,
+.custom-select:valid,
+.form-control:valid {
+    &:focus {
+        box-shadow: none !important;
+    }
+}
+
+select.form-control {
+    &:not([size]):not([multiple]) {
+        height: 38px;
+    }
+}
+
+select.form-control-sm {
+    &:not([size]):not([multiple]) {
+        height: 32px;
+    }
+}
+
+// Show/Hide Password
+.password-eye {
+    cursor: pointer;
+
+    &:before {
+        font-family: tabler-icons;
+        content: "\ea9a";
+        font-style: normal;
+        font-weight: 400;
+        font-variant: normal;
+        vertical-align: middle;
+        line-height: 1.2;
+        font-size: 16px;
+    }
+}
+
+.show-password {
+    .password-eye {
+        &:before {
+            content: "\F06D1";
+        }
+    }
+}
+
+.form-floating > {
+    .form-control-plaintext,
+    .form-control {
+        &::placeholder {
+        color: transparent !important;
+        }
+    }
+}
+.form-floating > .form-control,
+.form-floating > .form-control-plaintext,
+.form-floating > .form-select {
+    height: calc(3.5rem - 4px);
+}
+.form-floating {
+    &.floating-primary {
+        label {
+            color: var(--primary);
+            opacity: 1;
+        }
+
+        input {
+            border: 1px solid var(--primary);
+        }
+        & > .form-control:focus ~ label {
+            color: var(--primary) !important;
+        }
+    }
+
+    &.floating-secondary {
+        label {
+            color: var(--secondary);
+            opacity: 1;
+        }
+
+        input {
+            border: 1px solid var(--secondary);
+        }
+        & > .form-control:focus ~ label {
+            color: var(--secondary) !important;
+        }
+    }
+
+    &.floating-warning {
+        label {
+            color: var(--warning);
+            opacity: 1;
+            }
+
+        input {
+            border: 1px solid var(--warning);
+        }
+        & > .form-control:focus ~ label {
+            color: var(--warning) !important;
+        }
+    }
+
+    &.floating-info {
+        label {
+            color: var(--info);
+            opacity: 1;
+        }
+
+        input {
+            border: 1px solid var(--info);
+        }
+        & > .form-control:focus ~ label {
+            color: var(--info) !important;
+        }
+    }
+
+    &.floating-success {
+        label {
+            color: var(--success);
+            opacity: 1;
+        }
+        input {
+            border: 1px solid var(--success);
+        }
+        & > .form-control:focus ~ label {
+
+
+
+            color: var(--success) !important;
+        }
+    }
+
+    &.floating-danger {
+        label {
+            color: var(--danger);
+            opacity: 1;
+        }
+
+        input {
+            border: 1px solid var(--danger);
+        }
+        & > .form-control:focus ~ label {
+            color: var(--danger) !important;
+        }
+    }
+}
+.form-floating > .form-control-plaintext ~ label::after,
+.form-floating > .form-control:focus ~ label::after,
+.form-floating > .form-control:not(:placeholder-shown) ~ label::after,
+.form-floating > .form-select ~ label::after {
+    background-color: var(--white);
+    border-radius: $border-radius;
+}
+.form-control.is-valid:focus,
+.was-validated .form-control:valid:focus {
+    border-color: var(--success);
+    box-shadow: none;
+}
+.input-group-flat {
+    &:focus-within {
+        border-radius: $border-radius;
+    
+        .form-control,
+        .input-group-text {
+            border-color: var(--input-border) !important;
+        }
+    }
+  
+    .form-control {
+        &:focus {
+            border-color: var(--input-border);
+            box-shadow: none;
+        }
+    
+        &:not(:last-child) {
+            border-right: 0;
+        }
+    
+        &:not(:first-child) {
+            border-left: 0;
+        }
+    }
+  
+    .input-group-text {
+        background-color: var(--form-bg);
+        border-color: var(--input-border);
+        &:first-child {
+            padding-right: 0;
+        }
+    
+        &:last-child {
+            padding-left: 0;
+        }
+        i {
+            color: var(--gray-300);
+        }
+    }
+}
+.form-check-input {
+    &:checked {
+        background-color: var(--secondary);
+        border-color: var(--secondary);
+        ~ label {
+            color: var(--gray-900);
+        }
+    }
+    &:focus {
+        box-shadow: none;
+    }
+    ~ label {
+        color: var(--gray-500);
+    }
+}
+.file-uploader {
+    position: relative;
+    input {
+        font-size: 0;
+        opacity: 0;
+        position: absolute;
+    }
+    .input-file {
+        width: 100%;
+        background: var(--light);
+        border-radius: 5px;
+        display: flex;
+        height: 38px;
+        align-items: center;
+        .browse-btn {
+            height: 38px;
+            background: var(--dark);
+            color: var(--white);
+            display: inline-flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 5px 0 0 5px;
+            font-size: 14px;
+        }
+        .browse-text {
+            font-size: 14px;
+            color: var(--gray-300);
+            padding-left: 12px;
+        }
+        
+    }
+}
+.input-icon-end {
+    .form-control {
+        padding-right: 32px;
+    }
+}
+.form-cover {
+    position: relative;
+    .form-control {
+        position: relative;
+        padding-left: 36px;
+    }
+    i {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: 10px;
+    }
+
+    &.password {
+        .form-control {
+            padding-right: 36px;
+        }
+        span {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            right: 10px;
+            font-size: 12px;
+        }
+    }
+}

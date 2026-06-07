@@ -1,0 +1,62 @@
+@use '../utils/' as *;
+
+.bootstrap-datetimepicker-widget table td.active,
+.bootstrap-datetimepicker-widget table td.active:hover {
+	background-color: var(--primary);
+	text-shadow: unset;
+}
+.bootstrap-datetimepicker-widget table {
+	th {
+		font-size: 14px;
+		font-weight: $font-weight-semibold;
+		color: var(--gray-900);
+		width: 30px;
+		height: 30px;
+		line-height: 30px;
+		&.prev, &.next {
+			padding-bottom: 16px;
+			span {
+				width: 24px;
+				height: 24px;
+				font-size: 12px;
+				border: 1px solid var(--gray-100);
+				@include rounded(50%);
+				display: -webkit-inline-box;
+				display: -ms-inline-flexbox;
+				display: inline-flex;
+				align-items: center;
+				-webkit-box-align: center;
+				-ms-flex-align: center;
+				justify-content: center;
+				-webkit-justify-content: center;
+				-ms-flex-pack: center;
+				&:hover {
+					background: var(--dark);
+					border-color: var(--dark);
+					color: var(--white);
+				}
+			}
+		}
+	}
+	td {
+		font-size: 14px;
+		color: var(--gray-500);
+		&.day {
+			width: 30px;
+			height: 32px;
+			line-height: 32px;
+		}
+	}
+} 
+.bootstrap-datetimepicker-widget {
+	z-index: 999 !important;
+	.picker-switch {
+		padding-bottom: 16px;
+	}
+}
+.bootstrap-datetimepicker-widget table td.today:before {
+	border-bottom-color: var(--primary);
+}
+.bootstrap-datetimepicker-widget table thead tr:first-child th:hover {
+    background: transparent;
+}

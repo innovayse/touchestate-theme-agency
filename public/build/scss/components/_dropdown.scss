@@ -1,0 +1,117 @@
+@use '../utils/' as *;
+
+.dropdown-menu {
+    box-shadow: $box-shadow-sm;
+    animation-name: DropDownSlideUp;
+    animation-duration: 0.3s;
+    animation-fill-mode: both;
+    will-change: transform;
+    border-radius: $border-radius-lg;
+    border-color: var(--border-color);
+    padding: 12px;
+	background: var(--white);
+    &[data-popper-placement="top-start"],
+    &[data-popper-placement="top"] {
+        animation-name: DropDownSlideDown;
+    }
+
+    .dropdown-item {
+        border-radius: $border-radius-lg;
+        font-size: 14px;
+        font-weight: $font-weight-medium;
+        color: var(--body-color);
+        padding: 8px 16px;
+        &:hover, &:active, &:focus {
+            color: var(--heading-color);
+			background: var(--light);
+        }
+		&.active {
+			background: var(--primary);
+			color: var(--white);
+		}
+    }
+}
+
+
+
+@keyframes DropDownSlideUp {
+    100% {
+        margin-top: -1px;
+    }
+
+    0% {
+        margin-top: 5px;
+    }
+}
+
+@keyframes DropDownSlideDown {
+    100% {
+        margin-bottom: 0;
+    }
+
+    0% {
+        margin-bottom: 5px;
+    }
+}
+.dropdown-divider {
+  border-color: var(--border-color);
+}
+
+.dropdown-menu-lg {
+    width: 320px;
+}
+
+
+.dropdown-toggle {
+	&::after {
+		display: inline-block;
+		vertical-align: 0;
+		content: "\f078";
+    	font-family: 'Font Awesome 7 Free';
+		font-weight: 900;
+		border: 0;
+		font-size: 14px;
+		position: relative;
+	}
+}
+.dropdown-menu {
+	@mixin dropdown-menu-color($color) {
+		background-color: $color;
+
+		li a {
+			color: rgba(255, 255, 255, 0.9);
+		}
+		.dropdown-item {
+
+			&:hover,
+			&:focus,
+			&:active,
+			&.active {
+				color: var(--white);
+			}
+		}
+	}
+	&.dropdown-menu-primary {
+		@include dropdown-menu-color(var(--primary));
+	}
+
+	&.dropdown-menu-secondary {
+		@include dropdown-menu-color(var(--secondary));
+	}
+
+	&.dropdown-menu-warning {
+		@include dropdown-menu-color(var(--warning));
+	}
+
+	&.dropdown-menu-info {
+		@include dropdown-menu-color(var(--info));
+	}
+
+	&.dropdown-menu-success {
+		@include dropdown-menu-color(var(--success));
+	}
+
+	&.dropdown-menu-danger {
+		@include dropdown-menu-color(var(--danger));
+	}
+}

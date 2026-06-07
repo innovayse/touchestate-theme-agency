@@ -1,0 +1,27 @@
+.modal-content {
+    .modal-header {
+        border-color: var(--border-color);
+        padding: 20px;
+        .btn-close.btn-close-modal {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+            border-radius: 100px;
+            background: var(--light);
+            color: var(--danger);
+            opacity: 1;
+            margin-right: 0;
+        }
+    }
+}
+.modal-title {
+    font-size: 18px;
+}
+.modal-body {
+    padding: 20px;
+}
+.modal-footer {
+    border-color: var(--border-color);
+    padding: 20px 16px;
+}

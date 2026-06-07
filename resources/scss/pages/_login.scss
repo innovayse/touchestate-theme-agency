@@ -1,0 +1,69 @@
+@use '../utils' as *;
+@use '../utils/colors' as *;
+
+.auth-cover {
+    background-image: url(../img/bg/auth-bg.png);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    @include respond-below(md) {
+        padding: 10px;
+    }
+    &::before {
+        position: absolute;
+        content: "";
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        opacity: 0.7;
+        z-index: 0;
+    }
+}
+.login-item-01 {
+    padding: 40px;
+    border: 1px solid var(--gray-100);
+    box-shadow: 0px 0px 24px 0px #C5C5C540;
+    border-radius: 5px;
+    background: var(--white);
+    @include respond-below(md) {
+        padding: 24px;
+    }
+    h4 {
+        margin-bottom: 20px;
+    }
+    .login-or {
+        .span-or {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #828282;
+            &::before {
+                position: absolute;
+                content: "";
+                height: 1px;
+                width: 45%;
+                left: 0;
+                background: var(--gray-100);
+            }
+            &::after {
+                position: absolute;
+                content: "";
+                height: 1px;
+                width: 45%;
+                right: 0;
+                background: var(--gray-100);
+            }
+        }
+    }
+    .register-btn {
+        color: var(--primary);
+    }
+}
+.list-styled {
+    list-style-type: disc;
+    padding-left: 16px;
+}

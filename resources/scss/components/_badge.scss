@@ -1,0 +1,41 @@
+@use '../utils/' as *;
+
+// Soft Badge
+@each $color, $value in $theme-colors {
+  .badge-soft-#{$color} {
+    color: var(--#{$color});
+    background-color: var(--#{$color}-dark);
+
+    &[href] {
+      color: var(--#{$color});
+      text-decoration: none;
+
+      &:is(:hover, :focus) {
+        text-decoration: none;
+        background-color: var(--#{$color}-dark);
+      }
+    }
+  }
+}
+
+.badge {
+    vertical-align: middle;
+    font-size: 14px;
+    border-radius: 4px;
+    font-weight: $font-weight-normal;
+}
+
+.badge-secondary{
+  background-color: var(--secondary);
+  color:var(--white);
+
+}
+
+.badge.badge-sm {
+    vertical-align: middle;
+    font-size: 12px;
+    i{
+      font-size: 14px;
+      margin-right: 4px;
+    }
+}

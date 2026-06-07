@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+
+// Base Font
+$font-size-base: 16px;
+$font-weight-lighter: lighter;
+$font-weight-light: 300;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+$font-weight-bolder: bolder;
+
+// Font Family
+$font-family-primary: "IBM Plex Sans", sans-serif;
+
+// Border Radius
+$border-radius: 2px;
+$border-radius-lg: 5px;
+$border-radius-xl: 8px;
+$border-radius-xxl: 10px;
+$rounded: 50%;
+$rounded-pill: 1.5rem;
+
+// Box Shadow
+$box-shadow: 0px 0px 4px 0px rgba(201, 201, 201, 0.25);
+$box-shadow-sm: 0px 0px 24px 0px rgba(197, 197, 197, 0.25);
+
+

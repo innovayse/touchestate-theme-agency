@@ -1,0 +1,473 @@
+// ─── Advanced Filter ─────────────────────────────────────────────────────────
+
+.advanced-filter {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+
+    // ── Result count ──────────────────────────────────────────────────────
+    .filter-result {
+        font-size: 14px;
+        color: var(--gray-700);
+
+        .result-value {
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+    }
+
+    // ── Search row ────────────────────────────────────────────────────────
+    .filter-search-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+
+        .filter-search-input {
+            flex: 1;
+            background: var(--form-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--gray-900);
+            padding: 10px 16px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            input {
+                background: transparent;
+                border: none;
+                outline: none;
+                color: var(--gray-900);
+                width: 100%;
+                font-size: 14px;
+
+                &::placeholder { color: var(--gray-300); }
+            }
+
+            i {
+                color: var(--gray-400);
+                font-size: 18px;
+            }
+        }
+
+        .btn-filter-search {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            cursor: pointer;
+
+            &:hover { background: var(--primary-dark); }
+        }
+
+        .grid-list-view {
+            gap: 8px;
+            flex-shrink: 0;
+            list-style: none;
+            padding: 0;
+
+            .list-icon {
+                width: 38px;
+                height: 38px;
+                font-size: 16px;
+                border: 1px solid var(--border-color);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 8px;
+                color: var(--gray-600);
+                transition: all 0.2s;
+
+                &:hover {
+                    border-color: var(--primary);
+                    color: var(--primary);
+                }
+            }
+
+            .active {
+                background-color: var(--primary);
+                color: var(--white);
+                border-color: var(--primary);
+
+                &:hover { color: var(--white); }
+            }
+        }
+
+        .btn-filter-toggle {
+            background: var(--form-bg);
+            color: var(--gray-700);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            cursor: pointer;
+
+            i { font-size: 18px; }
+            i.arrow { font-size: 16px; transition: transform 0.3s; }
+
+            &.open i.arrow { transform: rotate(180deg); }
+
+            &:hover { background: var(--light-950); }
+        }
+    }
+
+    // ── Search row mobile ──────────────────────────────────────────────────
+    @media (max-width: 768px) {
+        .filter-search-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+
+            .filter-search-input {
+                order: 1;
+            }
+
+            .btn-filter-search {
+                order: 2;
+            }
+
+            .btn-filter-toggle {
+                order: 3;
+            }
+
+            .grid-list-view {
+                order: 4;
+                justify-self: end;
+            }
+        }
+    }
+
+    // ── Filter panel ──────────────────────────────────────────────────────
+    .filter-panel {
+        overflow: hidden;
+        transition: max-height 0.35s ease;
+        max-height: 0;
+
+        &.open { max-height: 3000px; }
+    }
+
+    // ── Labels ────────────────────────────────────────────────────────────
+    .filter-label {
+        color: var(--gray-500);
+        font-size: 13px;
+        font-weight: 500;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    // ── Text inputs ───────────────────────────────────────────────────────
+    .filter-input {
+        background: var(--form-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--gray-900);
+        padding: 9px 12px;
+        font-size: 14px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--gray-900);
+            width: 100%;
+            font-size: 14px;
+
+            &::placeholder { color: var(--gray-300); }
+        }
+
+        i {
+            color: var(--gray-400);
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+    }
+
+    // ── Number stepper ────────────────────────────────────────────────────
+    .filter-stepper {
+        display: flex;
+        align-items: stretch;
+        background: var(--form-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+
+        input[type="number"] {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--gray-900);
+            padding: 9px 12px;
+            font-size: 14px;
+            min-width: 0;
+            -moz-appearance: textfield;
+
+            &::-webkit-outer-spin-button,
+            &::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+            &::placeholder { color: var(--gray-300); }
+        }
+
+        .stepper-btns {
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--border-color);
+            flex-shrink: 0;
+
+            button {
+                background: transparent;
+                border: none;
+                color: var(--gray-500);
+                width: 26px;
+                flex: 1;
+                cursor: pointer;
+                font-size: 12px;
+                line-height: 1;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                &:hover { background: var(--light-950); color: var(--gray-900); }
+                &:first-child { border-bottom: 1px solid var(--border-color); }
+            }
+        }
+    }
+
+    // ── Select (native) ───────────────────────────────────────────────────
+    .filter-select {
+        background-color: var(--form-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--gray-900);
+        padding: 9px 12px;
+        font-size: 14px;
+        width: 100%;
+        outline: none;
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235D6772' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 32px;
+
+        option {
+            background: var(--white);
+            color: var(--gray-900);
+        }
+    }
+
+    // ── Custom select (replaces native <select>) ──────────────────────────
+    .custom-select {
+        position: relative;
+
+        &__trigger {
+            background-color: var(--form-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--gray-900);
+            padding: 9px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            padding-right: 32px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235D6772' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            transition: border-color 0.2s;
+            user-select: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        &__options {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: var(--form-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.25s ease, opacity 0.15s ease;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        &.open {
+            .custom-select__trigger {
+                border-color: var(--primary);
+            }
+            .custom-select__options {
+                max-height: 240px;
+                overflow-y: auto;
+                opacity: 1;
+            }
+        }
+
+        &__option {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--gray-900);
+            transition: background 0.15s;
+
+            &:hover {
+                background: rgba(0, 0, 0, 0.05);
+            }
+            &.selected {
+                color: var(--primary);
+                font-weight: 600;
+            }
+        }
+    }
+
+    // ── Field group (label + field) ───────────────────────────────────────
+    .filter-group {
+        margin-bottom: 16px;
+    }
+
+    // ── Amenities ────────────────────────────────────────────────────────
+    .amenities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 8px;
+
+        .amenity-item {
+            background: var(--form-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+
+            &:hover { border-color: var(--primary); }
+
+            input[type="checkbox"] {
+                width: 16px;
+                height: 16px;
+                accent-color: var(--primary);
+                cursor: pointer;
+                flex-shrink: 0;
+            }
+
+            i {
+                color: var(--gray-400);
+                font-size: 18px;
+                flex-shrink: 0;
+            }
+
+            span {
+                color: var(--gray-700);
+                font-size: 13px;
+                white-space: nowrap;
+            }
+        }
+    }
+
+    // ── Bottom action row ─────────────────────────────────────────────────
+    .filter-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 8px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border-color);
+
+        .btn-reset {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--gray-500);
+            border-radius: 8px;
+            padding: 8px 20px;
+            font-size: 14px;
+            cursor: pointer;
+
+            &:hover { background: var(--light-950); }
+        }
+
+        .btn-apply {
+            background: var(--primary);
+            border: none;
+            color: #fff;
+            border-radius: 8px;
+            padding: 8px 20px;
+            font-size: 14px;
+            cursor: pointer;
+
+            &:hover { background: var(--primary-dark); }
+        }
+    }
+
+    @media (max-width: 768px) {
+        .filter-actions {
+            justify-content: stretch;
+            .btn-reset, .btn-apply {
+                flex: 1;
+                text-align: center;
+            }
+        }
+    }
+}
+
+// ── Mobile reorder: filter → map → cards (≤991px) ──────────────────────────
+// .map-col-left uses `display: contents` so its children (.map-section-filter,
+// .map-section-grid) become direct flex participants of .map-page-row,
+// allowing `order` to interleave them with .map-col-right.
+@media (max-width: 991px) {
+    .map-page-row {
+        display: flex;
+        flex-direction: column;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .map-col-left {
+        display: contents;
+    }
+
+    .map-section-filter {
+        order: 1;
+        padding: 0 calc(var(--bs-gutter-x) * 0.5);
+    }
+
+    .map-col-right {
+        order: 2;
+        width: 100%;
+        margin-bottom: 24px;
+
+        .buy-grid-map-item-04 .map-listing {
+            position: relative;
+            top: 0;
+            height: 450px;
+        }
+    }
+
+    .map-section-grid {
+        order: 3;
+        padding: 0 calc(var(--bs-gutter-x) * 0.5);
+    }
+}
