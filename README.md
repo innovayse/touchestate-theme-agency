@@ -1,5 +1,10 @@
 # TouchEstate Agency Theme
 
+[![CI](https://github.com/innovayse/touchestate-theme-agency/actions/workflows/ci.yml/badge.svg)](https://github.com/innovayse/touchestate-theme-agency/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![PHP](https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php&logoColor=white)](https://php.net)
+[![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)](https://laravel.com)
+
 A multilingual real estate agency website theme built on the [TouchEstate](https://touchestate.io) API. Designed and developed by [Innovayse Digital Agency](https://innovayse.com).
 
 ## Features
@@ -10,7 +15,7 @@ A multilingual real estate agency website theme built on the [TouchEstate](https
 - Favorites (localStorage-based)
 - Interactive map view
 - Multilingual support: Armenian (`/hy`), Russian (`/ru`), English (`/en`)
-- list.am geocoding via Yandex Maps + Nominatim
+- Geocoding via Yandex Maps + Nominatim
 
 ## Requirements
 
