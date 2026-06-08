@@ -155,4 +155,6 @@ return [
     // Feature Locations
     'properties' => 'Properties',
     'more_locations' => 'More Locations',
+    'coming_soon' => 'Coming Soon',
+    'coming_soon_sub' => 'New locations on the way',
 ];

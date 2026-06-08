@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Cache;
 use TouchEstate\Sdk\TouchEstateClient;
 
 class HomeController extends Controller
@@ -13,103 +12,71 @@ class HomeController extends Controller
 
     public function index()
     {
-        // Rent properties (for slider)
+        $allItems   = [];
+        $stats      = ['propertiesListed' => 0, 'happyClients' => 0, 'citiesCovered' => 0, 'satisfactionRate' => 98];
+
         try {
-            $rentResult    = $this->client->properties()->list([
-                'transactionType' => 'Rent',
-                'pageSize'        => 8,
-                'status'          => 'Active',
-                'sortBy'          => 'viewCount',
-                'sortDescending'  => true,
+            $batch    = $this->client->properties()->list([
+                'pageSize'  => 100,
+                'sortBy'    => 'viewCount',
+                'sortOrder' => true,
+                'status'    => 'Active',
             ]);
-            $rentProperties = $rentResult['items'] ?? [];
-        } catch (\Exception) {
-            $rentProperties = [];
-        }
+            $allItems = $batch['items'] ?? [];
+        } catch (\Throwable) {}
 
-        // Sale properties (for slider)
         try {
-            $saleResult    = $this->client->properties()->list([
-                'transactionType' => 'Sale',
-                'pageSize'        => 8,
-                'status'          => 'Active',
-                'sortBy'          => 'viewCount',
-                'sortDescending'  => true,
-            ]);
-            $saleProperties = $saleResult['items'] ?? [];
-        } catch (\Exception) {
-            $saleProperties = [];
-        }
+            $stats = $this->client->properties()->stats();
+        } catch (\Throwable) {}
 
-        // Broad list for counts / images (cached 5 min)
-        $client = $this->client;
-        $allItems = Cache::remember('home_all_props', 300, function () use ($client) {
-            try {
-                return $client->properties()->list([
-                    'pageSize' => 100,
-                    'status'   => 'Active',
-                ])['items'] ?? [];
-            } catch (\Exception) {
-                return [];
-            }
-        });
+        // Rent / Sale tabs — top 6 each
+        $rentProperties = array_values(array_slice(
+            array_filter($allItems, fn($p) => strtolower($p['transactionType'] ?? '') === 'rent'),
+            0, 6
+        ));
+        $saleProperties = array_values(array_slice(
+            array_filter($allItems, fn($p) => strtolower($p['transactionType'] ?? '') === 'sale'),
+            0, 6
+        ));
 
-        // Aggregate: type counts/images, city counts/images, top-viewed images
-        $typeCounts      = ['Apartment' => 0, 'House' => 0, 'Office' => 0, 'Villa' => 0];
-        $typeImages      = ['Apartment' => [], 'House' => [], 'Office' => [], 'Villa' => []];
-        $cityCounts      = [];
-        $cityImages      = [];
-        $topViewedImages = [];
-
-        foreach ($allItems as $item) {
-            $type = $item['propertyType'] ?? '';
-            $city = $item['city']         ?? '';
-            $img  = $item['primaryImageUrl'] ?? null;
-
-            if (isset($typeCounts[$type])) {
+        // Type counts + images (up to 3 per type)
+        $typeCounts = ['Apartment' => 0, 'House' => 0, 'Office' => 0, 'Villa' => 0];
+        $typeImages = ['Apartment' => [], 'House' => [], 'Office' => [], 'Villa' => []];
+        foreach ($allItems as $p) {
+            $type = $p['propertyType'] ?? '';
+            if (array_key_exists($type, $typeCounts)) {
                 $typeCounts[$type]++;
-                if ($img && count($typeImages[$type]) < 4) {
-                    $typeImages[$type][] = ['imageUrl' => $img];
+                if (!empty($p['primaryImageUrl']) && count($typeImages[$type]) < 3) {
+                    $typeImages[$type][] = $p['primaryImageUrl'];
                 }
-            }
-
-            if ($city) {
-                $cityCounts[$city] = ($cityCounts[$city] ?? 0) + 1;
-                if ($img && count($cityImages[$city] ?? []) < 3) {
-                    $cityImages[$city][] = ['imageUrl' => $img];
-                }
-            }
-
-            if ($img) {
-                $topViewedImages[] = [
-                    'imageUrl'  => $img,
-                    'viewCount' => $item['viewCount'] ?? 0,
-                ];
             }
         }
 
+        // City counts + images (up to 4 per city)
+        $cityCounts = [];
+        $cityImages = [];
+        foreach ($allItems as $p) {
+            $city = $p['city'] ?? '';
+            if (!$city) continue;
+            $cityCounts[$city] = ($cityCounts[$city] ?? 0) + 1;
+            if (!empty($p['primaryImageUrl']) && count($cityImages[$city] ?? []) < 4) {
+                $cityImages[$city][] = $p['primaryImageUrl'];
+            }
+        }
         arsort($cityCounts);
 
-        usort($topViewedImages, fn($a, $b) => $b['viewCount'] - $a['viewCount']);
-        $topViewedImages = array_slice($topViewedImages, 0, 4);
-
-        $totalCount = count($allItems);
-
-        $stats = [
-            'totalProperties'  => $totalCount,
-            'propertiesListed' => $totalCount,
-            'totalAgents'      => 0,
-            'totalCities'      => count($cityCounts),
-        ];
-
-        $faqSliderProperties = array_slice(
-            array_merge($rentProperties, $saleProperties), 0, 6
-        );
+        // Top 4 viewed images
+        $topViewedImages = [];
+        foreach ($allItems as $p) {
+            if (!empty($p['primaryImageUrl'])) {
+                $topViewedImages[] = ['slug' => $p['slug'], 'imageUrl' => $p['primaryImageUrl']];
+                if (count($topViewedImages) >= 4) break;
+            }
+        }
 
         return view('index', compact(
             'rentProperties', 'saleProperties', 'stats',
             'typeCounts', 'cityCounts', 'topViewedImages', 'cityImages', 'typeImages',
-            'faqSliderProperties'
         ));
     }
 }
