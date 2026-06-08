@@ -100,10 +100,6 @@
             <div class="nav header-items">
 
                 @if(!$isAuthPage)
-                <a href="#" class="topbar-link btn btn-light topbar-search" data-bs-toggle="modal" data-bs-target="#search-modal">
-                    <x-icon name="search"/>
-                </a>
-
                 <a href="/{{ $currentLocale }}/favorites" class="topbar-link btn btn-light header-fav-btn" title="{{ __('header.favorites') }}" style="position:relative">
                     <x-icon name="favorite_border"/>
                     <span class="fav-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#e53935;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;line-height:16px;text-align:center;border-radius:50%;padding:0 3px;pointer-events:none"></span>
