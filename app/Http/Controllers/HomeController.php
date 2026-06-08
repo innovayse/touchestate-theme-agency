@@ -65,12 +65,12 @@ class HomeController extends Controller
         }
         arsort($cityCounts);
 
-        // Top 4 viewed images
+        // Top 6 viewed images
         $topViewedImages = [];
         foreach ($allItems as $p) {
             if (!empty($p['primaryImageUrl'])) {
                 $topViewedImages[] = ['slug' => $p['slug'], 'imageUrl' => $p['primaryImageUrl']];
-                if (count($topViewedImages) >= 4) break;
+                if (count($topViewedImages) >= 6) break;
             }
         }
 

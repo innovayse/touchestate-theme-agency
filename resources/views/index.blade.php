@@ -467,19 +467,19 @@
             </div>
             <!-- end row -->
 
-            @if(count($topViewedImages) > 0)
-            <div class="sec-bottom-imgs">
-                @foreach($topViewedImages as $i => $img)
-                <div class="bottom-img-{{ $i + 1 }}">
-                    <a href="/{{ app()->getLocale() }}/property/{{ $img['slug'] }}">
-                        <img src="{{ $img['imageUrl'] }}" alt="">
-                    </a>
-                </div>
-                @endforeach
-            </div>
-            @endif
-
         </div>
+
+        @if(count($topViewedImages) > 0)
+        <div class="sec-bottom-imgs">
+            @foreach($topViewedImages as $i => $img)
+            <div class="bottom-img-{{ $i + 1 }}">
+                <a href="/{{ app()->getLocale() }}/property/{{ $img['slug'] }}">
+                    <img src="{{ $img['imageUrl'] }}" alt="">
+                </a>
+            </div>
+            @endforeach
+        </div>
+        @endif
     </section>
     <!-- Exclusive Benifits Section End -->
 
@@ -517,7 +517,7 @@
                                         @foreach($imgs as $idx => $imgUrl)
                                         <img src="{{ $imgUrl }}"
                                              class="city-slide w-100"
-                                             style="object-fit:cover;height:220px;position:absolute;top:0;left:0;opacity:{{ $idx === 0 ? '1' : '0' }};transition:opacity 0.8s ease;"
+                                             style="object-fit:cover;height:220px;position:absolute;top:0;left:0;opacity:{{ $idx === 0 ? '1' : '0' }};transition:opacity 0.8s ease, transform 0.5s ease;"
                                              alt="{{ $city }}">
                                         @endforeach
                                     </div>
