@@ -1,5 +1,5 @@
 <div class="col-xl-4 col-md-6" data-slug="{{ $prop['slug'] }}">
-    <div class="property-listing-item" style="cursor:pointer" onclick="if(!event.target.closest('.favourite')){window.location.href='/{{ app()->getLocale() }}/property/{{ $prop['slug'] }}'}">
+    <div class="property-listing-item" style="cursor:pointer" onclick="if(!event.target.closest('.favourite') && !event.target.closest('.compare-btn')){window.location.href='/{{ app()->getLocale() }}/property/{{ $prop['slug'] }}'}">
         <div class="buy-grid-img">
             <a href="/{{ app()->getLocale() }}/property/{{ $prop['slug'] }}">
                 @if($prop['primaryImageUrl'])
@@ -39,9 +39,14 @@
                     <span class="badge badge-sm bg-secondary d-flex align-items-center">{{ __('property.status_inactive') }}</span>
                     @endif
                 </div>
-                <a href="javascript:void(0)" class="favourite">
-                    <i class="material-icons-outlined">favorite_border</i>
-                </a>
+                <div class="d-flex gap-1">
+                    <a href="javascript:void(0)" class="compare-btn">
+                        <i class="material-icons-outlined">balance</i>
+                    </a>
+                    <a href="javascript:void(0)" class="favourite">
+                        <i class="material-icons-outlined">favorite_border</i>
+                    </a>
+                </div>
             </div>
             <div class="d-flex align-items-center justify-content-between position-absolute bottom-0 end-0 start-0 p-3">
                 <span class="badge bg-light text-dark">{{ $prop['city'] }}</span>
