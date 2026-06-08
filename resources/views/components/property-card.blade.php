@@ -10,7 +10,7 @@
 <div class="col-xl-4 col-md-6 d-flex mb-4" data-slug="{{ $prop['slug'] }}">
     <div class="pc-card d-flex flex-column flex-fill"
          style="cursor:pointer;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);background:var(--white);border:1px solid var(--gray-100);"
-         onclick="if(!event.target.closest('.favourite')){window.location.href='/{{ $locale }}/property/{{ $prop['slug'] }}'}">
+         onclick="if(!event.target.closest('.favourite') && !event.target.closest('.compare-btn')){window.location.href='/{{ $locale }}/property/{{ $prop['slug'] }}'}">
 
         {{-- Image --}}
         <div class="position-relative" style="height:220px;overflow:hidden;flex-shrink:0;">
@@ -60,10 +60,16 @@
                         <span class="badge badge-sm bg-secondary">{{ __('property.status_inactive') }}</span>
                     @endif
                 </div>
-                <a href="javascript:void(0)" class="favourite"
-                   style="background:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.15);">
-                    <i class="material-icons-outlined" style="font-size:17px;color:#555">favorite_border</i>
-                </a>
+                <div class="d-flex gap-1">
+                    <a href="javascript:void(0)" class="compare-btn"
+                       style="border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.15);">
+                        <i class="material-icons-outlined" style="font-size:17px">balance</i>
+                    </a>
+                    <a href="javascript:void(0)" class="favourite"
+                       style="background:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.15);">
+                        <i class="material-icons-outlined" style="font-size:17px;color:#555">favorite_border</i>
+                    </a>
+                </div>
             </div>
 
             {{-- City badge bottom --}}

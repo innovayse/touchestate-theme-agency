@@ -155,4 +155,6 @@ return [
     // Feature Locations
     'properties' => 'Անշարժ Գույք',
     'more_locations' => 'Ավելի Շատ Տեղանքներ',
+    'coming_soon' => 'Շուտով',
+    'coming_soon_sub' => 'Նոր վայրեր ճանապարհին են',
 ];

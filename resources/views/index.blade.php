@@ -162,6 +162,9 @@
 
     <!-- Property Type Section Start -->
     <section class="property-type-section">
+        <div class="pt-blob pt-blob-1" aria-hidden="true"></div>
+        <div class="pt-blob pt-blob-2" aria-hidden="true"></div>
+        <div class="pt-blob pt-blob-3" aria-hidden="true"></div>
         <div class="container">
 
             <!-- Section Title Start -->
@@ -496,36 +499,49 @@
             <!-- Section Title End -->
 
             <!-- start row -->
-            <div class="row">
+            <div class="row g-4">
 
-                @php $i = 0; @endphp
+                @php $shown = 0; @endphp
                 @foreach($cityCounts as $city => $count)
-                @php $imgs = $cityImages[$city] ?? []; @endphp
-                @if(count($imgs) > 0)
-                <div class="col-lg-3 col-sm-6" data-aos="fade-up" data-aos-duration="{{ 1000 + $i * 500 }}">
-                    <div class="location-item-two">
-                        <div class="location-img" style="position:relative;overflow:hidden;cursor:pointer"
-                             onclick="window.location.href='/{{ app()->getLocale() }}/property?city={{ urlencode($city) }}'">
-                            @if(count($imgs) === 1)
-                                <img src="{{ $imgs[0] }}" class="img-fluid w-100" style="object-fit:cover;height:220px" alt="{{ $city }}">
-                            @else
-                                <div class="city-slideshow" data-images="{{ json_encode($imgs) }}" style="height:220px;position:relative;">
-                                    @foreach($imgs as $idx => $imgUrl)
-                                    <img src="{{ $imgUrl }}"
-                                         class="city-slide w-100"
-                                         style="object-fit:cover;height:220px;position:absolute;top:0;left:0;opacity:{{ $idx === 0 ? '1' : '0' }};transition:opacity 0.8s ease;"
-                                         alt="{{ $city }}">
-                                    @endforeach
-                                </div>
-                            @endif
-                            <div class="position-absolute top-0 end-0 p-3 z-1"><span class="badge bg-light text-dark">{{ $count }} {{ __('index.properties') }}</span></div>
-                            <h5 class="position-absolute start-0 bottom-0 text-white z-1 p-3">{{ $city }}</h5>
+                    @if($shown >= 8) @break @endif
+                    @php $imgs = $cityImages[$city] ?? []; @endphp
+                    @if(count($imgs) > 0)
+                    <div class="col-lg-3 col-sm-6" data-aos="fade-up" data-aos-duration="{{ 1000 + $shown * 300 }}">
+                        <div class="location-item-two">
+                            <div class="location-img" style="position:relative;overflow:hidden;cursor:pointer;border-radius:10px"
+                                 onclick="window.location.href='/{{ app()->getLocale() }}/property?city={{ urlencode($city) }}'">
+                                @if(count($imgs) === 1)
+                                    <img src="{{ $imgs[0] }}" class="img-fluid w-100" style="object-fit:cover;height:220px" alt="{{ $city }}">
+                                @else
+                                    <div class="city-slideshow" data-images="{{ json_encode($imgs) }}" style="height:220px;position:relative;">
+                                        @foreach($imgs as $idx => $imgUrl)
+                                        <img src="{{ $imgUrl }}"
+                                             class="city-slide w-100"
+                                             style="object-fit:cover;height:220px;position:absolute;top:0;left:0;opacity:{{ $idx === 0 ? '1' : '0' }};transition:opacity 0.8s ease;"
+                                             alt="{{ $city }}">
+                                        @endforeach
+                                    </div>
+                                @endif
+                                <div class="position-absolute top-0 end-0 p-3 z-1"><span class="badge bg-light text-dark">{{ $count }} {{ __('index.properties') }}</span></div>
+                                <h5 class="position-absolute start-0 bottom-0 text-white z-1 p-3 mb-0">{{ $city }}</h5>
+                            </div>
                         </div>
                     </div>
-                </div> <!-- end col -->
-                @php $i++; @endphp
-                @endif
+                    @php $shown++; @endphp
+                    @endif
                 @endforeach
+
+                @if($shown < 8)
+                <div class="col-lg-3 col-sm-6" data-aos="fade-up" data-aos-duration="{{ 1000 + $shown * 300 }}">
+                    <div class="location-item-two">
+                        <div class="location-img" style="height:220px;border-radius:10px;overflow:hidden;position:relative;background:var(--gray-100);border:2px dashed var(--gray-300);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;">
+                            <i class="material-icons-outlined" style="font-size:36px;color:var(--gray-400)">location_city</i>
+                            <span style="font-weight:600;color:var(--gray-500);font-size:15px">{{ __('index.coming_soon') }}</span>
+                            <span style="font-size:12px;color:var(--gray-400)">{{ __('index.coming_soon_sub') }}</span>
+                        </div>
+                    </div>
+                </div>
+                @endif
 
             </div>
             <!-- end row -->

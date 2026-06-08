@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\FavoritesController;
+use App\Http\Controllers\CompareController;
 use App\Http\Controllers\AgentController;
 use App\Http\Controllers\ContactController;
 
@@ -206,6 +207,10 @@ Route::group(
         // Favorites
         Route::get('/favorites', [FavoritesController::class, 'index'])->name('favorites');
         Route::post('/favorites/load', [FavoritesController::class, 'load'])->name('favorites.load');
+
+        // Compare
+        Route::get('/compare', [CompareController::class, 'index'])->name('compare');
+        Route::post('/compare/load', [CompareController::class, 'load'])->name('compare.load');
 
         // Agent
         Route::get('/agent',         [AgentController::class, 'index'])->name('agent');

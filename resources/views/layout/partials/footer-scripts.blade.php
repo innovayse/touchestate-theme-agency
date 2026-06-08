@@ -195,6 +195,118 @@
         });
     </script>
 
+    <!-- Compare (localStorage) -->
+    <script>
+    (function () {
+        var COMPARE_KEY = 'te_compare';
+        var MAX_COMPARE = 4;
+        var __maxMsg   = @json(__('compare.max_reached', ['max' => 4]));
+
+        function getSlugs() {
+            try { return JSON.parse(localStorage.getItem(COMPARE_KEY)) || []; }
+            catch (e) { return []; }
+        }
+
+        function setSlugs(slugs) {
+            localStorage.setItem(COMPARE_KEY, JSON.stringify(slugs));
+        }
+
+        function getSlug(btn) {
+            if (btn.dataset && btn.dataset.slug) return btn.dataset.slug;
+            var card = btn.closest('[data-slug]');
+            return card ? card.dataset.slug : null;
+        }
+
+        function applyCompareIcon(btn, isIn) {
+            btn.classList.toggle('is-compared', isIn);
+            btn.setAttribute('aria-pressed', isIn ? 'true' : 'false');
+        }
+
+        function applyCompareIcons() {
+            var slugs = getSlugs();
+            document.querySelectorAll('.compare-btn').forEach(function (btn) {
+                var slug = getSlug(btn);
+                if (slug) applyCompareIcon(btn, slugs.indexOf(slug) !== -1);
+            });
+            // Lock buttons when limit reached
+            var atMax = slugs.length >= MAX_COMPARE;
+            document.querySelectorAll('.compare-btn').forEach(function (btn) {
+                var slug = getSlug(btn);
+                var isIn = slug && slugs.indexOf(slug) !== -1;
+                btn.disabled = atMax && !isIn;
+                btn.title    = btn.disabled ? __maxMsg : '';
+            });
+        }
+
+        function updateHeaderCompare() {
+            var count = getSlugs().length;
+            document.querySelectorAll('.header-compare-btn').forEach(function (btn) {
+                var badge = btn.querySelector('.compare-badge');
+                var svg   = btn.querySelector('svg.i-icon');
+                if (badge) {
+                    if (count > 0) {
+                        badge.textContent  = count;
+                        badge.style.display = '';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+                if (svg) {
+                    svg.style.color = count > 0 ? '#1565c0' : '';
+                }
+            });
+        }
+
+        // Click handler — event delegation
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest('.compare-btn');
+            if (!btn) return;
+            e.preventDefault();
+            e.stopPropagation();
+
+            var slug = getSlug(btn);
+            if (!slug) return;
+
+            var slugs = getSlugs();
+            var idx   = slugs.indexOf(slug);
+
+            if (idx !== -1) {
+                slugs.splice(idx, 1);
+            } else {
+                if (slugs.length >= MAX_COMPARE) {
+                    showCompareToast(__maxMsg);
+                    return;
+                }
+                slugs.push(slug);
+            }
+
+            setSlugs(slugs);
+            updateHeaderCompare();
+            applyCompareIcons();
+        });
+
+        function showCompareToast(msg) {
+            var toast = document.createElement('div');
+            toast.textContent = msg;
+            toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#323232;color:#fff;padding:10px 22px;border-radius:25px;z-index:10000;font-size:14px;box-shadow:0 3px 8px rgba(0,0,0,.3);';
+            document.body.appendChild(toast);
+            setTimeout(function () {
+                toast.style.transition = 'opacity 0.3s';
+                toast.style.opacity = '0';
+                setTimeout(function () { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+            }, 2000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            applyCompareIcons();
+            updateHeaderCompare();
+        });
+
+        window.applyCompareIcons    = applyCompareIcons;
+        window.updateHeaderCompare  = updateHeaderCompare;
+    }());
+    </script>
+
     <!-- Favourites (localStorage) -->
     <script>
     (function () {

@@ -8,6 +8,8 @@ return [
     'blog' => 'Blog',
     'favorites' => 'Favorites',
     'favorites_empty' => 'You have no saved properties yet.',
+    'compare' => 'Compare',
+    'compare_empty' => 'You have no properties selected for comparison.',
 
     // Auth
     'sign_in' => 'Sign In',
