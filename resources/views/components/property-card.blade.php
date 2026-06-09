@@ -1,4 +1,4 @@
-@props(['prop'])
+@props(['prop', 'col' => 'col-xl-4 col-md-6'])
 
 @php
     $txType = strtolower($prop['transactionType'] ?? '');
@@ -7,7 +7,7 @@
     $locale  = app()->getLocale();
 @endphp
 
-<div class="col-xl-4 col-md-6 d-flex mb-4" data-slug="{{ $prop['slug'] }}">
+<div class="{{ $col }} d-flex mb-4" data-slug="{{ $prop['slug'] }}">
     <div class="pc-card d-flex flex-column flex-fill"
          style="cursor:pointer;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);background:var(--white);border:1px solid var(--gray-100);"
          onclick="if(!event.target.closest('.favourite') && !event.target.closest('.compare-btn')){window.location.href='/{{ $locale }}/property/{{ $prop['slug'] }}'}">
