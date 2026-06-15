@@ -28,18 +28,25 @@
         <div class="content">
             <div class="container-fluid">
 
-                <!-- start row -->
-                    <div class="row map-page-row">
-                    <div class="col-lg-5 map-col-left">
+                <!-- Row 1: Filter -->
+                <div class="row mb-4">
+                    <div class="col-12">
                         <div class="map-section-filter">
-                        <!-- Advanced Filter -->
                         @include('partials.advanced-filter', [
                             'filterAction' => '/'.app()->getLocale().'/map',
                             'filterPage'   => 'map',
                         ])
-                        </div><!-- end map-section-filter -->
+                        </div>
+                    </div>
+                </div>
 
+                <!-- Row 2: Grid + Map -->
+                <div class="row map-page-row">
+
+                    <!-- Left: scrollable property grid -->
+                    <div class="col-lg-5 map-col-left">
                         <div class="map-section-grid">
+
                         <!-- Skeleton Grid (shown while page loads) -->
                         <div id="prop-grid-skeleton" class="row mb-4">
                             @for($i = 0; $i < 4; $i++)
@@ -70,13 +77,12 @@
                             @endfor
                         </div>
 
-                        <!-- start row -->
+                        <!-- Property cards -->
                         <div class="row mb-4" id="prop-grid" style="display:none;opacity:0;transition:opacity 0.35s ease">
                             @foreach($properties['items'] ?? [] as $prop)
-                                <x-property-card :prop="$prop" col="col-lg-6 col-md-6" />
+                                <x-property-card :prop="$prop" col="col-xl-6" />
                             @endforeach
                         </div>
-                        <!-- end row -->
 
                         <!-- Load More / Show Less -->
                         <div class="text-center mb-4 d-flex align-items-center justify-content-center gap-3" id="grid-controls">
@@ -89,18 +95,20 @@
                                 <i class="material-icons-outlined" style="font-size:18px">expand_more</i>
                             </button>
                         </div>
-                        </div><!-- end map-section-grid -->
-                    </div> <!-- end col left -->
 
-                    <div class="col-lg-7 map-col-right">
+                        </div><!-- end map-section-grid -->
+                    </div><!-- end col left -->
+
+                    <!-- Right: natural-sticky map (JS-driven) -->
+                    <div class="col-lg-7 map-col-right" style="align-self:flex-start;">
                         <div class="buy-grid-map-item-04" style="position:relative;">
-                            <div id="map" class="map-listing"></div>
-                            <!-- Centered property card overlay (shown on marker click) -->
+                            <div id="map" class="map-listing" style="height:100%;"></div>
+                            <!-- Property card overlay on marker click -->
                             <div id="map-card-overlay" style="display:none;position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:500;pointer-events:auto;"></div>
                         </div>
-                    </div> <!-- end col right -->
-                </div>
-                    <!-- end row -->
+                    </div><!-- end col right -->
+
+                </div><!-- end row map-page-row -->
 
             </div>
         </div>
@@ -198,6 +206,7 @@ $mapLocations = array_map(function($p) {
             });
         }
     });
+
 
     // ── Pan map when district field changes ────────────────────────────────
     (function () {

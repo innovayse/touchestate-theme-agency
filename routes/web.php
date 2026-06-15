@@ -6,7 +6,6 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\FavoritesController;
 use App\Http\Controllers\CompareController;
-use App\Http\Controllers\AgentController;
 use App\Http\Controllers\ContactController;
 
 // ─────────────────────────────────────────────
@@ -170,10 +169,6 @@ Route::post('/api/property/{slug}/enquire', [PropertyController::class, 'enquire
 // Map
 Route::get('/map', [PropertyController::class, 'map']);
 
-// Agent
-Route::get('/agent', [AgentController::class, 'index']);
-Route::get('/agent/{slug}',  [AgentController::class, 'show']);
-
 // All simple static pages (default to Armenian locale)
 $defaultRoutes = [
     'contact-us', 'about-us', 'our-team',
@@ -211,10 +206,6 @@ Route::group(
         // Compare
         Route::get('/compare', [CompareController::class, 'index'])->name('compare');
         Route::post('/compare/load', [CompareController::class, 'load'])->name('compare.load');
-
-        // Agent
-        Route::get('/agent',         [AgentController::class, 'index'])->name('agent');
-        Route::get('/agent/{slug}',  [AgentController::class, 'show'])->name('agent.single');
 
         // Static pages
         Route::get('/about-us',        fn () => view('about-us'))->name('about-us');

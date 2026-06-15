@@ -249,7 +249,7 @@ header {
 
 /****** Utils ******/
 html {
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 body {
   font-family: "IBM Plex Sans", sans-serif;
@@ -257,7 +257,7 @@ body {
   color: var(--body-color);
   background: var(--white);
   scroll-behavior: smooth;
-  overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100%;
 }
 
@@ -398,7 +398,7 @@ header.fixed {
   top: 0 !important;
   left: 0;
   width: 100%;
-  z-index: 100;
+  z-index: 10001;
   -webkit-transition: all 0.9s;
   -ms-transition: all 0.9s;
   transition: all 0.9s;
@@ -464,7 +464,7 @@ header .header-nav .main-menu-wrapper {
     width: 260px;
     overflow-x: hidden;
     overflow-y: auto;
-    z-index: 1060;
+    z-index: 10002;
     transform: translateX(-260px);
     -webkit-transform: translateX(-260px);
     -ms-transform: translateX(-260px);
@@ -2321,6 +2321,12 @@ footer .join-sec p {
 [data-theme=dark] #propertyJsMap [class*=-copyrights-pane],
 [data-theme=dark] #mapFullscreenJsMap [class*=-copyrights-pane] {
   filter: invert(0.9) hue-rotate(180deg);
+}
+.map-listing [class*=-copyrights-pane],
+.yandex-map [class*=-copyrights-pane],
+#propertyJsMap [class*=-copyrights-pane],
+#mapFullscreenJsMap [class*=-copyrights-pane] {
+  display: none !important;
 }
 [data-theme=dark] .yandex-map [class*=-controls],
 [data-theme=dark] .map-listing [class*=-controls],
@@ -6415,7 +6421,7 @@ span.select2-container.select2-container--default.select2-container--open {
   width: 100vw;
   left: 50%;
   transform: translateX(-50%);
-  min-height: 420px;
+  min-height: 320px;
   overflow: visible;
   margin-top: -60px;
 }
@@ -6430,11 +6436,11 @@ span.select2-container.select2-container--default.select2-container--open {
 }
 
 .exclusive-benifit-section .sec-bottom-imgs div {
-  transition: 0.5s all ease;
+  transition: translate 0.35s ease-in-out;
 }
 .exclusive-benifit-section .sec-bottom-imgs img {
-  width: 410px;
-  height: 330px;
+  width: 310px;
+  height: 248px;
   object-fit: cover;
   border-radius: 8px;
   display: block;
@@ -6453,19 +6459,19 @@ span.select2-container.select2-container--default.select2-container--open {
   position: absolute; left: 0; bottom: -100px; transform: rotate(-7.59deg); z-index: 2;
 }
 .exclusive-benifit-section .sec-bottom-imgs .bottom-img-2 {
-  position: absolute; left: calc((100vw - 410px) / 5 * 1); bottom: -100px; transform: rotate(12.63deg); z-index: 2;
+  position: absolute; left: calc((100vw - 310px) / 5 * 1); bottom: -100px; transform: rotate(12.63deg); z-index: 2;
 }
 .exclusive-benifit-section .sec-bottom-imgs .bottom-img-3 {
-  position: absolute; left: calc((100vw - 410px) / 5 * 2); bottom: -100px; transform: rotate(-6.03deg); z-index: 3;
+  position: absolute; left: calc((100vw - 310px) / 5 * 2); bottom: -100px; transform: rotate(-6.03deg); z-index: 3;
 }
 .exclusive-benifit-section .sec-bottom-imgs .bottom-img-4 {
-  position: absolute; left: calc((100vw - 410px) / 5 * 3); bottom: -100px; transform: rotate(12.63deg); z-index: 3;
+  position: absolute; left: calc((100vw - 310px) / 5 * 3); bottom: -100px; transform: rotate(12.63deg); z-index: 3;
 }
 .exclusive-benifit-section .sec-bottom-imgs .bottom-img-5 {
-  position: absolute; left: calc((100vw - 410px) / 5 * 4); bottom: -100px; transform: rotate(-1.51deg); z-index: 2;
+  position: absolute; left: calc((100vw - 310px) / 5 * 4); bottom: -100px; transform: rotate(-1.51deg); z-index: 2;
 }
 .exclusive-benifit-section .sec-bottom-imgs .bottom-img-6 {
-  position: absolute; left: calc(100vw - 410px); bottom: -100px; transform: rotate(-6.03deg); z-index: 2;
+  position: absolute; left: calc(100vw - 310px); bottom: -100px; transform: rotate(-6.03deg); z-index: 2;
 }
 
 @media (max-width: 1399.98px) {
@@ -6491,14 +6497,59 @@ span.select2-container.select2-container--default.select2-container--open {
   .exclusive-benifit-section .sec-bottom-imgs .bottom-img-6 { left: calc(100vw - 230px); }
 }
 
-/* Hover: only on devices with a real pointer (not touch screens) */
+/* Wave float animation — total cycle 15s (6 × 2.5s), each image active in its own window.
+   Uses CSS Individual Transform `translate` (separate from `transform: rotate()` in base styles)
+   so hover can override translate without touching the rotation. */
+@keyframes float-img-1 {
+  0%            { translate: 0 0; animation-timing-function: ease-in; }
+  8.33%         { translate: 0 -30px; animation-timing-function: ease-out; }
+  16.67%, 100%  { translate: 0 0; }
+}
+@keyframes float-img-2 {
+  0%, 16.67%    { translate: 0 0; animation-timing-function: ease-in; }
+  25%           { translate: 0 -30px; animation-timing-function: ease-out; }
+  33.33%, 100%  { translate: 0 0; }
+}
+@keyframes float-img-3 {
+  0%, 33.33%    { translate: 0 0; animation-timing-function: ease-in; }
+  41.67%        { translate: 0 -30px; animation-timing-function: ease-out; }
+  50%, 100%     { translate: 0 0; }
+}
+@keyframes float-img-4 {
+  0%, 50%       { translate: 0 0; animation-timing-function: ease-in; }
+  58.33%        { translate: 0 -30px; animation-timing-function: ease-out; }
+  66.67%, 100%  { translate: 0 0; }
+}
+@keyframes float-img-5 {
+  0%, 66.67%    { translate: 0 0; animation-timing-function: ease-in; }
+  75%           { translate: 0 -30px; animation-timing-function: ease-out; }
+  83.33%, 100%  { translate: 0 0; }
+}
+@keyframes float-img-6 {
+  0%, 83.33%    { translate: 0 0; animation-timing-function: ease-in; }
+  91.67%        { translate: 0 -30px; animation-timing-function: ease-out; }
+  100%          { translate: 0 0; }
+}
+
+.exclusive-benifit-section .sec-bottom-imgs .bottom-img-1 { animation: float-img-1 15s linear infinite; }
+.exclusive-benifit-section .sec-bottom-imgs .bottom-img-2 { animation: float-img-2 15s linear infinite; }
+.exclusive-benifit-section .sec-bottom-imgs .bottom-img-3 { animation: float-img-3 15s linear infinite; }
+.exclusive-benifit-section .sec-bottom-imgs .bottom-img-4 { animation: float-img-4 15s linear infinite; }
+.exclusive-benifit-section .sec-bottom-imgs .bottom-img-5 { animation: float-img-5 15s linear infinite; }
+.exclusive-benifit-section .sec-bottom-imgs .bottom-img-6 { animation: float-img-6 15s linear infinite; }
+
+/* Hover: freeze animation + lift. `!important` beats animation in cascade (author !important > animation).
+   `transition: translate` (set above on div) gives smooth in/out. */
 @media (hover: hover) and (pointer: fine) {
-  .exclusive-benifit-section .sec-bottom-imgs .bottom-img-1:hover { transform: rotate(-7.59deg) translateY(-30px); }
-  .exclusive-benifit-section .sec-bottom-imgs .bottom-img-2:hover { transform: rotate(12.63deg) translateY(-30px); }
-  .exclusive-benifit-section .sec-bottom-imgs .bottom-img-3:hover { transform: rotate(-6.03deg) translateY(-30px); }
-  .exclusive-benifit-section .sec-bottom-imgs .bottom-img-4:hover { transform: rotate(12.63deg) translateY(-30px); }
-  .exclusive-benifit-section .sec-bottom-imgs .bottom-img-5:hover { transform: rotate(-1.51deg) translateY(-30px); }
-  .exclusive-benifit-section .sec-bottom-imgs .bottom-img-6:hover { transform: rotate(-6.03deg) translateY(-30px); }
+  .exclusive-benifit-section .sec-bottom-imgs .bottom-img-1:hover,
+  .exclusive-benifit-section .sec-bottom-imgs .bottom-img-2:hover,
+  .exclusive-benifit-section .sec-bottom-imgs .bottom-img-3:hover,
+  .exclusive-benifit-section .sec-bottom-imgs .bottom-img-4:hover,
+  .exclusive-benifit-section .sec-bottom-imgs .bottom-img-5:hover,
+  .exclusive-benifit-section .sec-bottom-imgs .bottom-img-6:hover {
+    animation-play-state: paused;
+    translate: 0 -30px !important;
+  }
 }
 
 .benifit-item {
@@ -6534,6 +6585,9 @@ span.select2-container.select2-container--default.select2-container--open {
 
 .feature-location-section {
   padding: 60px 0;
+  position: relative;
+  z-index: 5;
+  background: var(--white);
 }
 @media (max-width: 767.98px) {
   .feature-location-section {
@@ -8295,6 +8349,35 @@ span.select2-container.select2-container--default.select2-container--open {
   max-width: 100%;
   height: 207px;
   object-fit: cover;
+}
+
+/* Map property card overlay — centered over map on marker click */
+#map-card-overlay {
+  overflow: hidden;
+  scrollbar-width: none;
+}
+#map-card-overlay::-webkit-scrollbar { display: none; }
+#map-card-overlay a { display: block; }
+.menu-opened #map-card-overlay { display: none !important; }
+
+/* Yandex Maps — hide copyright/terms branding */
+[class*="ymaps-"][class*="copyrights"],
+[class*="ymaps-"][class*="copyright"] {
+  display: none !important;
+}
+
+/* Yandex Maps balloon — strip default white frame */
+[class*="ymaps-"][class*="balloon"] {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  padding: 0 !important;
+}
+[class*="ymaps-"][class*="balloon__tail"],
+[class*="ymaps-"][class*="balloon__close"],
+[class*="ymaps-"][class*="balloon__close-button"] {
+  display: none !important;
 }
 
 .buy-details-item .nav-pills .nav-item .nav-link {
@@ -10844,6 +10927,22 @@ span.select2-container.select2-container--default.select2-container--open {
   }
 }
 
+@media (min-width: 992px) {
+  .map-col-right {
+    position: sticky;
+    top: 80px;
+    bottom: 0;
+    align-self: flex-start;
+  }
+  .buy-grid-map-item-04 {
+    height: calc(100vh - 80px);
+  }
+  #map.map-listing {
+    height: 100% !important;
+    width: 100%;
+  }
+}
+
 @media (max-width: 991px) {
   .map-page-row {
     display: flex;
@@ -10851,25 +10950,29 @@ span.select2-container.select2-container--default.select2-container--open {
     margin-left: 0;
     margin-right: 0;
   }
-  .map-col-left {
-    display: contents;
-  }
-  .map-section-filter {
-    order: 1;
-    padding: 0 calc(var(--bs-gutter-x) * 0.5);
-  }
   .map-col-right {
-    order: 2;
+    order: 1;
     width: 100%;
     margin-bottom: 24px;
+  }
+  .map-col-left {
+    order: 2;
+  }
+  .map-col-right .buy-grid-map-item-04 {
+    height: 350px;
   }
   .map-col-right .buy-grid-map-item-04 .map-listing {
     position: relative;
     top: 0;
-    height: 450px;
+    height: 100%;
+  }
+}
+
+@media (max-width: 575px) {
+  .map-col-right .buy-grid-map-item-04 {
+    height: 400px;
   }
   .map-section-grid {
-    order: 3;
     padding: 0 calc(var(--bs-gutter-x) * 0.5);
   }
 }

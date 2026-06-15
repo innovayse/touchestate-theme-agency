@@ -360,16 +360,21 @@ function getBalloonContentFromApi(loc) {
 function getMiniCardHtml(loc) {
   var imgSrc = loc.image || '/build/img/buy/buy-grid-img-01.jpg';
   var url = _propertyBase() + loc.slug;
-  return '<a href="' + url + '" style="display:block;min-width:220px;max-width:250px;background:#fff;border-radius:8px;' +
-    'overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.22);font-family:Arial,sans-serif;' +
-    'text-decoration:none;color:inherit;cursor:pointer;">' +
-    '<img src="' + imgSrc + '" alt="" style="width:100%;height:110px;object-fit:cover;display:block;">' +
-    '<div style="padding:8px 10px;">' +
-      '<div style="font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:3px;' +
+  return '<a href="' + url + '" style="display:block;width:260px;background:#1e2330;border-radius:12px;' +
+    'overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.45);font-family:Inter,system-ui,sans-serif;' +
+    'text-decoration:none;color:inherit;cursor:pointer;border:1px solid rgba(255,255,255,.08);">' +
+    '<div style="position:relative;">' +
+      '<img src="' + imgSrc + '" alt="" style="width:100%;height:140px;object-fit:cover;display:block;">' +
+      '<div style="position:absolute;bottom:0;left:0;right:0;padding:6px 10px;' +
+        'background:linear-gradient(transparent,rgba(0,0,0,.65));">' +
+        '<span style="font-size:15px;font-weight:700;color:#fff;">' + (loc.price || '') + '</span>' +
+      '</div>' +
+    '</div>' +
+    '<div style="padding:10px 12px;">' +
+      '<div style="font-size:13px;font-weight:600;color:#f0f0f0;margin-bottom:4px;' +
         'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (loc.title || '') + '</div>' +
-      '<div style="font-size:11px;color:#888;margin-bottom:4px;' +
+      '<div style="font-size:11px;color:#9aa0b0;' +
         'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (loc.address || '') + '</div>' +
-      '<div style="font-size:14px;font-weight:700;color:#E8443C;">' + (loc.price || '') + '</div>' +
     '</div>' +
   '</a>';
 }
@@ -401,6 +406,13 @@ function createLayouts() {
       build: function() {
         this.constructor.superclass.build.call(this);
         var el = this.getParentElement();
+        var node = el;
+        while (node && node !== document.body) {
+          if (node.className && typeof node.className === 'string' && node.className.indexOf('balloon') !== -1) {
+            node.style.cssText += ';background:transparent!important;box-shadow:none!important;border:none!important;padding:0!important;';
+          }
+          node = node.parentNode;
+        }
         el.addEventListener('mouseenter', cancelHoverClose);
         el.addEventListener('mouseleave', scheduleHoverClose);
       },
@@ -579,38 +591,26 @@ function placeMarkerForLoc(loc, cityCenter) {
     }
   );
   placemark.events.add('mouseenter', function() {
-    if (_pinnedMark) return; // pinned — hover disabled
-    cancelHoverClose();
-    if (_activeHoverMark === placemark) {
-      map.container.getElement().style.cursor = 'pointer';
-      return;
-    }
-    if (_activeHoverMark) {
-      _activeHoverMark.balloon.close();
-    }
-    _activeHoverMark = placemark;
-    placemark.balloon.open();
     map.container.getElement().style.cursor = 'pointer';
   });
   placemark.events.add('mouseleave', function() {
-    if (_pinnedMark) return; // pinned — hover disabled
-    scheduleHoverClose();
     map.container.getElement().style.cursor = '';
   });
   placemark.events.add('click', function(e) {
     cancelHoverClose();
+    // Close hover balloon
+    if (_activeHoverMark) { _activeHoverMark.balloon.close(); _activeHoverMark = null; }
+    var overlay = document.getElementById('map-card-overlay');
+    if (!overlay) return;
     if (_pinnedMark === placemark) {
-      // Unpin — close
+      // Unpin — hide overlay
       _pinnedMark = null;
-      _activeHoverMark = null;
-      placemark.balloon.close();
+      overlay.style.display = 'none';
+      overlay.innerHTML = '';
     } else {
-      // Close previous pinned
-      if (_pinnedMark) _pinnedMark.balloon.close();
-      if (_activeHoverMark && _activeHoverMark !== placemark) _activeHoverMark.balloon.close();
       _pinnedMark = placemark;
-      _activeHoverMark = placemark;
-      if (!placemark.balloon.isOpen()) placemark.balloon.open();
+      overlay.innerHTML = getMiniCardHtml(loc);
+      overlay.style.display = 'block';
     }
   });
   clusterer.add(placemark);
@@ -736,12 +736,13 @@ function initializeWithApiLocations(apiLocations) {
       filterCardsByBounds(map.getBounds());
     });
 
-    // Click on map (not on marker) — close pinned balloon
+    // Click on map (not on marker) — close pinned overlay
     map.events.add('click', function() {
       if (_pinnedMark) {
-        _pinnedMark.balloon.close();
         _pinnedMark = null;
         _activeHoverMark = null;
+        var overlay = document.getElementById('map-card-overlay');
+        if (overlay) { overlay.style.display = 'none'; overlay.innerHTML = ''; }
       }
     });
 

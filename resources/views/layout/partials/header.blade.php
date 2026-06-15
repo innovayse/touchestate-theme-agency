@@ -19,9 +19,7 @@
                     @if(!empty($workspace['logoUrl']))
                         <img src="{{ $workspace['logoUrl'] }}" class="img-fluid" style="max-height:36px;width:auto" alt="{{ $workspace['name'] ?? 'Logo' }}">
                     @endif
-                    @if(!empty($workspace['name']))
-                        <span class="fw-semibold fs-16">{{ $workspace['name'] }}</span>
-                    @endif
+                    <span class="fw-semibold fs-16">{{ !empty($workspace['name']) ? $workspace['name'] : 'TouchEstate' }}</span>
                 </a>
                 @if(!$isAuthPage)
                 <a id="mobile_btn" href="javascript:void(0);">
@@ -37,9 +35,7 @@
                         @if(!empty($workspace['logoUrl']))
                             <img src="{{ $workspace['logoUrl'] }}" class="img-fluid" style="max-height:36px;width:auto" alt="{{ $workspace['name'] ?? 'Logo' }}">
                         @endif
-                        @if(!empty($workspace['name']))
-                            <span class="fw-semibold fs-16">{{ $workspace['name'] }}</span>
-                        @endif
+                        <span class="fw-semibold fs-16">{{ !empty($workspace['name']) ? $workspace['name'] : 'TouchEstate' }}</span>
                     </a>
                     <a id="menu_close" class="menu-close" href="javascript:void(0);">
                         <x-icon name="close"/>
@@ -58,9 +54,6 @@
                     </li>
                     <li class="{{ Request::is('property', '*/property', 'map', '*/map', '*/property/*') ? 'active' : '' }}">
                         <a href="{{'/'. $currentLocale .'/property'}}">{{ __('header.property') }}</a>
-                    </li>
-                    <li class="{{ Request::is('agent', '*/agent', '*/agent/*') ? 'active' : '' }}">
-                        <a href="{{url('agent')}}">{{ __('header.agent') }}</a>
                     </li>
                 </ul>
 
