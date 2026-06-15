@@ -23,6 +23,10 @@
             <div class="row">
 
                 <div class="col-lg-5">
+                    <div class="banner-title aos" data-aos="fade-up">
+                        <h1>{{ __('index.hero_title') }} <span>{{ __('index.hero_title_highlight') }}</span> {{ __('index.hero_title_end') }}</h1>
+                        <p>{{ __('index.hero_description') }}</p>
+                    </div>
                     <div class="banner-users d-flex align-items-center flex-wrap gap-2 mb-3">
                         @if(!empty($stats['propertiesListed']))
                         <div>
@@ -32,10 +36,6 @@
                             <p class="mb-0 text-white fs-13">{{ __('index.hero_trusted') }}</p>
                         </div>
                         @endif
-                    </div>
-                    <div class="banner-title aos" data-aos="fade-up">
-                        <h1>{{ __('index.hero_title') }} <span>{{ __('index.hero_title_highlight') }}</span> {{ __('index.hero_title_end') }}</h1>
-                        <p>{{ __('index.hero_description') }}</p>
                     </div>
                     <div class="d-flex align-items-center">
                         <a href="/{{ app()->getLocale() }}/property" class="btn btn-primary btn-lg d-inline-flex align-items-center me-3"><i class="material-icons-outlined me-2">shopping_basket</i>{{ __('index.hero_buy_property') }}</a>
