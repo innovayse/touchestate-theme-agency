@@ -628,12 +628,12 @@
                     <div class="property-sec-img mt-0">
                         <div class="row g-3">
                             <div class="col-6">
-                                <div class="mb-3"><img src="{{ $topViewedImages[0]['imageUrl'] ?? URL::asset('build/img/home-3/property/property-01.jpg') }}" class="img-fluid rounded" alt="" style="width:100%;height:200px;object-fit:cover"></div>
-                                <div><img src="{{ $topViewedImages[1]['imageUrl'] ?? URL::asset('build/img/home-3/property/property-04.jpg') }}" class="img-fluid rounded" alt="" style="width:100%;height:200px;object-fit:cover"></div>
+                                <div class="mb-3"><img src="{{ URL::asset('img/house1.webp') }}" class="img-fluid rounded" alt="" style="width:100%;height:200px;object-fit:cover"></div>
+                                <div><img src="{{ URL::asset('img/house2.webp') }}" class="img-fluid rounded" alt="" style="width:100%;height:200px;object-fit:cover"></div>
                             </div>
                             <div class="col-6">
-                                <div class="mb-3"><img src="{{ $topViewedImages[2]['imageUrl'] ?? URL::asset('build/img/home-3/property/property-02.jpg') }}" class="img-fluid rounded" alt="" style="width:100%;height:200px;object-fit:cover"></div>
-                                <div><img src="{{ $topViewedImages[3]['imageUrl'] ?? URL::asset('build/img/home-3/property/property-03.jpg') }}" class="img-fluid rounded" alt="" style="width:100%;height:200px;object-fit:cover"></div>
+                                <div class="mb-3"><img src="{{ URL::asset('img/house3.webp') }}" class="img-fluid rounded" alt="" style="width:100%;height:200px;object-fit:cover"></div>
+                                <div><img src="{{ URL::asset('img/house.webp') }}" class="img-fluid rounded" alt="" style="width:100%;height:200px;object-fit:cover"></div>
                             </div>
                         </div>
                         <div class="rotate-div">

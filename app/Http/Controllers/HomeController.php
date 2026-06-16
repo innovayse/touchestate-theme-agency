@@ -65,7 +65,7 @@ class HomeController extends Controller
         }
         arsort($cityCounts);
 
-        // Top 6 viewed images
+        // Top 6 viewed images for decorative sec-bottom-imgs
         $topViewedImages = [];
         foreach ($allItems as $p) {
             if (!empty($p['primaryImageUrl'])) {
