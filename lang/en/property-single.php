@@ -178,6 +178,25 @@ return [
     'total_buildings' => 'Buildings',
     'code' => 'Code',
 
+    // Property Details card
+    'property_details'  => 'Property Details',
+    'property_type'     => 'Property Type',
+    'transaction_type'  => 'Transaction Type',
+    'status'            => 'Status',
+    'currency'          => 'Currency',
+
+    // Location Details card
+    'location_details'  => 'Location Details',
+    'country'           => 'Country',
+    'city'              => 'City',
+    'street'            => 'Street',
+    'additional_info'   => 'Additional Information',
+    'nearby'            => 'Nearby',
+    'cat_transport'     => 'Metro',
+    'cat_education'     => 'Education',
+    'cat_food'          => 'Supermarkets',
+    'open_yandex_maps'  => 'Open in Yandex Maps',
+
     // Boolean Features
     'elevator' => 'Elevator',
     'garage' => 'Garage',
@@ -292,6 +311,7 @@ return [
     'heating_autonomous'   => 'Autonomous',
     'heating_solar'        => 'Solar',
     'heating_underfloor'   => 'Underfloor',
+    'heating_underfloor_heating' => 'Underfloor',
     'heating_type'         => 'Heating',
 
     // Parking (multi-select)
@@ -318,13 +338,13 @@ return [
     'feature_basement'          => 'Basement',
     'feature_gym'               => 'Gym',
     'feature_security'          => 'Security',
-    'feature_loadingdock'       => 'Loading Dock',
-    'feature_panoramicwindows'  => 'Panoramic Windows',
+    'feature_loading_dock'       => 'Loading Dock',
+    'feature_panoramic_windows'  => 'Panoramic Windows',
     'feature_sauna'             => 'Sauna',
     'feature_fireplace'         => 'Fireplace',
     'feature_gazebo'            => 'Gazebo',
-    'feature_barbecuearea'      => 'BBQ Area',
-    'feature_sportscourt'       => 'Sports Court',
+    'feature_barbecue_area'      => 'BBQ Area',
+    'feature_sports_court'       => 'Sports Court',
 
     // Appliances (array)
     'appliance_washer'        => 'Washing Machine',
@@ -332,12 +352,12 @@ return [
     'appliance_fridge'        => 'Refrigerator',
     'appliance_stove'         => 'Stove',
     'appliance_microwave'     => 'Microwave',
-    'appliance_coffeemaker'   => 'Coffee Maker',
-    'appliance_waterheater'   => 'Water Heater',
-    'appliance_hairdryer'     => 'Hair Dryer',
+    'appliance_coffee_maker'   => 'Coffee Maker',
+    'appliance_water_heater'   => 'Water Heater',
+    'appliance_hair_dryer'     => 'Hair Dryer',
     'appliance_iron'          => 'Iron',
     'appliance_dishwasher'    => 'Dishwasher',
-    'appliance_vacuumcleaner' => 'Vacuum Cleaner',
+    'appliance_vacuum_cleaner' => 'Vacuum Cleaner',
 
     // Utilities (array)
     'utility_electricity' => 'Electricity',
