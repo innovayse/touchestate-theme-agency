@@ -6,7 +6,6 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\FavoritesController;
 use App\Http\Controllers\CompareController;
-use App\Http\Controllers\AgentController;
 use App\Http\Controllers\ContactController;
 
 // ─────────────────────────────────────────────
@@ -147,6 +146,60 @@ Route::get('/api/central-district', function (\Illuminate\Http\Request $request)
 });
 
 
+Route::get('/api/nearby', function (\Illuminate\Http\Request $request) {
+    // Nearby POI lookup via Yandex "Search for Organizations" API (server-side: hides key, avoids CORS).
+    // Used by the property page "Location details" card for non-transport categories (e.g. education).
+    $lat      = (float) $request->query('lat', 0);
+    $lon      = (float) $request->query('lon', 0);
+    $category = $request->query('category', '');
+    $locale   = $request->query('lang', 'ru');
+    if (!$lat || !$lon) return response()->json(['results' => []]);
+
+    // category → localized search text
+    $rubrics = [
+        'education' => ['ru' => 'школа',  'en' => 'school',     'hy' => 'դպրոց'],
+        'transport' => ['ru' => 'метро',  'en' => 'metro',      'hy' => 'մետրո'],
+        'food'      => ['ru' => 'магазин','en' => 'supermarket','hy' => 'խանութ'],
+        'hotel'     => ['ru' => 'отель',  'en' => 'hotel',      'hy' => 'հյուրանոց'],
+    ];
+    $text = $rubrics[$category][$locale] ?? ($rubrics[$category]['en'] ?? $category);
+    if (!$text) return response()->json(['results' => []]);
+
+    $yLang = match ($locale) {
+        'en' => 'en_US',
+        'hy' => 'hy_AM',
+        default => 'ru_RU',
+    };
+
+    try {
+        $resp = Http::withoutVerifying()->timeout(6)
+            ->get('https://search-maps.yandex.ru/v1/', [
+                'apikey'  => config('services.yandex.places_key'),
+                'text'    => $text,
+                'lang'    => $yLang,
+                'll'      => "{$lon},{$lat}",
+                'spn'     => '0.06,0.04',
+                'rspn'    => 1,
+                'type'    => 'biz',
+                'results' => 15,
+            ]);
+
+        $features = $resp->json('features', []);
+        $results  = [];
+        foreach ($features as $f) {
+            $coords = $f['geometry']['coordinates'] ?? null; // [lon, lat]
+            $name   = $f['properties']['name'] ?? '';
+            if (!$coords || !$name) continue;
+            $results[] = ['name' => $name, 'lon' => (float) $coords[0], 'lat' => (float) $coords[1]];
+        }
+
+        return response()->json(['results' => $results]);
+    } catch (\Throwable $e) {
+        return response()->json(['results' => []]);
+    }
+});
+
+
 // ─────────────────────────────────────────────
 // Contacts API
 // ─────────────────────────────────────────────
@@ -169,10 +222,6 @@ Route::post('/api/property/{slug}/enquire', [PropertyController::class, 'enquire
 
 // Map
 Route::get('/map', [PropertyController::class, 'map']);
-
-// Agent
-Route::get('/agent', [AgentController::class, 'index']);
-Route::get('/agent/{slug}',  [AgentController::class, 'show']);
 
 // All simple static pages (default to Armenian locale)
 $defaultRoutes = [
@@ -211,10 +260,6 @@ Route::group(
         // Compare
         Route::get('/compare', [CompareController::class, 'index'])->name('compare');
         Route::post('/compare/load', [CompareController::class, 'load'])->name('compare.load');
-
-        // Agent
-        Route::get('/agent',         [AgentController::class, 'index'])->name('agent');
-        Route::get('/agent/{slug}',  [AgentController::class, 'show'])->name('agent.single');
 
         // Static pages
         Route::get('/about-us',        fn () => view('about-us'))->name('about-us');

@@ -142,28 +142,3 @@
 	</div>
 	<!-- End Success Modal  -->
 @endif
-
-@if (!Route::is(['signup', 'signin', 'forgot-password', 'reset-password', 'error-404', 'error-500', 'maintenance', 'coming-soon']))
-	<!-- Search Modal -->
-	<div class="modal fade" id="search-modal" tabindex="-1" aria-hidden="true">
-		<div class="modal-dialog  modal-dialog-centered modal-lg">
-			<div class="modal-content">
-				<div class="modal-body search-wrap">
-					<form class="search-form" id="search-form" action="/{{ app()->getLocale() }}/property" method="GET">
-						<div class="d-flex align-items-center justify-content-between mb-4">
-							<h5>{{ __('header.search') }}</h5>
-							<a href="javascript:void(0);" class="close" data-bs-dismiss="modal"><x-icon name="close"/></a>
-						</div>
-						<div class="input-group input-group-flat">
-							<input type="text" name="search" class="form-control" placeholder="{{ __('header.search_placeholder') }}">
-							<span class="input-group-text" style="cursor:pointer" onclick="this.closest('form').submit()">
-								<x-icon name="search"/>
-							</span>
-						</div>
-					</form>
-				</div>
-			</div>
-		</div>
-	</div>
-	<!-- End Search Modal -->
-@endif

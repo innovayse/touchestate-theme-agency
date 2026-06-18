@@ -19,9 +19,7 @@
                     @if(!empty($workspace['logoUrl']))
                         <img src="{{ $workspace['logoUrl'] }}" class="img-fluid" style="max-height:36px;width:auto" alt="{{ $workspace['name'] ?? 'Logo' }}">
                     @endif
-                    @if(!empty($workspace['name']))
-                        <span class="fw-semibold fs-16">{{ $workspace['name'] }}</span>
-                    @endif
+                    <span class="fw-semibold fs-16">{{ !empty($workspace['name']) ? $workspace['name'] : 'TouchEstate' }}</span>
                 </a>
                 @if(!$isAuthPage)
                 <a id="mobile_btn" href="javascript:void(0);">
@@ -37,9 +35,7 @@
                         @if(!empty($workspace['logoUrl']))
                             <img src="{{ $workspace['logoUrl'] }}" class="img-fluid" style="max-height:36px;width:auto" alt="{{ $workspace['name'] ?? 'Logo' }}">
                         @endif
-                        @if(!empty($workspace['name']))
-                            <span class="fw-semibold fs-16">{{ $workspace['name'] }}</span>
-                        @endif
+                        <span class="fw-semibold fs-16">{{ !empty($workspace['name']) ? $workspace['name'] : 'TouchEstate' }}</span>
                     </a>
                     <a id="menu_close" class="menu-close" href="javascript:void(0);">
                         <x-icon name="close"/>
@@ -58,9 +54,6 @@
                     </li>
                     <li class="{{ Request::is('property', '*/property', 'map', '*/map', '*/property/*') ? 'active' : '' }}">
                         <a href="{{'/'. $currentLocale .'/property'}}">{{ __('header.property') }}</a>
-                    </li>
-                    <li class="{{ Request::is('agent', '*/agent', '*/agent/*') ? 'active' : '' }}">
-                        <a href="{{url('agent')}}">{{ __('header.agent') }}</a>
                     </li>
                 </ul>
 
@@ -86,7 +79,7 @@
                         <span class="fav-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#e53935;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;line-height:16px;text-align:center;border-radius:50%;padding:0 3px;pointer-events:none"></span>
                     </a>
                     <a href="/{{ $currentLocale }}/compare" class="topbar-link btn btn-light header-compare-btn" title="{{ __('header.compare') }}" style="position:relative">
-                        <i class="material-icons-outlined" style="font-size:20px;line-height:1;display:block">balance</i>
+                        <x-icon name="balance" size="20"/>
                         <span class="compare-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#1565c0;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;line-height:16px;text-align:center;border-radius:50%;padding:0 3px;pointer-events:none"></span>
                     </a>
                     <a href="javascript:void(0);" class="topbar-link btn btn-light theme-toggle-single">
@@ -100,16 +93,12 @@
             <div class="nav header-items">
 
                 @if(!$isAuthPage)
-                <a href="#" class="topbar-link btn btn-light topbar-search" data-bs-toggle="modal" data-bs-target="#search-modal">
-                    <x-icon name="search"/>
-                </a>
-
                 <a href="/{{ $currentLocale }}/favorites" class="topbar-link btn btn-light header-fav-btn" title="{{ __('header.favorites') }}" style="position:relative">
                     <x-icon name="favorite_border"/>
                     <span class="fav-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#e53935;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;line-height:16px;text-align:center;border-radius:50%;padding:0 3px;pointer-events:none"></span>
                 </a>
                 <a href="/{{ $currentLocale }}/compare" class="topbar-link btn btn-light header-compare-btn" title="{{ __('header.compare') }}" style="position:relative">
-                    <i class="material-icons-outlined" style="font-size:20px;line-height:1;display:block">balance</i>
+                    <x-icon name="balance" size="20"/>
                     <span class="compare-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#1565c0;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;line-height:16px;text-align:center;border-radius:50%;padding:0 3px;pointer-events:none"></span>
                 </a>
                 @endif

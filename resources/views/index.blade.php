@@ -23,6 +23,10 @@
             <div class="row">
 
                 <div class="col-lg-5">
+                    <div class="banner-title aos" data-aos="fade-up">
+                        <h1>{{ __('index.hero_title') }} <span>{{ __('index.hero_title_highlight') }}</span> {{ __('index.hero_title_end') }}</h1>
+                        <p>{{ __('index.hero_description') }}</p>
+                    </div>
                     <div class="banner-users d-flex align-items-center flex-wrap gap-2 mb-3">
                         @if(!empty($stats['propertiesListed']))
                         <div>
@@ -32,10 +36,6 @@
                             <p class="mb-0 text-white fs-13">{{ __('index.hero_trusted') }}</p>
                         </div>
                         @endif
-                    </div>
-                    <div class="banner-title aos" data-aos="fade-up">
-                        <h1>{{ __('index.hero_title') }} <span>{{ __('index.hero_title_highlight') }}</span> {{ __('index.hero_title_end') }}</h1>
-                        <p>{{ __('index.hero_description') }}</p>
                     </div>
                     <div class="d-flex align-items-center">
                         <a href="/{{ app()->getLocale() }}/property" class="btn btn-primary btn-lg d-inline-flex align-items-center me-3"><i class="material-icons-outlined me-2">shopping_basket</i>{{ __('index.hero_buy_property') }}</a>
@@ -467,19 +467,19 @@
             </div>
             <!-- end row -->
 
-            @if(count($topViewedImages) > 0)
-            <div class="sec-bottom-imgs">
-                @foreach($topViewedImages as $i => $img)
-                <div class="bottom-img-{{ $i + 1 }}">
-                    <a href="/{{ app()->getLocale() }}/property/{{ $img['slug'] }}">
-                        <img src="{{ $img['imageUrl'] }}" alt="">
-                    </a>
-                </div>
-                @endforeach
-            </div>
-            @endif
-
         </div>
+
+        @if(count($topViewedImages) > 0)
+        <div class="sec-bottom-imgs">
+            @foreach($topViewedImages as $i => $img)
+            <div class="bottom-img-{{ $i + 1 }}">
+                <a href="/{{ app()->getLocale() }}/property/{{ $img['slug'] }}">
+                    <img src="{{ $img['imageUrl'] }}" alt="">
+                </a>
+            </div>
+            @endforeach
+        </div>
+        @endif
     </section>
     <!-- Exclusive Benifits Section End -->
 
@@ -517,7 +517,7 @@
                                         @foreach($imgs as $idx => $imgUrl)
                                         <img src="{{ $imgUrl }}"
                                              class="city-slide w-100"
-                                             style="object-fit:cover;height:220px;position:absolute;top:0;left:0;opacity:{{ $idx === 0 ? '1' : '0' }};transition:opacity 0.8s ease;"
+                                             style="object-fit:cover;height:220px;position:absolute;top:0;left:0;opacity:{{ $idx === 0 ? '1' : '0' }};transition:opacity 0.8s ease, transform 0.5s ease;"
                                              alt="{{ $city }}">
                                         @endforeach
                                     </div>
@@ -628,12 +628,12 @@
                     <div class="property-sec-img mt-0">
                         <div class="row g-3">
                             <div class="col-6">
-                                <div class="mb-3"><img src="{{ $topViewedImages[0]['imageUrl'] ?? URL::asset('build/img/home-3/property/property-01.jpg') }}" class="img-fluid rounded" alt="" style="width:100%;height:200px;object-fit:cover"></div>
-                                <div><img src="{{ $topViewedImages[1]['imageUrl'] ?? URL::asset('build/img/home-3/property/property-04.jpg') }}" class="img-fluid rounded" alt="" style="width:100%;height:200px;object-fit:cover"></div>
+                                <div class="mb-3"><img src="{{ URL::asset('img/house1.webp') }}" class="img-fluid rounded" alt="" style="width:100%;height:200px;object-fit:cover"></div>
+                                <div><img src="{{ URL::asset('img/house2.webp') }}" class="img-fluid rounded" alt="" style="width:100%;height:200px;object-fit:cover"></div>
                             </div>
                             <div class="col-6">
-                                <div class="mb-3"><img src="{{ $topViewedImages[2]['imageUrl'] ?? URL::asset('build/img/home-3/property/property-02.jpg') }}" class="img-fluid rounded" alt="" style="width:100%;height:200px;object-fit:cover"></div>
-                                <div><img src="{{ $topViewedImages[3]['imageUrl'] ?? URL::asset('build/img/home-3/property/property-03.jpg') }}" class="img-fluid rounded" alt="" style="width:100%;height:200px;object-fit:cover"></div>
+                                <div class="mb-3"><img src="{{ URL::asset('img/house3.webp') }}" class="img-fluid rounded" alt="" style="width:100%;height:200px;object-fit:cover"></div>
+                                <div><img src="{{ URL::asset('img/house.webp') }}" class="img-fluid rounded" alt="" style="width:100%;height:200px;object-fit:cover"></div>
                             </div>
                         </div>
                         <div class="rotate-div">
