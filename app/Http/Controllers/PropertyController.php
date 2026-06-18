@@ -389,8 +389,22 @@ class PropertyController extends Controller
             abort(404);
         }
 
+        // Similar = listings from OUR OWN account (via the connection key), NOT the TouchEstate
+        // marketplace. Exclude the current property; prioritise same transaction type / type / city.
         try {
-            $similar = array_slice($this->client->properties()->similar($slug, 6), 0, 6);
+            $items = $this->client->properties()->list(['pageSize' => 50, 'status' => 'Active'])['items'] ?? [];
+            $similar = collect($items)
+                ->reject(fn ($p) => ($p['slug'] ?? null) === $slug)
+                ->sortByDesc(function ($p) use ($property) {
+                    $score = 0;
+                    if (($p['transactionType'] ?? null) === ($property['transactionType'] ?? null)) $score += 2;
+                    if (($p['propertyType'] ?? null)    === ($property['propertyType'] ?? null))    $score += 2;
+                    if (($p['city'] ?? null)            === ($property['city'] ?? null))            $score += 1;
+                    return $score;
+                })
+                ->take(6)
+                ->values()
+                ->all();
         } catch (\Exception $e) {
             $similar = [];
         }

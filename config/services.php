@@ -36,7 +36,9 @@ return [
     ],
 
     'yandex' => [
-        'maps_key' => env('YANDEX_MAPS_API_KEY', ''),
+        'maps_key'    => env('YANDEX_MAPS_API_KEY', ''),
+        'suggest_key' => env('YANDEX_SUGGEST_KEY', ''),
+        'places_key'  => env('YANDEX_PLACES_KEY', ''),
     ],
 
 ];

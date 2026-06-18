@@ -178,6 +178,25 @@ return [
     'total_buildings' => 'Зданий',
     'code' => 'Код',
 
+    // Property Details card
+    'property_details'  => 'Детали объекта',
+    'property_type'     => 'Тип объекта',
+    'transaction_type'  => 'Тип сделки',
+    'status'            => 'Статус',
+    'currency'          => 'Валюта',
+
+    // Location Details card
+    'location_details'  => 'Детали локации',
+    'country'           => 'Страна',
+    'city'              => 'Город',
+    'street'            => 'Улица',
+    'additional_info'   => 'Дополнительная информация',
+    'nearby'            => 'Рядом',
+    'cat_transport'     => 'Метро',
+    'cat_education'     => 'Образование',
+    'cat_food'          => 'Магазины',
+    'open_yandex_maps'  => 'Открыть Яндекс Карты',
+
     // Boolean Features
     'elevator' => 'Лифт',
     'garage' => 'Гараж',
@@ -292,6 +311,7 @@ return [
     'heating_autonomous'   => 'Автономное',
     'heating_solar'        => 'Солнечное',
     'heating_underfloor'   => 'Тёплый пол',
+    'heating_underfloor_heating' => 'Тёплый пол',
     'heating_type'         => 'Отопление',
 
     // Parking (multi-select)
@@ -318,13 +338,13 @@ return [
     'feature_basement'          => 'Подвал',
     'feature_gym'               => 'Тренажёрный зал',
     'feature_security'          => 'Охрана',
-    'feature_loadingdock'       => 'Погрузочная зона',
-    'feature_panoramicwindows'  => 'Панорамные окна',
+    'feature_loading_dock'       => 'Погрузочная зона',
+    'feature_panoramic_windows'  => 'Панорамные окна',
     'feature_sauna'             => 'Сауна',
     'feature_fireplace'         => 'Камин',
     'feature_gazebo'            => 'Беседка',
-    'feature_barbecuearea'      => 'Зона барбекю',
-    'feature_sportscourt'       => 'Спортивная площадка',
+    'feature_barbecue_area'      => 'Зона барбекю',
+    'feature_sports_court'       => 'Спортивная площадка',
 
     // Appliances (array)
     'appliance_washer'        => 'Стиральная машина',
@@ -332,12 +352,12 @@ return [
     'appliance_fridge'        => 'Холодильник',
     'appliance_stove'         => 'Плита',
     'appliance_microwave'     => 'Микроволновка',
-    'appliance_coffeemaker'   => 'Кофеварка',
-    'appliance_waterheater'   => 'Водонагреватель',
-    'appliance_hairdryer'     => 'Фен',
+    'appliance_coffee_maker'   => 'Кофеварка',
+    'appliance_water_heater'   => 'Водонагреватель',
+    'appliance_hair_dryer'     => 'Фен',
     'appliance_iron'          => 'Утюг',
     'appliance_dishwasher'    => 'Посудомоечная машина',
-    'appliance_vacuumcleaner' => 'Пылесос',
+    'appliance_vacuum_cleaner' => 'Пылесос',
 
     // Utilities (array)
     'utility_electricity' => 'Электричество',

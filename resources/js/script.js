@@ -533,6 +533,11 @@ Template Name: Dreams Estate - Bootstrap Template
 
 	// Slider — thumbnails must init first for asNavFor to work
 	$(document).ready(function () {
+		// Safety: never let the gallery skeleton stick, even if slick fails to init
+		$(window).on('load', function () {
+			$('.slider-card.gallery-loading').removeClass('gallery-loading');
+		});
+
 		if ($('.slider-nav-thumbnails').length > 0) {
 			$('.slider-nav-thumbnails').slick({
 				slidesToShow: 6,
@@ -581,6 +586,9 @@ Template Name: Dreams Estate - Bootstrap Template
 			});
 		}
 
+		// Gallery skeleton: slick has initialized → reveal the real slider, drop the skeleton
+		$('.slider-card.gallery-loading').removeClass('gallery-loading');
+
 		// Click zones overlaying the left/right edges of the main image
 		$(document).on('click', '.service-slider-zone--prev', function (e) {
 			e.preventDefault();
@@ -619,17 +627,30 @@ Template Name: Dreams Estate - Bootstrap Template
 		});
 	});
 
-	// Fancybox v3 — explicit init for gallery (overrides auto-init, skips Slick clones to avoid dupes)
+	// Fancybox v3 — click on the main slider image opens a lightbox (modal + thumbnail carousel).
+	// Built from the slider's non-clone slides so Slick's infinite clones don't create dupes.
 	if (typeof $.fancybox !== 'undefined') {
-		$('[data-fancybox="gallery"]').fancybox({
-			loop: true,
-			animationEffect: 'fade',
-			transitionEffect: 'slide',
-			buttons: ['zoom', 'slideShow', 'fullScreen', 'thumbs', 'close'],
-			thumbs: { autoStart: true, axis: 'x' },
-			infobar: true,
-			protect: true,
-			selector: '[data-fancybox="gallery"]:not(.slick-cloned [data-fancybox="gallery"])'
+		$(document).on('click', '.service-slider .service-img-wrap img', function () {
+			const $slider = $('.service-slider');
+			let items = $slider.find('.slick-slide:not(.slick-cloned) .service-img-wrap img')
+				.map(function () {
+					return { src: this.getAttribute('src'), type: 'image',
+						opts: { caption: this.getAttribute('alt') || '' } };
+				}).get();
+			if (!items.length) {
+				items = [{ src: this.getAttribute('src'), type: 'image' }];
+			}
+			const index = $slider.hasClass('slick-initialized')
+				? ($slider.slick('slickCurrentSlide') || 0) : 0;
+			$.fancybox.open(items, {
+				loop: true,
+				animationEffect: 'fade',
+				transitionEffect: 'slide',
+				buttons: ['zoom', 'slideShow', 'fullScreen', 'thumbs', 'close'],
+				thumbs: { autoStart: true, axis: 'x' },
+				infobar: true,
+				protect: true
+			}, index);
 		});
 	}
 
