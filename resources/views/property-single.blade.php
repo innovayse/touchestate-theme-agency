@@ -291,7 +291,7 @@
                         </div>
                         <div class="col-xl-4 d-flex d-xl-block flex-wrap gap-3">
                             <div class="breadcrumb-icons d-flex align-items-center justify-content-xl-end justify-content-start gap-2 mb-xl-4 mb-2 mt-xl-0 mt-4">
-                                <a href="javascript:void(0);" class="compare-btn" data-slug="{{ $property['slug'] ?? '' }}" aria-label="{{ __('header.compare') }}" title="{{ __('header.compare') }}"><i class="material-icons-outlined">balance</i></a>
+                                <a href="javascript:void(0);" class="compare-btn" data-slug="{{ $property['slug'] ?? '' }}" aria-label="{{ __('header.compare') }}" title="{{ __('header.compare') }}"><x-icon name="balance"/></a>
                                 <a href="javascript:void(0);" class="favourite" data-slug="{{ $property['slug'] ?? '' }}" aria-label="{{ __('property-single.favorite') }}"><x-icon name="favorite_border" class="rounded"/></a>
                                 <a href="javascript:void(0);" class="share-btn" id="sharePropertyBtn"><x-icon name="share" class="rounded"/></a>
                             </div>

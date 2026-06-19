@@ -11186,7 +11186,8 @@ span.select2-container.select2-container--default.select2-container--open {
     background: #fff !important;
     transition: background 0.18s ease, box-shadow 0.18s ease;
 }
-.compare-btn i {
+.compare-btn i,
+.compare-btn svg {
     transition: color 0.18s ease;
     color: #555 !important;
 }
@@ -11194,10 +11195,18 @@ span.select2-container.select2-container--default.select2-container--open {
     background: #1565c0 !important;
     box-shadow: 0 2px 8px rgba(21, 101, 192, 0.35) !important;
 }
-.compare-btn.is-compared i {
+.compare-btn.is-compared i,
+.compare-btn.is-compared svg {
     color: #fff !important;
 }
 .compare-btn[disabled] { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+
+/* property-single breadcrumb: compare matches favourite/share (teal); active stays blue */
+.breadcrumb-icons .compare-btn { background: rgba(3, 189, 157, 0.3490196078) !important; }
+.breadcrumb-icons .compare-btn:hover { background: var(--primary) !important; }
+.breadcrumb-icons .compare-btn i,
+.breadcrumb-icons .compare-btn svg { color: #fff !important; }
+.breadcrumb-icons .compare-btn.is-compared { background: #1565c0 !important; }
 
 /* ── Compare skeleton ── */
 @keyframes csk-shimmer {
