@@ -4,7 +4,6 @@ return [
     // Section headings
     'pages' => 'Էջեր',
     'our_pages' => 'Մեր էջերը',
-    'company' => 'Ընկերություն',
     'destinations' => 'Ուղղություններ',
     'useful_links' => 'Օգտ. հղումներ',
 
@@ -13,15 +12,12 @@ return [
     'download_app' => 'Ներբեռնեք հավելվածը և ամրագրեք ձեր գույքը',
 
     // Pages links
-    'our_team' => 'Մեր թիմը',
     'faq' => 'ՀՏՀ',
     'settings' => 'Կարգավորումներ',
     'profile' => 'Պրոֆիլ',
-    'listings' => 'Ցուցակներ',
+    'listings' => 'Հայտարարություններ',
 
     // Company links
-    'about_us' => 'Մեր մասին',
-    'careers' => 'Կարիերա',
 
     'affiliate_program' => 'Գործընկերային ծրագիր',
     'our_partners' => 'Մեր գործընկերները',

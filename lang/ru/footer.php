@@ -4,7 +4,6 @@ return [
     // Section headings
     'pages' => 'Страницы',
     'our_pages' => 'Наши страницы',
-    'company' => 'Компания',
     'destinations' => 'Направления',
     'useful_links' => 'Полезные ссылки',
 
@@ -13,15 +12,12 @@ return [
     'download_app' => 'Скачайте приложение и забронируйте недвижимость',
 
     // Pages links
-    'our_team' => 'Наша команда',
     'faq' => 'Вопросы и ответы',
 'settings' => 'Настройки',
     'profile' => 'Профиль',
     'listings' => 'Объявления',
 
     // Company links
-    'about_us' => 'О нас',
-    'careers' => 'Карьера',
     'affiliate_program' => 'Партнёрская программа',
     'our_partners' => 'Наши партнёры',
 

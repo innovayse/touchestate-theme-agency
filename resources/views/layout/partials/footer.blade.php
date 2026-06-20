@@ -36,17 +36,7 @@
                         <h5 class="footer-title">{{ __('footer.our_pages') }}</h5>
                         <ul class="footer-menu">
                             <li><a href="{{'/'.app()->getLocale().'/property'}}">{{ __('footer.listings') }}</a></li>
-                            <li><a href="{{url('our-team')}}">{{ __('footer.our_team') }}</a></li>
                             <li><a href="{{url('faq')}}">{{ __('footer.faq') }}</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="col-lg-2 col-6">
-                    <div class="footer-widget">
-                        <h5 class="footer-title">{{ __('footer.company') }}</h5>
-                        <ul class="footer-menu">
-                            <li><a href="{{url('about-us')}}">{{ __('footer.about_us') }}</a></li>
-                            <li><a href="javascript:void(0);">{{ __('footer.careers') }}</a></li>
                         </ul>
                     </div>
                 </div>
