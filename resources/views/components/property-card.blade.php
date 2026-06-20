@@ -24,7 +24,7 @@
                          onerror="this.style.display='none'">
                 @else
                     <div style="height:220px;background:#e9ecef;display:flex;align-items:center;justify-content:center;">
-                        <x-icon name="image_not_supported" class="text-muted" size="48"/>
+                        <x-icon name="image" size="48" class="text-muted"/>
                     </div>
                 @endif
             </a>
@@ -34,11 +34,11 @@
                 <div class="d-flex align-items-center gap-2">
                     @if($txType === 'rentdaily')
                         <span class="badge badge-sm bg-danger d-flex align-items-center gap-1">
-                            <x-icon name="offline_bolt" size="13"/>{{ __('index.popular_rent_daily') }}
+                            <x-icon name="bolt" size="13"/>{{ __('index.popular_rent_daily') }}
                         </span>
                     @elseif(str_starts_with($txType, 'rent'))
                         <span class="badge badge-sm bg-info d-flex align-items-center gap-1">
-                            <x-icon name="calendar_month" size="13"/>{{ __('index.popular_rent_monthly') }}
+                            <x-icon name="calendar_today" size="13"/>{{ __('index.popular_rent_monthly') }}
                         </span>
                     @else
                         <span class="badge badge-sm bg-success d-flex align-items-center gap-1">
@@ -67,7 +67,7 @@
                     </a>
                     <a href="javascript:void(0)" class="favourite"
                        style="background:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.15);">
-                        <x-icon name="favorite_border" style="width:17px;height:17px;color:#555"/>
+                        <x-icon name="favorite_border" size="17" style="color:#555"/>
                     </a>
                 </div>
             </div>
@@ -88,7 +88,7 @@
                         <a href="/{{ $locale }}/property/{{ $prop['slug'] }}" class="text-dark text-decoration-none">{{ $prop['title'] }}</a>
                     </h6>
                     <p class="fs-14 mb-0 text-muted d-flex align-items-center" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                        <x-icon name="location_on" class="me-1" style="width:14px;height:14px;flex-shrink:0"/>
+                        <x-icon name="location_on" size="14" class="me-1" style="flex-shrink:0"/>
                         <span style="overflow:hidden;text-overflow:ellipsis;">{{ $prop['fullAddress'] ?? $prop['city'] ?? '' }}</span>
                     </p>
                 </div>
@@ -98,7 +98,7 @@
             {{-- Price row --}}
             <div class="d-flex align-items-center justify-content-between pb-3 mb-3" style="border-bottom:1px solid var(--gray-100);">
                 <div class="d-flex align-items-center gap-1">
-                    <x-icon name="visibility" class="text-muted" size="17"/>
+                    <x-icon name="visibility" size="17" class="text-muted"/>
                     <span class="fs-14 text-muted">{{ $prop['viewCount'] ?? 0 }}</span>
                 </div>
                 <div class="text-end">
@@ -118,19 +118,19 @@
             <ul class="list-unstyled d-flex flex-wrap gap-2 mb-0 mt-auto">
                 @if(!empty($prop['bedrooms']))
                     <li class="d-flex align-items-center gap-1 fs-13 text-muted">
-                        <x-icon name="bed" style="width:16px;height:16px;background:var(--gray-100);border-radius:4px;padding:2px"/>
+                        <x-icon name="bed" size="16" style="background:var(--gray-100);border-radius:4px;padding:2px"/>
                         {{ $prop['bedrooms'] }} {{ __('property.bedroom') }}
                     </li>
                 @endif
                 @if(!empty($prop['bathrooms']))
                     <li class="d-flex align-items-center gap-1 fs-13 text-muted">
-                        <x-icon name="bathtub" style="width:16px;height:16px;background:var(--gray-100);border-radius:4px;padding:2px"/>
+                        <x-icon name="bathtub" size="16" style="background:var(--gray-100);border-radius:4px;padding:2px"/>
                         {{ $prop['bathrooms'] }} {{ __('property.bath') }}
                     </li>
                 @endif
                 @if(!empty($prop['areaTotal']))
                     <li class="d-flex align-items-center gap-1 fs-13 text-muted">
-                        <x-icon name="straighten" style="width:16px;height:16px;background:var(--gray-100);border-radius:4px;padding:2px"/>
+                        <x-icon name="straighten" size="16" style="background:var(--gray-100);border-radius:4px;padding:2px"/>
                         {{ $prop['areaTotal'] }} {{ __('property.sq_ft') }}
                     </li>
                 @endif

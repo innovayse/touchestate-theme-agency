@@ -146,6 +146,25 @@ return [
     'total_buildings' => 'Շենքերի քանակ',
     'code' => 'Կոդ',
 
+    // Property Details card
+    'property_details'  => 'Գույքի մանրամասներ',
+    'property_type'     => 'Գույքի տեսակ',
+    'transaction_type'  => 'Գործարքի տեսակ',
+    'status'            => 'Կարգավիճակ',
+    'currency'          => 'Արժույթ',
+
+    // Location Details card
+    'location_details'  => 'Տեղակայման մանրամասներ',
+    'country'           => 'Երկիր',
+    'city'              => 'Քաղաք',
+    'street'            => 'Փողոց',
+    'additional_info'   => 'Լրացուցիչ տեղեկություններ',
+    'nearby'            => 'Մոտակայքում',
+    'cat_transport'     => 'Մետրո',
+    'cat_education'     => 'Կրթություն',
+    'cat_food'          => 'Խանութներ',
+    'open_yandex_maps'  => 'Բացել Yandex Քարտեզում',
+
     // Boolean Features
     'elevator' => 'Վերելակ',
     'garage' => 'Ավտոտնակ',
@@ -260,6 +279,7 @@ return [
     'heating_autonomous'   => 'Ինքնավար',
     'heating_solar'        => 'Արևային',
     'heating_underfloor'   => 'Հատակի ջեռուցում',
+    'heating_underfloor_heating' => 'Հատակի ջեռուցում',
     'heating_type'         => 'Ջեռուցում',
 
     // Parking (multi-select)
@@ -286,13 +306,13 @@ return [
     'feature_basement'          => 'Նկուղ',
     'feature_gym'               => 'Մարզասրահ',
     'feature_security'          => 'Անվտանգություն',
-    'feature_loadingdock'       => 'Բեռնման հարթակ',
-    'feature_panoramicwindows'  => 'Պանորամային պատուհաններ',
+    'feature_loading_dock'       => 'Բեռնման հարթակ',
+    'feature_panoramic_windows'  => 'Պանորամային պատուհաններ',
     'feature_sauna'             => 'Սաունա',
     'feature_fireplace'         => 'Բուխարի',
     'feature_gazebo'            => 'Беседка',
-    'feature_barbecuearea'      => 'BBQ գոտի',
-    'feature_sportscourt'       => 'Մարզադաշտ',
+    'feature_barbecue_area'      => 'BBQ գոտի',
+    'feature_sports_court'       => 'Մարզադաշտ',
 
     // Appliances (array)
     'appliance_washer'        => 'Լվացքի մեքենա',
@@ -300,12 +320,12 @@ return [
     'appliance_fridge'        => 'Սառնարան',
     'appliance_stove'         => 'Բուխարի',
     'appliance_microwave'     => 'Միկրոալիք',
-    'appliance_coffeemaker'   => 'Սուրճի մեքենա',
-    'appliance_waterheater'   => 'Ջրատաքացուցիչ',
-    'appliance_hairdryer'     => 'Ֆեն',
+    'appliance_coffee_maker'   => 'Սուրճի մեքենա',
+    'appliance_water_heater'   => 'Ջրատաքացուցիչ',
+    'appliance_hair_dryer'     => 'Ֆեն',
     'appliance_iron'          => 'Արդուկ',
     'appliance_dishwasher'    => 'Ամանլվացող',
-    'appliance_vacuumcleaner' => 'Փոշեկուլ',
+    'appliance_vacuum_cleaner' => 'Փոշեկուլ',
 
     // Utilities (array)
     'utility_electricity' => 'Էլեկտրաէներգիա',

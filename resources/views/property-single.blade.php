@@ -88,6 +88,37 @@
     border-radius: 10px;
     background: #1a1a1a;
     display: block;
+    cursor: pointer;
+}
+
+/* Location card: "Nearby" category tabs */
+.poi-tab {
+    border: 1px solid var(--gray-200, #e2e8f0);
+    background: transparent;
+    color: var(--body-color, #64748b);
+    border-radius: 20px;
+    padding: 5px 16px;
+    font-size: 13px;
+    line-height: 1.2;
+    transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+.poi-tab:hover { border-color: var(--primary, #03bd9d); color: var(--primary, #03bd9d); }
+.poi-tab.active {
+    background: var(--primary, #03bd9d);
+    color: #fff;
+    border-color: var(--primary, #03bd9d);
+}
+/* Fullscreen-map tab bar: readable on the dark map overlay */
+.poi-tab-fs {
+    color: #fff;
+    border-color: rgba(255,255,255,.5);
+    background: rgba(255,255,255,.08);
+}
+.poi-tab-fs:hover { color: #fff; border-color: #fff; }
+.poi-tab-fs.active {
+    background: var(--primary, #03bd9d);
+    border-color: var(--primary, #03bd9d);
+    color: #fff;
 }
 .service-slider-zone {
     position: absolute;
@@ -133,14 +164,15 @@
 }
 .slider-card .slider-nav-thumbnails .slick-slide {
     margin: 0 6px;
-    height: 92px;
+    height: auto;            /* let the thumbnail scale by aspect-ratio, not a fixed px height */
     cursor: pointer;
     box-sizing: border-box;
 }
 .slider-card .slider-nav-thumbnails .slick-slide .slide-img {
     display: block;
     width: 100%;
-    height: 100%;
+    aspect-ratio: 16 / 10;   /* height tracks the slick-set width across all breakpoints */
+    height: auto;
     border-radius: 8px;
     overflow: hidden;
     border: 2px solid rgba(255,255,255,.12);
@@ -166,9 +198,57 @@
     opacity: 1;
 }
 @media (max-width: 576px) {
-    .slider-card .slider-nav-thumbnails .slick-slide { height: 70px; }
     .service-slider-zone { width: 22%; }
     .service-slider-zone::after { width: 38px; height: 38px; background-size: 18px; }
+}
+
+/* Gallery skeleton — shown only until slick initializes, then `.gallery-loading` is removed (JS).
+   Prevents the "stacked images → carousel" jump (FOUC). */
+.gallery-skeleton-main,
+.gallery-skeleton-thumbs { display: none; }
+.slider-card.gallery-loading .slide-part { aspect-ratio: 16 / 10; }            /* definite box while loading */
+.slider-card.gallery-loading .service-slider { visibility: hidden; }           /* hidden but measurable for slick */
+.slider-card.gallery-loading .service-slider-zone { display: none; }
+.slider-card.gallery-loading .gallery-skeleton-main {
+    display: block;
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    z-index: 4;
+}
+.slider-card.gallery-loading .slider-nav-thumbnails { display: none; }
+.slider-card.gallery-loading .gallery-skeleton-thumbs {
+    display: flex;
+    gap: 12px;
+    margin: 16px 0 24px;
+    justify-content: center;
+}
+.gallery-skeleton-thumbs .csk-block {
+    flex: 1 1 0;
+    max-width: 140px;
+    aspect-ratio: 16 / 10;
+    border-radius: 8px;
+}
+
+/* Accordion headers: keep long titles on one line, truncate with … instead of overflowing.
+   Block layout + absolutely-positioned chevron so text-overflow works (flex breaks ellipsis). */
+.accordions-items-seperate .accordion-button {
+    position: relative;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 3rem;
+}
+.accordions-items-seperate .accordion-button::after {
+    position: absolute;
+    right: 1.25rem;
+    top: 50%;
+    margin: 0;
+    transform: translateY(-50%);
+}
+.accordions-items-seperate .accordion-button:not(.collapsed)::after {
+    transform: translateY(-50%) rotate(-180deg);
 }
 
 </style>
@@ -219,9 +299,10 @@
         'electricity' => 'bolt', 'water' => 'water_drop', 'gas' => 'local_fire_department', 'sewage' => 'plumbing',
     ];
 
-    // Enum переводы через helper
+    // Enum переводы через helper — Str::snake даёт корректные ключи:
+    // NotIncluded→not_included, ByAgreement→by_agreement (strtolower их слепляет)
     $enumKey = fn(string $prefix, string $value): string =>
-        'property-single.' . $prefix . '_' . strtolower($value);
+        'property-single.' . $prefix . '_' . \Illuminate\Support\Str::snake($value);
 
     // История цен
     $priceHistory = collect($property['history'] ?? [])
@@ -281,9 +362,7 @@
                             </div>
                             <h1 class="breadcrumb-title text-start">{{ $property['title'] ?? '' }}</h1>
                             <div class="d-flex align-items-center gap-2 flex-wrap gap-1 mb-xl-0 mb-4">
-                                <div class="fs-14 mb-0 text-white d-flex align-items-center flex-wrap gap-1 custom-address-item"><x-icon name="location_on" class="text-white me-1"/>{{ $property['fullAddress'] ?? $property['city'] ?? '' }}</div>
                                 @if(!empty($property['createdAt']))
-                                <i class="fa-solid fa-circle text-body"></i>
                                 @php $__d = \Carbon\Carbon::parse($property['createdAt']); @endphp
                                 <p class="fs-14 mb-0 text-white">{{ __('property-single.last_updated_on') }} {{ $__d->format('d') }} {{ __('property.' . strtolower($__d->format('M'))) }} {{ $__d->format('Y') }}</p>
                                 @endif
@@ -291,7 +370,7 @@
                         </div>
                         <div class="col-xl-4 d-flex d-xl-block flex-wrap gap-3">
                             <div class="breadcrumb-icons d-flex align-items-center justify-content-xl-end justify-content-start gap-2 mb-xl-4 mb-2 mt-xl-0 mt-4">
-                                <a href="javascript:void(0);" class="compare-btn" data-slug="{{ $property['slug'] ?? '' }}" aria-label="{{ __('header.compare') }}" title="{{ __('header.compare') }}"><x-icon name="balance"/></a>
+                                <a href="javascript:void(0);" class="compare-btn" data-slug="{{ $property['slug'] ?? '' }}" aria-label="{{ __('header.compare') }}" title="{{ __('header.compare') }}"><x-icon name="balance" size="20"/></a>
                                 <a href="javascript:void(0);" class="favourite" data-slug="{{ $property['slug'] ?? '' }}" aria-label="{{ __('property-single.favorite') }}"><x-icon name="favorite_border" class="rounded"/></a>
                                 <a href="javascript:void(0);" class="share-btn" id="sharePropertyBtn"><x-icon name="share" class="rounded"/></a>
                             </div>
@@ -323,8 +402,10 @@
 
                         <!-- start slider -->
                         @if($mediaImages->isNotEmpty())
-                        <div class="slider-card service-slider-card mb-4">
+                        <div class="slider-card service-slider-card mb-4 gallery-loading">
                             <div class="slide-part mb-4 service-slider-wrap">
+                                {{-- Skeleton shown until slick initializes (prevents the stacked-images jump) --}}
+                                <div class="gallery-skeleton-main csk-block"></div>
                                 <div class="slider service-slider">
                                     @foreach($mediaImages as $img)
                                     <div class="service-img-wrap">
@@ -342,6 +423,10 @@
                                 @endif
                             </div>
                             @if($mediaImages->count() > 1)
+                            {{-- Thumbnails skeleton shown until slick initializes --}}
+                            <div class="gallery-skeleton-thumbs">
+                                @for($i = 0; $i < 6; $i++)<span class="csk-block"></span>@endfor
+                            </div>
                             <div class="slider slider-nav-thumbnails text-center">
                                 @foreach($mediaImages as $img)
                                 <div class="slide-img"><img src="{{ $img['thumbnailUrl'] ?? $img['url'] }}" class="img-fluid" loading="lazy" alt="{{ $property['title'] ?? '' }}" onerror="this.onerror=null;this.style.background='#f0f0f0';this.style.minHeight='80px';"></div>
@@ -902,38 +987,6 @@
                             </div>
                             @endif
 
-                            <!-- Gallery -->
-                            @if($mediaImages->isNotEmpty())
-                            <div class="accordion-item">
-                                <div class="accordion-header">
-                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-6" aria-expanded="true">
-                                        {{ __('property-single.gallery') }}
-                                    </button>
-                                </div>
-                                <div id="accordion-6" class="accordion-collapse collapse show">
-                                    <div class="accordion-body gallery-body">
-                                        @if($mediaImages->count() === 1)
-                                            @php $img = $mediaImages->first(); @endphp
-                                            <div class="gallery-single-wrap" style="max-width:480px;">
-                                                <a href="{{ $img['url'] }}" data-fancybox="gallery" class="gallery-item rounded d-block">
-                                                    <img src="{{ $img['thumbnailUrl'] ?? $img['url'] }}" alt="{{ $property['title'] ?? '' }}" class="rounded img-fluid" loading="lazy">
-                                                </a>
-                                            </div>
-                                        @else
-                                            <div class="gallery-slider" data-slides-count="{{ $mediaImages->count() }}">
-                                                @foreach($mediaImages as $img)
-                                                <div class="gallery-card">
-                                                    <a href="{{ $img['url'] }}" data-fancybox="gallery" data-caption="{{ $property['title'] ?? '' }}" class="gallery-item rounded">
-                                                        <img src="{{ $img['thumbnailUrl'] ?? $img['url'] }}" alt="{{ $property['title'] ?? '' }}" class="rounded img-fluid" onerror="this.onerror=null;this.src='{{ $img['url'] }}'">
-                                                    </a>
-                                                </div>
-                                                @endforeach
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                            @endif
 
                             <!-- Comments -->
                             <div class="accordion-item mb-xl-0">
@@ -1015,7 +1068,8 @@
                     </div> <!-- col end -->
 
                     <!-- ============================================================
-                         Sidebar (right column): Agent card + Enquire form + Map
+                         Sidebar (right column): Provider details + Property details
+                         + Enquire (currently hidden) + Location details (map)
                          ============================================================ -->
                     <div class="col-xl-4 buy-details-item">
                         <div class="property-single-sidebar">
@@ -1088,6 +1142,58 @@
                             </div>
                         </div>
 
+                        <!-- Property Details -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">{{ __('property-single.property_details') }}</h5>
+                            </div>
+                            <div class="card-body">
+                                @if($property['propertyType'] ?? null)
+                                @php $__pdType = 'property.' . strtolower($property['propertyType']); @endphp
+                                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                    <span class="text-muted">{{ __('property-single.property_type') }}</span>
+                                    <span class="fw-semibold">{{ __($__pdType) !== $__pdType ? __($__pdType) : $property['propertyType'] }}</span>
+                                </div>
+                                @endif
+                                @if($property['transactionType'] ?? null)
+                                @php $__pdTx = strtolower($property['transactionType']); @endphp
+                                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                    <span class="text-muted">{{ __('property-single.transaction_type') }}</span>
+                                    <span class="fw-semibold">
+                                        @if($__pdTx === 'rentdaily') {{ __('property-single.rent_daily') }}
+                                        @elseif(str_starts_with($__pdTx, 'rent')) {{ __('property-single.rent_monthly') }}
+                                        @else {{ __('property-single.for_sale') }}
+                                        @endif
+                                    </span>
+                                </div>
+                                @endif
+                                @if($property['status'] ?? null)
+                                @php $__pdStatus = ucfirst(strtolower($property['status'])); @endphp
+                                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                    <span class="text-muted">{{ __('property-single.status') }}</span>
+                                    <span>
+                                        @if($__pdStatus === 'Draft')<span class="badge bg-secondary">{{ __('property.status_draft') }}</span>
+                                        @elseif($__pdStatus === 'Active')<span class="badge bg-success">{{ __('property.status_active') }}</span>
+                                        @elseif($__pdStatus === 'Sold')<span class="badge bg-dark">{{ __('property.status_sold') }}</span>
+                                        @elseif($__pdStatus === 'Rented')<span class="badge bg-dark">{{ __('property.status_rented') }}</span>
+                                        @elseif($__pdStatus === 'Reserved')<span class="badge" style="background:#f59e0b">{{ __('property.status_reserved') }}</span>
+                                        @elseif($__pdStatus === 'Inactive')<span class="badge bg-secondary">{{ __('property.status_inactive') }}</span>
+                                        @else<span class="fw-semibold">{{ $property['status'] }}</span>
+                                        @endif
+                                    </span>
+                                </div>
+                                @endif
+                                @if($property['currency'] ?? null)
+                                <div class="d-flex justify-content-between align-items-center py-2">
+                                    <span class="text-muted">{{ __('property-single.currency') }}</span>
+                                    <span class="fw-semibold">{{ $property['currency'] }}</span>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- Enquire — TEMPORARILY HIDDEN. To restore: change @if(false) below to @if(true) (or remove the @if/@endif). --}}
+                        @if(false)
                         <!-- Enquire -->
                         <div class="card">
                             <div class="card-header">
@@ -1122,59 +1228,90 @@
                                 </form>
                             </div>
                         </div>
+                        @endif
+                        {{-- /Enquire (temporarily hidden) --}}
 
-                        <!-- Map -->
-                        @if(($property['latitude'] ?? null) && ($property['longitude'] ?? null))
+                        <!-- Location details -->
                         @php
-                            $mapTitle = urlencode($property['title'] ?? '');
-                            $mapLang = ['ru' => 'ru_RU', 'hy' => 'hy_AM', 'en' => 'en_US'][app()->getLocale()] ?? 'en_US';
-                            $mapSrc = "https://yandex.ru/map-widget/v1/?ll={$property['longitude']}%2C{$property['latitude']}&z=16&pt={$property['longitude']},{$property['latitude']},pm2rdm~{$mapTitle}&l=map&lang={$mapLang}";
+                            $__hasCoords  = ($property['latitude'] ?? null) && ($property['longitude'] ?? null);
+                            $__geoAddress = $property['fullAddress'] ?? trim(implode(', ', array_filter([$property['street'] ?? null, $property['buildingNumber'] ?? null, $property['city'] ?? null, $property['country'] ?? null])));
+                            $__canMap     = $__hasCoords || $__geoAddress !== '';   // map+POI work via coords OR by geocoding the address client-side
                         @endphp
+                        @if(($property['country'] ?? null) || ($property['city'] ?? null) || ($property['street'] ?? null) || $__hasCoords)
                         <div class="card mb-0">
+                            <div class="card-header">
+                                <h5 class="mb-0">{{ __('property-single.location_details') }}</h5>
+                            </div>
+                            <div class="card-body">
+                                {{-- Country / City / Street (shown even without coordinates) --}}
+                                @if($property['country'] ?? null)
+                                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                    <span class="text-muted">{{ __('property-single.country') }}</span>
+                                    <span class="fw-semibold">{{ $property['country'] }}</span>
+                                </div>
+                                @endif
+                                @if($property['city'] ?? null)
+                                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                    <span class="text-muted">{{ __('property-single.city') }}</span>
+                                    <span class="fw-semibold">{{ $property['city'] }}</span>
+                                </div>
+                                @endif
+                                @if($property['street'] ?? null)
+                                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                    <span class="text-muted">{{ __('property-single.street') }}</span>
+                                    <span class="fw-semibold text-end">{{ $property['street'] }}{{ !empty($property['buildingNumber']) ? ', ' . $property['buildingNumber'] : '' }}</span>
+                                </div>
+                                @endif
+
+                                @if($__canMap)
+                                {{-- Additional information: nearest POI per category (filled by JS) --}}
+                                <div id="poiLoading" style="display:none; margin-top:16px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="fs-14 text-muted">{{ __('property-single.additional_info') }}</span>
+                                        <div class="spinner-border spinner-border-sm ms-1" style="color:#03bd9d; width:14px; height:14px; border-width:2px;" role="status"></div>
+                                    </div>
+                                </div>
+                                <div id="poiAdditional" style="display:none; margin-top:16px;">
+                                    <h6 class="mb-2 fs-14 text-muted">{{ __('property-single.additional_info') }}</h6>
+                                    <div id="poiNearestList"></div>
+                                </div>
+
+                                {{-- Nearby: category tabs that toggle POI markers on the map below --}}
+                                <div id="poiTabs" style="display:none; margin-top:16px; border-top:1px solid var(--gray-100); padding-top:12px;">
+                                    <h6 class="mb-2 fs-14 text-muted">{{ __('property-single.nearby') }}</h6>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button type="button" class="btn btn-sm poi-tab" data-cat="transport">{{ __('property-single.cat_transport') }}</button>
+                                        <button type="button" class="btn btn-sm poi-tab" data-cat="education">{{ __('property-single.cat_education') }}</button>
+                                        <button type="button" class="btn btn-sm poi-tab" data-cat="food">{{ __('property-single.cat_food') }}</button>
+                                    </div>
+                                </div>
+                                @endif
+                            </div>
+
+                            @if($__canMap)
+                            {{-- Map --}}
                             <div class="custom-map position-relative">
                                 <button class="map-fullscreen-btn" id="mapFullscreenBtn" title="Fullscreen">
                                     <x-icon name="fullscreen"/>
                                 </button>
-                                {{-- Кнопки управления картой (правый верхний угол) --}}
+                                {{-- Кнопка центрирования на объекте --}}
                                 <div id="mapControlBtns" class="map-control-btns" style="display:none;">
-                                    <button id="mapGoHome" class="map-control-btn map-control-btn--home" title="Показать объект">
+                                    <button id="mapGoHome" class="map-control-btn map-control-btn--home" title="{{ __('property-single.location') }}">
                                         <x-icon name="home"/>
-                                    </button>
-                                    <button id="mapGoMetro" class="map-control-btn map-control-btn--metro" title="Показать метро">
-                                        <x-icon name="subway"/>
                                     </button>
                                 </div>
                                 <div id="propertyJsMap" style="width:100%;height:195px;"></div>
                             </div>
                             <div class="card-body">
-                                <h6 class="mb-2"> {{ __('property-single.location') }} </h6>
                                 <p class="mb-0 text-body d-flex align-items-center">
                                     <x-icon name="location_on" class="me-1"/>
                                     {{ $property['fullAddress'] ?? $property['city'] ?? '' }}
                                 </p>
-
-                                {{-- Nearby metro stations --}}
-                                {{-- Metro loading --}}
-                                <div id="nearbyMetroLoading" style="display:none; margin-top:16px; border-top:1px solid var(--gray-100); padding-top:12px;">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <x-icon name="subway" style="color:#03bd9d"/>
-                                        <span class="fs-14 text-body">{{ __('property-single.nearby_metro') }}</span>
-                                        <div class="spinner-border spinner-border-sm ms-1" style="color:#03bd9d; width:14px; height:14px; border-width:2px;" role="status"></div>
-                                    </div>
-                                </div>
-
-                                {{-- Metro results --}}
-                                <div id="nearbyMetroBlock" style="display:none; margin-top:16px; border-top:1px solid var(--gray-100); padding-top:12px;">
-                                    <h6 id="nearbyMetroToggle" class="mb-2 d-flex align-items-center" style="cursor:pointer; user-select:none;">
-                                        <x-icon name="subway" class="me-1" style="color:#03bd9d"/>
-                                        {{ __('property-single.nearby_metro') }}
-                                    </h6>
-                                    <div id="nearbyMetroList"></div>
-                                    <p id="nearbyMetroEmpty" class="mb-0 text-body fs-14" style="display:none;">{{ __('property-single.no_metro_nearby') }}</p>
-                                </div>
                             </div>
+                            @endif
                         </div>
 
+                        @if($__canMap)
                         <!-- Map fullscreen overlay (appended to body via JS) -->
                         <div id="mapFullscreenOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; background:#000;">
                             <div id="mapFullscreenJsMap" style="width:100%;height:100%;"></div>
@@ -1183,6 +1320,13 @@
                         <button id="mapFullscreenClose" style="display:none; position:fixed; top:12px; left:12px; z-index:2147483647; width:40px; height:40px; border:none; border-radius:6px; background:rgba(0,0,0,0.7); color:#fff; cursor:pointer; align-items:center; justify-content:center;">
                             <x-icon name="fullscreen_exit" size="24"/>
                         </button>
+                        <!-- Category tabs over the fullscreen map -->
+                        <div id="mapFsTabs" style="display:none; position:fixed; top:12px; left:50%; transform:translateX(-50%); z-index:2147483647; gap:8px; background:rgba(0,0,0,0.55); padding:6px; border-radius:24px;">
+                            <button type="button" class="btn btn-sm poi-tab poi-tab-fs" data-cat="transport">{{ __('property-single.cat_transport') }}</button>
+                            <button type="button" class="btn btn-sm poi-tab poi-tab-fs" data-cat="education">{{ __('property-single.cat_education') }}</button>
+                            <button type="button" class="btn btn-sm poi-tab poi-tab-fs" data-cat="food">{{ __('property-single.cat_food') }}</button>
+                        </div>
+                        @endif
                         @endif
 
                         </div>{{-- property-single-sidebar --}}
@@ -1218,18 +1362,15 @@
 </div>
 @endif
 
-<!-- Map: Yandex Map init + fullscreen overlay + Nearby Metro fetch & toggle -->
+<!-- Map: Yandex Map init + fullscreen overlay + nearby POI (transport via OSM, education via Yandex) + category tabs -->
 <script>
 (function () {
     var btn       = document.getElementById('mapFullscreenBtn');
     var overlay   = document.getElementById('mapFullscreenOverlay');
     var closeBtn  = document.getElementById('mapFullscreenClose');
     var fsMapEl   = document.getElementById('mapFullscreenJsMap');
+    var fsTabs    = document.getElementById('mapFsTabs');
     var mapEl     = document.getElementById('propertyJsMap');
-    var block     = document.getElementById('nearbyMetroBlock');
-    var list      = document.getElementById('nearbyMetroList');
-    var empty     = document.getElementById('nearbyMetroEmpty');
-    var toggle    = document.getElementById('nearbyMetroToggle');
 
     if (!mapEl) return;
     if (btn && overlay) document.body.appendChild(overlay);
@@ -1237,16 +1378,28 @@
     var lat       = {{ $property['latitude'] ?? 'null' }};
     var lng       = {{ $property['longitude'] ?? 'null' }};
     var propTitle = @json($property['title'] ?? '');
+    var locale    = @json(app()->getLocale());
+    var address   = @json($__geoAddress);
 
-    if (!lat || !lng) return;
+    // Need coordinates OR an address (to geocode) — otherwise nothing to show
+    if ((!lat || !lng) && !address) return;
 
-    var metroStations  = [];
-    var metroMapShown  = false;
-    var mainMap        = null;
-    var metroCollection = null; // коллекция меток метро на основной карте
-    var fsMap          = null;
+    var mainMap   = null;
+    var poiLayer  = null;   // active-category markers on the main map
+    var fsMap     = null;
+    var fsPoiLayer = null;  // active-category markers on the fullscreen map
+    var activeCat = null;
 
-    // ── SVG иконки ──
+    // Category meta: marker color + sprite icon id
+    var CATS = {
+        transport: { color: '#03bd9d', icon: 'train' },
+        education: { color: '#1565c0', icon: 'domain' },
+        food:      { color: '#e67e22', icon: 'shopping_cart' }
+    };
+    var CAT_ORDER = ['transport', 'education', 'food'];
+    var poiData = { transport: [], education: [], food: [] };
+
+    // ── icons ──
     var homeIconSvg = 'data:image/svg+xml,' + encodeURIComponent(
         '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="52" viewBox="0 0 40 52">' +
         '<path d="M20 0C8.95 0 0 8.95 0 20c0 14 20 32 20 32s20-18 20-32C40 8.95 31.05 0 20 0z" fill="#E74C3C"/>' +
@@ -1256,225 +1409,227 @@
         '<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" fill="#fff"/>' +
         '</g></svg>'
     );
+    function pinSvg(color) {
+        return 'data:image/svg+xml,' + encodeURIComponent(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42">' +
+            '<path d="M16 0C7.16 0 0 7.16 0 16c0 11.2 16 26 16 26s16-14.8 16-26C32 7.16 24.84 0 16 0z" fill="' + color + '"/>' +
+            '<circle cx="16" cy="15" r="6" fill="#fff"/></svg>'
+        );
+    }
 
-    var metroIconSvg = 'data:image/svg+xml,' + encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="48" viewBox="0 0 36 48">' +
-        '<path d="M18 0C8.06 0 0 8.06 0 18c0 12.6 18 30 18 30s18-17.4 18-30C36 8.06 27.94 0 18 0z" fill="#2D3436"/>' +
-        '<circle cx="18" cy="17" r="10" fill="#03bd9d"/>' +
-        '<g transform="translate(18,17) scale(0.58) translate(-12,-12)">' +
-        '<path d="M12 2c-4 0-8 .5-8 4v9.5C4 17.43 5.57 19 7.5 19L6 20.5v.5h2l2-2h4l2 2h2v-.5L16.5 19c1.93 0 3.5-1.57 3.5-3.5V6c0-3.5-3.58-4-8-4zM7.5 17c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm3.5-6H6V6h5v5zm5 6c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6h-5V6h5v5z" fill="#fff"/>' +
-        '</g></svg>'
-    );
+    function fmtDist(km) { return km < 1 ? Math.round(km * 1000) + ' м' : km.toFixed(1) + ' км'; }
+    function haversine(la, lo) {
+        var R = 6371, dLat = (la - lat) * Math.PI / 180, dLon = (lo - lng) * Math.PI / 180;
+        var a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat*Math.PI/180)*Math.cos(la*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
 
-    // ── Хелперы ──
     function homePlacemark() {
         return new ymaps.Placemark([lat, lng], { balloonContent: propTitle }, {
-            iconLayout: 'default#image',
-            iconImageHref: homeIconSvg,
-            iconImageSize: [28, 36],
-            iconImageOffset: [-14, -36]
+            iconLayout: 'default#image', iconImageHref: homeIconSvg,
+            iconImageSize: [28, 36], iconImageOffset: [-14, -36]
         });
     }
-
-    function metroPlacemark(st) {
-        var dist = st.km < 1 ? Math.round(st.km * 1000) + ' m' : st.km.toFixed(1) + ' km';
-        return new ymaps.Placemark([st.lat, st.lon], {
-            balloonContent: '<strong>' + st.name + '</strong><br>' + dist
+    function poiPlacemark(item, color) {
+        return new ymaps.Placemark([item.lat, item.lon], {
+            balloonContent: '<strong>' + item.name + '</strong><br>' + fmtDist(item.km)
         }, {
-            iconLayout: 'default#image',
-            iconImageHref: metroIconSvg,
-            iconImageSize: [26, 34],
-            iconImageOffset: [-13, -34]
+            iconLayout: 'default#image', iconImageHref: pinSvg(color),
+            iconImageSize: [26, 34], iconImageOffset: [-13, -34]
         });
     }
-
-    function calcBounds(includeMetro) {
+    function calcBounds(items) {
         var minLat = lat, maxLat = lat, minLon = lng, maxLon = lng;
-        if (includeMetro) {
-            metroStations.forEach(function (st) {
-                if (st.lat < minLat) minLat = st.lat;
-                if (st.lat > maxLat) maxLat = st.lat;
-                if (st.lon < minLon) minLon = st.lon;
-                if (st.lon > maxLon) maxLon = st.lon;
-            });
-        }
-        var diff = Math.max(maxLat - minLat, maxLon - minLon);
-        return {
-            center: [(minLat + maxLat) / 2, (minLon + maxLon) / 2],
-            zoom: diff > 0.04 ? 13 : diff > 0.02 ? 14 : 15
-        };
+        (items || []).forEach(function (p) {
+            if (p.lat < minLat) minLat = p.lat;
+            if (p.lat > maxLat) maxLat = p.lat;
+            if (p.lon < minLon) minLon = p.lon;
+            if (p.lon > maxLon) maxLon = p.lon;
+        });
+        return [[minLat, minLon], [maxLat, maxLon]];
     }
 
-    var goHomeBtn  = document.getElementById('mapGoHome');
-    var goMetroBtn = document.getElementById('mapGoMetro');
+    var goHomeBtn   = document.getElementById('mapGoHome');
     var controlBtns = document.getElementById('mapControlBtns');
 
-    // ── Инициализация основной карты (ждём загрузки ymaps) ──
+    // ── main map ──
     function initMap() {
         ymaps.ready(function () {
             mainMap = new ymaps.Map(mapEl, { center: [lat, lng], zoom: 16, controls: ['zoomControl'] });
             mainMap.geoObjects.add(homePlacemark());
-            metroCollection = new ymaps.GeoObjectCollection();
-            mainMap.geoObjects.add(metroCollection);
-            // Показываем кнопки после инициализации карты
+            poiLayer = new ymaps.GeoObjectCollection();
+            mainMap.geoObjects.add(poiLayer);
             if (controlBtns) controlBtns.style.display = 'flex';
+            // Force correct sizing in case the container was measured before layout settled
+            mainMap.container.fitToViewport();
         });
     }
-    if (typeof ymaps !== 'undefined') {
-        initMap();
-    } else {
-        window.addEventListener('load', initMap);
-    }
+    // initMap() is invoked from boot() once coordinates are known (see bottom)
 
-    // ── Кнопки управления картой ──
     if (goHomeBtn) {
         goHomeBtn.addEventListener('click', function () {
             if (!mainMap) return;
             mainMap.setCenter([lat, lng], 16, { duration: 400 });
-            // Подсветить активную кнопку
-            goHomeBtn.style.background = 'rgba(231,76,60,0.15)';
-            if (goMetroBtn) goMetroBtn.style.background = 'rgba(255,255,255,0.92)';
         });
     }
 
-    if (goMetroBtn) {
-        goMetroBtn.addEventListener('click', function () {
-            if (!mainMap || !metroCollection) return;
-            if (!metroStations.length) return;
-            // Если метро не показано — показать
-            if (!metroMapShown) {
-                metroMapShown = true;
-                metroStations.forEach(function (st) { metroCollection.add(metroPlacemark(st)); });
-            }
-            // Считаем bounds включая объект и все станции метро
-            var minLat = lat, maxLat = lat, minLon = lng, maxLon = lng;
-            metroStations.forEach(function (st) {
-                if (st.lat < minLat) minLat = st.lat;
-                if (st.lat > maxLat) maxLat = st.lat;
-                if (st.lon < minLon) minLon = st.lon;
-                if (st.lon > maxLon) maxLon = st.lon;
-            });
-            // setBounds автоматически подбирает zoom чтобы всё вошло
-            mainMap.setBounds([[minLat, minLon], [maxLat, maxLon]], {
-                checkZoomRange: true,
-                duration: 400,
-                padding: [40, 40, 40, 40]
-            });
-            goMetroBtn.style.background = 'rgba(3,189,157,0.15)';
-            if (goHomeBtn) goHomeBtn.style.background = 'rgba(255,255,255,0.92)';
-        });
-    }
-
-    // ── Fullscreen ──
+    // ── fullscreen ──
     function openFs() {
         if (typeof ymaps === 'undefined' || !mainMap) return;
         overlay.style.display = 'block';
-        if (closeBtn) { closeBtn.style.display = 'flex'; }
+        if (closeBtn) closeBtn.style.display = 'flex';
+        if (fsTabs) fsTabs.style.display = 'flex';
         document.body.style.overflow = 'hidden';
         fsMapEl.innerHTML = '';
         setTimeout(function () {
-            var b = calcBounds(metroMapShown);
-            fsMap = new ymaps.Map(fsMapEl, { center: b.center, zoom: metroMapShown ? b.zoom : 16, controls: ['zoomControl'] });
+            fsMap = new ymaps.Map(fsMapEl, { center: [lat, lng], zoom: 16, controls: ['zoomControl'] });
             fsMap.geoObjects.add(homePlacemark());
-            if (metroMapShown) {
-                metroStations.forEach(function (st) { fsMap.geoObjects.add(metroPlacemark(st)); });
-            }
+            fsPoiLayer = new ymaps.GeoObjectCollection();
+            fsMap.geoObjects.add(fsPoiLayer);
+            if (activeCat) renderCategoryOnMap(fsMap, fsPoiLayer, activeCat);
         }, 50);
     }
-
     function closeFs() {
         overlay.style.display = 'none';
-        if (closeBtn) { closeBtn.style.display = 'none'; }
+        if (closeBtn) closeBtn.style.display = 'none';
+        if (fsTabs) fsTabs.style.display = 'none';
         fsMapEl.innerHTML = '';
         if (fsMap) { fsMap.destroy(); fsMap = null; }
+        fsPoiLayer = null;
         document.body.style.overflow = '';
     }
-
     if (btn) btn.addEventListener('click', openFs);
     if (closeBtn) closeBtn.addEventListener('click', closeFs);
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeFs(); });
 
-    // ── Overpass + Yandex Geocoding ──
-    var loadingEl = document.getElementById('nearbyMetroLoading');
-    if (!block || !list) return;
+    // ── category tabs: toggle POI markers on the given map ──
+    function renderCategoryOnMap(map, layer, cat) {
+        if (!map || !layer) return;
+        layer.removeAll();
+        var items = poiData[cat] || [];
+        items.forEach(function (p) { layer.add(poiPlacemark(p, CATS[cat].color)); });
+        if (items.length) {
+            map.setBounds(calcBounds(items), { checkZoomRange: true, duration: 400, padding: [40, 40, 40, 40] });
+        } else {
+            map.setCenter([lat, lng], 16, { duration: 400 });
+        }
+    }
+    function selectCategory(cat) {
+        activeCat = cat;
+        renderCategoryOnMap(mainMap, poiLayer, cat);
+        if (fsMap && fsPoiLayer) renderCategoryOnMap(fsMap, fsPoiLayer, cat);
+        // Highlight active tab in both the inline and fullscreen tab bars
+        document.querySelectorAll('.poi-tab, .poi-tab-fs').forEach(function (b) {
+            b.classList.toggle('active', b.getAttribute('data-cat') === cat);
+        });
+    }
+    document.querySelectorAll('.poi-tab, .poi-tab-fs').forEach(function (b) {
+        b.addEventListener('click', function () { selectCategory(b.getAttribute('data-cat')); });
+    });
 
-    // Показываем спиннер сразу
-    if (loadingEl) loadingEl.style.display = 'block';
+    // ── fetch POI data (uses resolved lat/lng) ──
+    function fetchPOI() {
+        var loadingEl = document.getElementById('poiLoading');
+        var addBlock  = document.getElementById('poiAdditional');
+        var nearList  = document.getElementById('poiNearestList');
+        var tabsBlock = document.getElementById('poiTabs');
+        if (loadingEl) loadingEl.style.display = 'block';
 
-    var radius  = 2000;
+        // One Overpass query for all categories (transport / education / supermarkets)
+        var q = '[out:json][timeout:12];(' +
+            'node["station"="subway"](around:2000,' + lat + ',' + lng + ');' +
+            'node["railway"="station"](around:2000,' + lat + ',' + lng + ');' +
+            'nwr["amenity"="school"](around:1500,' + lat + ',' + lng + ');' +
+            'nwr["amenity"="university"](around:1500,' + lat + ',' + lng + ');' +
+            'nwr["shop"="supermarket"](around:1500,' + lat + ',' + lng + ');' +
+        ');out center tags 60;';
+        function runOverpass(server) {
+            // Abort after 12s so a stuck server fails over to the mirror quickly instead of hanging
+            var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            var to = ctrl ? setTimeout(function () { ctrl.abort(); }, 12000) : null;
+            return fetch(server, {
+                method: 'POST',
+                body: 'data=' + encodeURIComponent(q),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                signal: ctrl ? ctrl.signal : undefined
+            }).then(function (r) { if (to) clearTimeout(to); return r.json(); });
+        }
+        function catOf(t) {
+            if (t.station === 'subway' || t.railway === 'station') return 'transport';
+            if (t.amenity === 'school' || t.amenity === 'university') return 'education';
+            if (t.shop === 'supermarket') return 'food';
+            return null;
+        }
 
-    var overpassQuery = '[out:json][timeout:10];(' +
-        'node["railway"="station"]["station"="subway"](around:' + radius + ',' + lat + ',' + lng + ');' +
-        'node["station"="subway"](around:' + radius + ',' + lat + ',' + lng + ');' +
-    ');out body;';
+        runOverpass('https://overpass-api.de/api/interpreter')
+            .catch(function () { return runOverpass('https://overpass.kumi.systems/api/interpreter'); })
+            .then(function (data) {
+                var seen = { transport: {}, education: {}, food: {} };
+                (data.elements || []).forEach(function (el) {
+                    var t = el.tags || {};
+                    var cat = catOf(t);
+                    if (!cat) return;
+                    var elat = el.lat != null ? el.lat : (el.center && el.center.lat);
+                    var elon = el.lon != null ? el.lon : (el.center && el.center.lon);
+                    var name = t['name:' + locale] || t['name:en'] || t['name'] || '';
+                    if (elat == null || elon == null || !name || seen[cat][name]) return;
+                    seen[cat][name] = true;
+                    poiData[cat].push({ name: name, lat: elat, lon: elon, km: haversine(elat, elon) });
+                });
+                CAT_ORDER.forEach(function (c) { poiData[c].sort(function (a, b) { return a.km - b.km; }); });
+            })
+            .catch(function () {})
+            .then(function () {
+                if (loadingEl) loadingEl.style.display = 'none';
 
-    function runOverpass(server) {
-        return fetch(server, { method: 'POST', body: 'data=' + encodeURIComponent(overpassQuery), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }).then(function (r) { return r.json(); });
+                // Additional info: up to 5 nearest places across all categories (all if fewer)
+                var all = [];
+                CAT_ORDER.forEach(function (c) {
+                    poiData[c].forEach(function (p) { all.push({ cat: c, p: p }); });
+                });
+                all.sort(function (a, b) { return a.p.km - b.p.km; });
+                var rows = '';
+                all.slice(0, 5).forEach(function (it) {
+                    var meta = CATS[it.cat];
+                    rows += '<div class="d-flex align-items-center mb-2">' +
+                        '<svg class="me-2" width="18" height="18" fill="currentColor" style="color:' + meta.color + '" aria-hidden="true"><use href="{{ asset('img/icons.svg') }}#icon-' + meta.icon + '"/></svg>' +
+                        '<span class="fs-14 text-body">' + it.p.name + '</span>' +
+                        '<span class="fs-14 text-body ms-auto">' + fmtDist(it.p.km) + '</span>' +
+                    '</div>';
+                });
+                if (rows && nearList) { nearList.innerHTML = rows; if (addBlock) addBlock.style.display = 'block'; }
+
+                // Show only the category tabs that actually have data
+                var anyData = false;
+                document.querySelectorAll('.poi-tab, .poi-tab-fs').forEach(function (b) {
+                    var c = b.getAttribute('data-cat');
+                    if (poiData[c] && poiData[c].length) { anyData = true; b.style.display = ''; }
+                    else { b.style.display = 'none'; }
+                });
+                if (anyData && tabsBlock) tabsBlock.style.display = 'block';
+            });
     }
 
-    runOverpass('https://overpass-api.de/api/interpreter')
-    .catch(function () { return runOverpass('https://overpass.kumi.systems/api/interpreter'); })
-    .then(function (data) {
-        var seen = {};
-        (data.elements || []).forEach(function (el) {
-            var tags = el.tags || {};
-            var name = tags['name:{{ app()->getLocale() }}'] || tags['name:en'] || tags.name || '';
-            if (!name || !el.lat || !el.lon) return;
-            if (seen[name] && tags.railway !== 'station') return;
-            seen[name] = true;
-            var c = { lat: el.lat, lon: el.lon };
-            var R = 6371, dLat = (c.lat - lat) * Math.PI / 180, dLon = (c.lon - lng) * Math.PI / 180;
-            var a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat*Math.PI/180)*Math.cos(c.lat*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
-            var km = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            if (km <= radius / 1000) metroStations.push({ name: name, km: km, lat: c.lat, lon: c.lon });
-        });
-    })
-    .then(function () {
-        metroStations.sort(function (a, b) { return a.km - b.km; });
-        // Прячем спиннер, показываем результат
-        if (loadingEl) loadingEl.style.display = 'none';
-        block.style.display = 'block';
+    // ── resolve coordinates, then boot the map + POI ──
+    function boot() { initMap(); fetchPOI(); }
 
-        if (metroStations.length === 0) { empty.style.display = 'block'; return; }
-
-        metroStations.forEach(function (st) {
-            var dist = st.km < 1 ? Math.round(st.km * 1000) + ' m' : st.km.toFixed(1) + ' km';
-            var item = document.createElement('div');
-            item.className = 'd-flex align-items-center mb-2';
-            item.innerHTML = '<svg class="me-2" width="18" height="18" fill="currentColor" style="color:#03bd9d" aria-hidden="true"><use href="{{ asset('img/icons.svg') }}#icon-train"/></svg>' +
-                '<span class="fs-14 text-body">' + st.name + '</span>' +
-                '<span class="fs-14 text-body ms-auto">' + dist + '</span>';
-            list.appendChild(item);
-        });
-
-        if (toggle) {
-            toggle.addEventListener('click', function () {
-                if (!metroStations.length || !mainMap || !metroCollection) return;
-                metroMapShown = !metroMapShown;
-                if (metroMapShown) {
-                    metroStations.forEach(function (st) { metroCollection.add(metroPlacemark(st)); });
-                    var minLat = lat, maxLat = lat, minLon = lng, maxLon = lng;
-                    metroStations.forEach(function (st) {
-                        if (st.lat < minLat) minLat = st.lat;
-                        if (st.lat > maxLat) maxLat = st.lat;
-                        if (st.lon < minLon) minLon = st.lon;
-                        if (st.lon > maxLon) maxLon = st.lon;
-                    });
-                    mainMap.setBounds([[minLat, minLon], [maxLat, maxLon]], { checkZoomRange: true, duration: 400, padding: [40, 40, 40, 40] });
-                    if (goMetroBtn) goMetroBtn.style.background = 'rgba(3,189,157,0.15)';
-                    if (goHomeBtn) goHomeBtn.style.background = 'rgba(255,255,255,0.92)';
-                } else {
-                    metroCollection.removeAll();
-                    mainMap.setCenter([lat, lng], 16, { duration: 400 });
-                    if (goMetroBtn) goMetroBtn.style.background = 'rgba(255,255,255,0.92)';
-                    if (goHomeBtn) goHomeBtn.style.background = 'rgba(255,255,255,0.92)';
-                }
-            });
-        }
-    })
-    .catch(function () {
-        if (loadingEl) loadingEl.style.display = 'none';
-    });
+    if (lat && lng) {
+        boot();
+    } else {
+        // No coords from API → geocode the address with Yandex (JS API already loaded)
+        var geocodeAndBoot = function () {
+            if (typeof ymaps === 'undefined' || !ymaps.geocode) return;
+            ymaps.geocode(address, { results: 1 }).then(function (res) {
+                var obj = res.geoObjects.get(0);
+                if (!obj) return;
+                var c = obj.geometry.getCoordinates();   // [lat, lon]
+                lat = c[0]; lng = c[1];
+                boot();
+            }, function () { /* geocode failed — leave map empty */ });
+        };
+        if (typeof ymaps !== 'undefined') { ymaps.ready(geocodeAndBoot); }
+        else { window.addEventListener('load', function () { if (typeof ymaps !== 'undefined') ymaps.ready(geocodeAndBoot); }); }
+    }
 }());
 </script>
 
