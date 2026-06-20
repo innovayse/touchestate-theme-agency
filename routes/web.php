@@ -225,7 +225,7 @@ Route::get('/map', [PropertyController::class, 'map']);
 
 // All simple static pages (default to Armenian locale)
 $defaultRoutes = [
-    'contact-us', 'about-us', 'our-team',
+    'contact-us', // 'about-us' temporarily disabled (page kept); 'our-team' removed
     'faq', 'privacy-policy', 'terms-condition', 'testimonial',
     'cart', 'checkout',
     'maintenance', 'error-404', 'error-500',
@@ -262,8 +262,7 @@ Route::group(
         Route::post('/compare/load', [CompareController::class, 'load'])->name('compare.load');
 
         // Static pages
-        Route::get('/about-us',        fn () => view('about-us'))->name('about-us');
-        Route::get('/our-team',        fn () => view('our-team'))->name('our-team');
+        // Route::get('/about-us',        fn () => view('about-us'))->name('about-us'); // temporarily disabled (page kept)
         Route::get('/contact-us',      fn () => view('contact-us'))->name('contact-us');
         Route::get('/faq',             fn () => view('faq'))->name('faq');
         Route::get('/privacy-policy',  fn () => view('privacy-policy'))->name('privacy-policy');
