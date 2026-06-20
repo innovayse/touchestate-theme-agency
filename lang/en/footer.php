@@ -4,7 +4,6 @@ return [
     // Section headings
     'pages' => 'Pages',
     'our_pages' => 'Our Pages',
-    'company' => 'Company',
     'destinations' => 'Destinations',
     'useful_links' => 'Useful Links',
 
@@ -13,15 +12,12 @@ return [
     'download_app' => 'Download the app and book your property',
 
     // Pages links
-    'our_team' => 'Our Team',
     'faq' => 'FAQ',
 'settings' => 'Settings',
     'profile' => 'Profile',
     'listings' => 'Listings',
 
     // Company links
-    'about_us' => 'About Us',
-    'careers' => 'Careers',
     'affiliate_program' => 'Affiliate Program',
     'our_partners' => 'Our Partners',
 

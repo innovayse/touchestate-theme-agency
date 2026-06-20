@@ -118,6 +118,7 @@
     </div>
     <!-- Search End -->
 
+    {{-- About Us section temporarily hidden — about-us page disabled (links would 404)
     <!-- About Us Section Start -->
     <section class="about-us-section-2">
         <div class="container">
@@ -159,6 +160,7 @@
         </div>
     </section>
     <!-- About Us Section End -->
+    --}}
 
     <!-- Property Type Section Start -->
     <section class="property-type-section">
