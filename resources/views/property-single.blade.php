@@ -1613,22 +1613,37 @@
     // ── resolve coordinates, then boot the map + POI ──
     function boot() { initMap(); fetchPOI(); }
 
+    // Nominatim fallback when Yandex geocoder key has no geocoding permission
+    function geocodeViaNominatim(cb) {
+        fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(address) + '&format=json&limit=1', {
+            headers: { 'Accept-Language': 'en', 'User-Agent': 'touchestate-app/1.0' }
+        }).then(function (r) { return r.json(); }).then(function (data) {
+            if (data && data[0]) { lat = parseFloat(data[0].lat); lng = parseFloat(data[0].lon); cb(); }
+        }).catch(function () {});
+    }
+
     if (lat && lng) {
         boot();
     } else {
-        // No coords from API → geocode the address with Yandex (JS API already loaded)
+        // No coords from API → try Yandex geocoder, fall back to Nominatim on failure/empty result
         var geocodeAndBoot = function () {
-            if (typeof ymaps === 'undefined' || !ymaps.geocode) return;
-            ymaps.geocode(address, { results: 1 }).then(function (res) {
-                var obj = res.geoObjects.get(0);
-                if (!obj) return;
-                var c = obj.geometry.getCoordinates();   // [lat, lon]
-                lat = c[0]; lng = c[1];
-                boot();
-            }, function () { /* geocode failed — leave map empty */ });
+            if (typeof ymaps !== 'undefined' && ymaps.geocode) {
+                ymaps.geocode(address, { results: 1 }).then(function (res) {
+                    var obj = res.geoObjects.get(0);
+                    if (obj) {
+                        var c = obj.geometry.getCoordinates();
+                        lat = c[0]; lng = c[1];
+                        boot();
+                    } else {
+                        geocodeViaNominatim(boot);
+                    }
+                }, function () { geocodeViaNominatim(boot); });
+            } else {
+                geocodeViaNominatim(boot);
+            }
         };
         if (typeof ymaps !== 'undefined') { ymaps.ready(geocodeAndBoot); }
-        else { window.addEventListener('load', function () { if (typeof ymaps !== 'undefined') ymaps.ready(geocodeAndBoot); }); }
+        else { window.addEventListener('load', function () { ymaps && ymaps.ready ? ymaps.ready(geocodeAndBoot) : geocodeViaNominatim(boot); }); }
     }
 }());
 </script>
