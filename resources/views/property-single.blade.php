@@ -988,7 +988,8 @@
                             @endif
 
 
-                            <!-- Comments -->
+                            <!-- Comments (shown only when there is at least one comment) -->
+                            @if(!empty($comments['items']))
                             <div class="accordion-item mb-xl-0">
                                 <div class="accordion-header">
                                     <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-9" aria-expanded="true">
@@ -1001,7 +1002,7 @@
                                             <h6 class="fs-16 fw-semibold"> {{ __('property-single.comments') }} ({{ $comments['totalCount'] ?? 0 }}) </h6>
                                         </div>
 
-                                        @forelse($comments['items'] ?? [] as $comment)
+                                        @foreach($comments['items'] as $comment)
                                         @php
                                             $__rName = $comment['authorName'] ?? __('property-single.anonymous');
                                             $__rInitials = collect(explode(' ', $__rName))->map(fn($w) => mb_strtoupper(mb_substr($w, 0, 1)))->take(2)->implode('');
@@ -1056,13 +1057,12 @@
                                                 @endif
                                             </div>
                                         </div>
-                                        @empty
-                                        <p class="text-muted text-center py-3">{{ __('property-single.no_comments_yet') }}</p>
-                                        @endforelse
+                                        @endforeach
 
                                     </div>
                                 </div>
                             </div>
+                            @endif
                         </div>
 
                     </div> <!-- col end -->
