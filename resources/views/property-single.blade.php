@@ -1379,7 +1379,10 @@
     var lng       = {{ $property['longitude'] ?? 'null' }};
     var propTitle = @json($property['title'] ?? '');
     var locale    = @json(app()->getLocale());
-    var address   = @json($__geoAddress);
+    var address     = @json($__geoAddress);
+    var addrStreet  = @json($property['street'] ?? '');
+    var addrCity    = @json($property['city'] ?? '');
+    var addrCountry = @json($property['country'] ?? '');
 
     // Need coordinates OR an address (to geocode) — otherwise nothing to show
     if ((!lat || !lng) && !address) return;
@@ -1613,13 +1616,27 @@
     // ── resolve coordinates, then boot the map + POI ──
     function boot() { initMap(); fetchPOI(); }
 
-    // Nominatim fallback when Yandex geocoder key has no geocoding permission
+    // Nominatim fallback when Yandex geocoder key has no geocoding permission.
+    // Tries progressively simpler queries: full address → street+city → city only.
     function geocodeViaNominatim(cb) {
-        fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(address) + '&format=json&limit=1', {
-            headers: { 'Accept-Language': 'en', 'User-Agent': 'touchestate-app/1.0' }
-        }).then(function (r) { return r.json(); }).then(function (data) {
-            if (data && data[0]) { lat = parseFloat(data[0].lat); lng = parseFloat(data[0].lon); cb(); }
-        }).catch(function () {});
+        var queries = [];
+        if (addrStreet && addrCity) queries.push([addrStreet, addrCity, addrCountry].filter(Boolean).join(', '));
+        if (addrCity)               queries.push([addrCity, addrCountry].filter(Boolean).join(', '));
+        if (!queries.length)        queries.push(address);
+
+        function tryNext(i) {
+            if (i >= queries.length) return;
+            fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(queries[i]) + '&format=json&limit=1')
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data && data[0]) {
+                        lat = parseFloat(data[0].lat); lng = parseFloat(data[0].lon); cb();
+                    } else {
+                        tryNext(i + 1);
+                    }
+                }).catch(function () { tryNext(i + 1); });
+        }
+        tryNext(0);
     }
 
     if (lat && lng) {
