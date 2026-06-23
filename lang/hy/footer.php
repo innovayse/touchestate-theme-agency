@@ -61,6 +61,6 @@ return [
 
     // Copyright
     'copyright' => 'Հեղինակային իրավունք',
-    'all_rights' => 'Բոլոր իրավունքները պաշտպանված են, Touch Estate',
+    'all_rights' => 'Բոլոր իրավունքները պաշտպանված են, :brand',
     'product_of' => 'Արտադրանք',
 ];

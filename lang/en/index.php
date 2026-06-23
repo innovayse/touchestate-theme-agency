@@ -141,7 +141,6 @@ return [
     'villa' => 'Villa',
     'bungalow' => 'Bungalow',
     'lodge' => 'Lodge',
-    'condo' => 'Condo',
     'apartment' => 'Apartment',
 
     // Blog Section

@@ -141,7 +141,6 @@ return [
     'villa' => 'Вилла',
     'bungalow' => 'Бунгало',
     'lodge' => 'Лодж',
-    'condo' => 'Кондо',
     'apartment' => 'Квартира',
 
     // Blog Section

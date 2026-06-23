@@ -20,7 +20,7 @@ class PropertyController extends Controller
             'status'           => 'prohibited',
 
             // Enum singles
-            'propertyType'     => ['nullable', Rule::in(['Apartment','House','Studio','Villa','Townhouse','Penthouse','Room','Complex','Land','Commercial','Office','Warehouse','Garage','Pavilion','EventVenue','Dacha','Cottage','Condo'])],
+            'propertyType'     => ['nullable', Rule::in(['Apartment','House','Studio','Villa','Townhouse','Penthouse','Room','Complex','Land','Commercial','Office','Warehouse','Garage','Pavilion','EventVenue','Dacha','Cottage'])],
             'transactionType'  => ['nullable', Rule::in(['Sale','Rent','RentDaily'])],
             'renovationType'   => ['nullable', Rule::in(['Capital','Designer','Euro','Cosmetic','Partial','Old','Unrenovated'])],
             'constructionType' => ['nullable', Rule::in(['Wood','Strip','Brick','Monolithic','Panel','Stone'])],

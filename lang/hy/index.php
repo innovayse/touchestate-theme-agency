@@ -141,7 +141,6 @@ return [
     'villa' => 'Վիլլա',
     'bungalow' => 'Բունգալո',
     'lodge' => 'Լոջ',
-    'condo' => 'Կոնդո',
     'apartment' => 'Բնակարան',
 
     // Blog Section

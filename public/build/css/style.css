@@ -1798,6 +1798,11 @@ footer .footer-row {
     padding: 0 0 0 40px;
   }
 }
+@media (max-width: 574.98px) {
+  footer .footer-row .col-6 {
+    width: 100%;
+  }
+}
 @media (max-width: 991px) {
   footer .footer-row {
     gap: 0;
@@ -10720,7 +10725,8 @@ span.select2-container.select2-container--default.select2-container--open {
 .advanced-filter .filter-stepper .stepper-btns button:first-child {
   border-bottom: 1px solid var(--border-color);
 }
-.advanced-filter .filter-select {
+.advanced-filter .filter-select,
+.home-search-2 .filter-select {
   background-color: var(--form-bg);
   border: 1px solid var(--border-color);
   border-radius: 8px;
@@ -10736,14 +10742,15 @@ span.select2-container.select2-container--default.select2-container--open {
   background-position: right 12px center;
   padding-right: 32px;
 }
-.advanced-filter .filter-select option {
+.advanced-filter .filter-select option,
+.home-search-2 .filter-select option {
   background: var(--white);
   color: var(--gray-900);
 }
-.advanced-filter .custom-select {
+.custom-select {
   position: relative;
 }
-.advanced-filter .custom-select__trigger {
+.custom-select__trigger {
   background-color: var(--form-bg);
   border: 1px solid var(--border-color);
   border-radius: 8px;
@@ -10761,7 +10768,7 @@ span.select2-container.select2-container--default.select2-container--open {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.advanced-filter .custom-select__options {
+.custom-select__options {
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
@@ -10776,35 +10783,35 @@ span.select2-container.select2-container--default.select2-container--open {
   z-index: 100;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
-.advanced-filter .custom-select.open .custom-select__trigger {
+.custom-select.open .custom-select__trigger {
   border-color: var(--primary);
 }
-.advanced-filter .custom-select.open .custom-select__options {
+.custom-select.open .custom-select__options {
   max-height: 240px;
   overflow-y: auto;
   opacity: 1;
 }
-.advanced-filter .custom-select__options::-webkit-scrollbar {
+.custom-select__options::-webkit-scrollbar {
   width: 4px;
 }
-.advanced-filter .custom-select__options::-webkit-scrollbar-track {
+.custom-select__options::-webkit-scrollbar-track {
   background: transparent;
 }
-.advanced-filter .custom-select__options::-webkit-scrollbar-thumb {
+.custom-select__options::-webkit-scrollbar-thumb {
   background: var(--primary);
   border-radius: 4px;
 }
-.advanced-filter .custom-select__option {
+.custom-select__option {
   padding: 8px 12px;
   cursor: pointer;
   font-size: 14px;
   color: var(--gray-900);
   transition: background 0.15s;
 }
-.advanced-filter .custom-select__option:hover {
+.custom-select__option:hover {
   background: rgba(0, 0, 0, 0.05);
 }
-.advanced-filter .custom-select__option.selected {
+.custom-select__option.selected {
   color: var(--primary);
   font-weight: 600;
 }

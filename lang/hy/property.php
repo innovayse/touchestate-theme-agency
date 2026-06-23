@@ -58,7 +58,6 @@ return [
     'house' => 'Տուն',
     'bungalow' => 'Բունգալո',
     'lodge' => 'Լոջ',
-    'condo' => 'Կոնդո',
     'complex' => 'Համալիր',
     'penthouse' => 'Պենտհաուս',
     'studio' => 'Ստուդիա',

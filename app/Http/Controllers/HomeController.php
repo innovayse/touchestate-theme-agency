@@ -74,9 +74,17 @@ class HomeController extends Controller
             }
         }
 
+        // Distinct property types present in the current listings — for the home search dropdown
+        // (only show types that actually exist right now; values come straight from the API)
+        $availableTypes = array_values(array_unique(array_filter(
+            array_map(fn ($p) => $p['propertyType'] ?? '', $allItems)
+        )));
+        sort($availableTypes);
+
         return view('index', compact(
             'rentProperties', 'saleProperties', 'stats',
             'typeCounts', 'cityCounts', 'topViewedImages', 'cityImages', 'typeImages',
+            'availableTypes',
         ));
     }
 }
