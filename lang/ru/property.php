@@ -58,7 +58,6 @@ return [
     'house' => 'Дом',
     'bungalow' => 'Бунгало',
     'lodge' => 'Лодж',
-    'condo' => 'Кондо',
     'complex' => 'Комплекс',
     'penthouse' => 'Пентхаус',
     'studio' => 'Студия',

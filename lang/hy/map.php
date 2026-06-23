@@ -9,7 +9,6 @@ return [
     'filter' => 'Ֆիլտր',
     'categories' => 'Կատեգորիաներ',
     'apartments' => 'Բնակարաններ',
-    'condos' => 'Կոնդոմինիումներ',
     'houses' => 'Տներ',
     'select' => 'Ընտրել',
     'bedrooms' => 'Ննջասենյակներ',

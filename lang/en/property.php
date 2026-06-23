@@ -58,7 +58,6 @@ return [
     'house' => 'House',
     'bungalow' => 'Bungalow',
     'lodge' => 'Lodge',
-    'condo' => 'Condo',
     'complex' => 'Complex',
     'penthouse' => 'Penthouse',
     'studio' => 'Studio',

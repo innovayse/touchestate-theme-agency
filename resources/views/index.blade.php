@@ -57,7 +57,7 @@
                 <div class="row g-3 align-items-end">
                     <div class="col-12 col-md-6 col-lg-4 col-xl">
                         <label class="form-label">{{ __('index.search_buy_sell') }}</label>
-                        <select name="transactionType" class="select">
+                        <select name="transactionType" class="filter-select">
                             <option value="">{{ __('index.search_select') }}</option>
                             <option value="Sale">{{ __('map.sale') }}</option>
                             <option value="Rent">{{ __('map.rent_monthly') }}</option>
@@ -66,14 +66,12 @@
                     </div>
                     <div class="col-12 col-md-6 col-lg-4 col-xl">
                         <label class="form-label">{{ __('index.search_type') }}</label>
-                        <select name="propertyType" class="select">
+                        <select name="propertyType" class="filter-select">
                             <option value="">{{ __('index.search_select') }}</option>
-                            <option value="Apartment">{{ __('property.apartment') }}</option>
-                            <option value="House">{{ __('property.house') }}</option>
-                            <option value="Villa">{{ __('property.villa') }}</option>
-                            <option value="Condo">{{ __('property.condo') }}</option>
-                            <option value="Land">{{ __('property.land') }}</option>
-                            <option value="Office">{{ __('property.office') }}</option>
+                            @foreach($availableTypes as $pt)
+                            @php $__ptKey = 'property.' . strtolower($pt); @endphp
+                            <option value="{{ $pt }}">{{ __($__ptKey) !== $__ptKey ? __($__ptKey) : $pt }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="col-12 col-md-6 col-lg-4 col-xl">
@@ -920,6 +918,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 }());
+
+// ── Custom select dropdowns for Buy/Rent + Type (modern dropdown like the filter) ──
+// DOMContentLoaded so script.js (loaded in the footer) has defined initCustomSelects.
+document.addEventListener('DOMContentLoaded', function () {
+    if (typeof initCustomSelects === 'function') initCustomSelects();
+});
 </script>
 
 @endsection

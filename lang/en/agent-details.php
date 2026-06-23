@@ -36,14 +36,12 @@ return [
     // Property tabs
     'all_properties' => 'All Properties',
     'apartment' => 'Apartment',
-    'condos' => 'Condos',
     'home' => 'Home',
 
     // Property badges
     'trending' => 'Trending',
     'featured' => 'Featured',
     'for_rent' => 'For Rent',
-    'condo' => 'Condo',
 
     // Property details
     'starts_from' => 'Starts From',

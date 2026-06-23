@@ -1,4 +1,16 @@
-@php $orgName = $workspace['name'] ?? null; @endphp
+@php
+    $orgName = $workspace['name'] ?? null;
+
+    // Messengers come as raw phone numbers (+374…), not URLs — build proper deep-links
+    $waNumber    = !empty($workspace['messengers']['whatsApp']) ? preg_replace('/\D+/', '', $workspace['messengers']['whatsApp']) : null;
+    $viberNumber = !empty($workspace['messengers']['viber'])    ? preg_replace('/\D+/', '', $workspace['messengers']['viber'])    : null;
+
+    // "Touch Estate" brand link — points to touchestate.<tld> based on current host, fallback to config base_url
+    $teHost  = request()->getHost();
+    $teTld   = ($p = strrpos($teHost, '.')) !== false ? strtolower(substr($teHost, $p + 1)) : '';
+    $teUrl   = ctype_alpha($teTld) ? "https://touchestate.$teTld" : config('touchestate.base_url', 'https://touchestate.io');
+    $teBrand = '<a href="'.e($teUrl).'" target="_blank" rel="noopener">Touch Estate</a>';
+@endphp
 <!-- Start Footer -->
 <footer class="footer footer-dark">
     <div class="footer-bg">
@@ -25,8 +37,8 @@
                                 @if(!empty($workspace['socials']['facebook']))<a href="{{ $workspace['socials']['facebook'] }}" target="_blank"><i class="fa-brands fa-facebook"></i></a>@endif
                                 @if(!empty($workspace['socials']['instagram']))<a href="{{ $workspace['socials']['instagram'] }}" target="_blank"><i class="fa-brands fa-instagram"></i></a>@endif
                                 @if(!empty($workspace['messengers']['telegram']))<a href="{{ $workspace['messengers']['telegram'] }}" target="_blank"><i class="fa-brands fa-telegram"></i></a>@endif
-                                @if(!empty($workspace['messengers']['whatsApp']))<a href="{{ $workspace['messengers']['whatsApp'] }}" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>@endif
-                                @if(!empty($workspace['messengers']['viber']))<a href="{{ $workspace['messengers']['viber'] }}" target="_blank"><i class="fa-brands fa-viber"></i></a>@endif
+                                @if($waNumber)<a href="https://wa.me/{{ $waNumber }}" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>@endif
+                                @if($viberNumber)<a href="viber://chat?number=+{{ $viberNumber }}"><i class="fa-brands fa-viber"></i></a>@endif
                             </div>
                         </div>
                     </div>
@@ -58,8 +70,8 @@
                 @if(!empty($workspace['socials']['facebook']))<a href="{{ $workspace['socials']['facebook'] }}" target="_blank"><i class="fa-brands fa-facebook"></i></a>@endif
                 @if(!empty($workspace['socials']['instagram']))<a href="{{ $workspace['socials']['instagram'] }}" target="_blank"><i class="fa-brands fa-instagram"></i></a>@endif
                 @if(!empty($workspace['messengers']['telegram']))<a href="{{ $workspace['messengers']['telegram'] }}" target="_blank"><i class="fa-brands fa-telegram"></i></a>@endif
-                @if(!empty($workspace['messengers']['whatsApp']))<a href="{{ $workspace['messengers']['whatsApp'] }}" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>@endif
-                @if(!empty($workspace['messengers']['viber']))<a href="{{ $workspace['messengers']['viber'] }}" target="_blank"><i class="fa-brands fa-viber"></i></a>@endif
+                @if($waNumber)<a href="https://wa.me/{{ $waNumber }}" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>@endif
+                @if($viberNumber)<a href="viber://chat?number=+{{ $viberNumber }}"><i class="fa-brands fa-viber"></i></a>@endif
             </div>
         </div>
     </div>
@@ -69,7 +81,7 @@
     <div class="footer-bottom">
         <div class="container">
             <div class="copyright text-center">
-                <p>{{ __('footer.copyright') }} &copy; <script>document.write(new Date().getFullYear())</script>. {{ __('footer.all_rights') }}</p>
+                <p>{{ __('footer.copyright') }} &copy; <script>document.write(new Date().getFullYear())</script>. {!! __('footer.all_rights', ['brand' => $teBrand]) !!}</p>
             </div>
         </div>
     </div>
