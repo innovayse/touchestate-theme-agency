@@ -9,7 +9,6 @@ return [
     'filter' => 'Filter',
     'categories' => 'Categories',
     'apartments' => 'Apartments',
-    'condos' => 'Condos',
     'houses' => 'Houses',
     'select' => 'Select',
     'bedrooms' => 'Bedrooms',

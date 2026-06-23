@@ -5,7 +5,6 @@ return [
     'title' => 'Детали Аренды',
 
     // Badges
-    'condo' => 'Кондоминиум',
     'for_rent' => 'Для Аренды',
     'trending' => 'Популярное',
     'featured' => 'Избранное',

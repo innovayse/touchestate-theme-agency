@@ -36,14 +36,12 @@ return [
     // Property tabs
     'all_properties' => 'Вся недвижимость',
     'apartment' => 'Квартира',
-    'condos' => 'Кондоминиумы',
     'home' => 'Дом',
 
     // Property badges
     'trending' => 'В тренде',
     'featured' => 'Избранное',
     'for_rent' => 'В аренду',
-    'condo' => 'Кондоминиум',
 
     // Property details
     'starts_from' => 'Начиная с',

@@ -36,14 +36,12 @@ return [
     // Property tabs
     'all_properties' => 'Բոլոր անշարժ գույքը',
     'apartment' => 'Բնակարան',
-    'condos' => 'Կոնդոմինիումներ',
     'home' => 'Տուն',
 
     // Property badges
     'trending' => 'Հայտնի',
     'featured' => 'Առանձնացված',
     'for_rent' => 'Վարձույթի',
-    'condo' => 'Կոնդոմինիում',
 
     // Property details
     'starts_from' => 'Սկսած',

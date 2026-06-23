@@ -5,7 +5,6 @@ return [
     'title' => 'Rent Details',
 
     // Badges
-    'condo' => 'Condo',
     'for_rent' => 'For Rent',
     'trending' => 'Trending',
     'featured' => 'Featured',

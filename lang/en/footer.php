@@ -60,6 +60,6 @@ return [
 
     // Copyright
     'copyright' => 'Copyright',
-    'all_rights' => 'All Rights Reserved, Touch Estate',
+    'all_rights' => 'All Rights Reserved, :brand',
     'product_of' => 'Product of',
 ];

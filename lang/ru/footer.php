@@ -60,6 +60,6 @@ return [
 
     // Copyright
     'copyright' => 'Авторское право',
-    'all_rights' => 'Все права защищены, Touch Estate',
+    'all_rights' => 'Все права защищены, :brand',
     'product_of' => 'Продукт',
 ];

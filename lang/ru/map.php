@@ -9,7 +9,6 @@ return [
     'filter' => 'Фильтр',
     'categories' => 'Категории',
     'apartments' => 'Апартаменты',
-    'condos' => 'Кондоминиумы',
     'houses' => 'Дома',
     'select' => 'Выбрать',
     'bedrooms' => 'Спальни',

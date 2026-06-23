@@ -760,13 +760,14 @@
                                 </div>
                                 <div id="accordion-4" class="accordion-collapse collapse show">
                                     <div class="accordion-body">
-                                        <div class="row row-gap-2">
+                                        <div class="row row-gap-3">
                                             @foreach($property['amenities'] as $amenity)
-                                            <div class="col-lg-3 col-md-6">
-                                                <p class="mb-2 d-flex align-items-center gap-2">
-                                                    @php $__amKey = 'property-single.amenity_' . strtolower($amenity); @endphp
-                                                    <x-icon name="check" class="text-secondary"/> {{ __($__amKey) !== $__amKey ? __($__amKey) : $amenity }}
-                                                </p>
+                                            @php $__amKey = 'property-single.amenity_' . strtolower($amenity); @endphp
+                                            <div class="col-lg-4 col-md-6 col-6">
+                                                <div class="feature-item d-flex align-items-center gap-2">
+                                                    <x-icon name="check" class="text-secondary"/>
+                                                    <span>{{ __($__amKey) !== $__amKey ? __($__amKey) : $amenity }}</span>
+                                                </div>
                                             </div>
                                             @endforeach
                                         </div>
@@ -779,11 +780,11 @@
                             @if(!empty($property['features']))
                             <div class="accordion-item">
                                 <div class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-feat" aria-expanded="false">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-feat" aria-expanded="true">
                                         {{ __('property-single.features_section') }}
                                     </button>
                                 </div>
-                                <div id="accordion-feat" class="accordion-collapse collapse">
+                                <div id="accordion-feat" class="accordion-collapse collapse show">
                                     <div class="accordion-body">
                                         <div class="row row-gap-2">
                                             @foreach($property['features'] as $feat)
@@ -805,11 +806,11 @@
                             @if(!empty($property['appliances']))
                             <div class="accordion-item">
                                 <div class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-appl" aria-expanded="false">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-appl" aria-expanded="true">
                                         {{ __('property-single.appliances_section') }}
                                     </button>
                                 </div>
-                                <div id="accordion-appl" class="accordion-collapse collapse">
+                                <div id="accordion-appl" class="accordion-collapse collapse show">
                                     <div class="accordion-body">
                                         <div class="row row-gap-2">
                                             @foreach($property['appliances'] as $appl)
@@ -831,11 +832,11 @@
                             @if(!empty($property['utilities']))
                             <div class="accordion-item">
                                 <div class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-util" aria-expanded="false">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-util" aria-expanded="true">
                                         {{ __('property-single.utilities_section') }}
                                     </button>
                                 </div>
-                                <div id="accordion-util" class="accordion-collapse collapse">
+                                <div id="accordion-util" class="accordion-collapse collapse show">
                                     <div class="accordion-body">
                                         <div class="row row-gap-2">
                                             @foreach($property['utilities'] as $util)
@@ -857,11 +858,11 @@
                             @if($isRental && ($property['deposit'] ?? $property['petsPolicy'] ?? $property['utilitiesPolicy'] ?? null))
                             <div class="accordion-item">
                                 <div class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-cond" aria-expanded="false">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-cond" aria-expanded="true">
                                         {{ __('property-single.rental_conditions') }}
                                     </button>
                                 </div>
-                                <div id="accordion-cond" class="accordion-collapse collapse">
+                                <div id="accordion-cond" class="accordion-collapse collapse show">
                                     <div class="accordion-body">
                                         <div class="row row-gap-3">
                                             @if($property['deposit'] ?? null)
@@ -922,11 +923,11 @@
                             @if(!empty($property['extendedAttributes']) && is_array($property['extendedAttributes']))
                             <div class="accordion-item">
                                 <div class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-ext" aria-expanded="false">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-ext" aria-expanded="true">
                                         {{ __('property-single.extended_attributes') }}
                                     </button>
                                 </div>
-                                <div id="accordion-ext" class="accordion-collapse collapse">
+                                <div id="accordion-ext" class="accordion-collapse collapse show">
                                     <div class="accordion-body">
                                         <div class="row row-gap-3">
                                             @foreach($property['extendedAttributes'] as $attrKey => $attrVal)
@@ -947,11 +948,11 @@
                             @if($priceHistory->isNotEmpty())
                             <div class="accordion-item">
                                 <div class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-hist" aria-expanded="false">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-hist" aria-expanded="true">
                                         {{ __('property-single.price_history') }}
                                     </button>
                                 </div>
-                                <div id="accordion-hist" class="accordion-collapse collapse">
+                                <div id="accordion-hist" class="accordion-collapse collapse show">
                                     <div class="accordion-body">
                                         <ul class="price-history-list list-unstyled mb-0">
                                             @foreach($priceHistory as $entry)
