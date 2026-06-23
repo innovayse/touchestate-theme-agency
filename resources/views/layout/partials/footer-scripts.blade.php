@@ -86,7 +86,7 @@
 @endif
 
     <!-- Main JS -->
-    <script src="{{URL::asset('build/js/script.js')}}"></script>
+    <script src="{{URL::asset('build/js/script.js')}}?v={{ filemtime(public_path('build/js/script.js')) }}"></script>
 
     <!-- Property Share -->
     <script>
