@@ -540,13 +540,15 @@ Template Name: Dreams Estate - Bootstrap Template
 
 		if ($('.slider-nav-thumbnails').length > 0) {
 			$('.slider-nav-thumbnails').slick({
-				slidesToShow: 6,
+				// Active thumbnail stays centered; show as many side thumbs as fit (odd counts keep symmetry)
+				slidesToShow: 7,
 				slidesToScroll: 1,
 				asNavFor: '.service-slider',
 				dots: false,
 				infinite: true,
 				arrows: true,
-				centerMode: false,
+				centerMode: true,
+				centerPadding: '0px',
 				focusOnSelect: true,
 				responsive: [
 				{
@@ -555,7 +557,7 @@ Template Name: Dreams Estate - Bootstrap Template
 				},
 				{
 					breakpoint: 992,
-					settings: { slidesToShow: 4 }
+					settings: { slidesToShow: 5 }
 				},
 				{
 					breakpoint: 768,
@@ -563,11 +565,11 @@ Template Name: Dreams Estate - Bootstrap Template
 				},
 				{
 					breakpoint: 576,
-					settings: { slidesToShow: 2 }
+					settings: { slidesToShow: 3 }
 				},
 				{
 					breakpoint: 400,
-					settings: { slidesToShow: 2 }
+					settings: { slidesToShow: 3 }
 				}
 				]
 			});
@@ -627,30 +629,25 @@ Template Name: Dreams Estate - Bootstrap Template
 		});
 	});
 
-	// Fancybox v3 — click on the main slider image opens a lightbox (modal + thumbnail carousel).
+	// Fancybox v5 — click on the main slider image opens a lightbox (modal + thumbnail carousel).
 	// Built from the slider's non-clone slides so Slick's infinite clones don't create dupes.
-	if (typeof $.fancybox !== 'undefined') {
+	if (typeof Fancybox !== 'undefined') {
 		$(document).on('click', '.service-slider .service-img-wrap img', function () {
 			const $slider = $('.service-slider');
-			let items = $slider.find('.slick-slide:not(.slick-cloned) .service-img-wrap img')
+			let slides = $slider.find('.slick-slide:not(.slick-cloned) .service-img-wrap img')
 				.map(function () {
 					return { src: this.getAttribute('src'), type: 'image',
-						opts: { caption: this.getAttribute('alt') || '' } };
+						caption: this.getAttribute('alt') || '' };
 				}).get();
-			if (!items.length) {
-				items = [{ src: this.getAttribute('src'), type: 'image' }];
+			if (!slides.length) {
+				slides = [{ src: this.getAttribute('src'), type: 'image' }];
 			}
 			const index = $slider.hasClass('slick-initialized')
 				? ($slider.slick('slickCurrentSlide') || 0) : 0;
-			$.fancybox.open(items, {
-				loop: true,
-				animationEffect: 'fade',
-				transitionEffect: 'slide',
-				buttons: ['zoom', 'slideShow', 'fullScreen', 'thumbs', 'close'],
-				thumbs: { autoStart: true, axis: 'x' },
-				infobar: true,
-				protect: true
-			}, index);
+			Fancybox.show(slides, {
+				startIndex: index,
+				Thumbs: { type: 'classic' }
+			});
 		});
 	}
 

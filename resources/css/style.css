@@ -8380,6 +8380,17 @@ span.select2-container.select2-container--default.select2-container--open {
   display: none !important;
 }
 
+/* Yandex Maps zoom control (+/-) — follow dark/light theme (default is light).
+   Target only the buttons (zoom__button), not the nested container/icon, or the
+   invert() filters would compound across nesting and cancel out. */
+html[data-theme="dark"] [class*="ymaps-"][class*="zoom__button"] {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Fancybox v5 — raise above the fixed site header (header.fixed z-index:10001),
+   otherwise the sticky header covers the lightbox toolbar / close button. */
+.fancybox__container { --fancybox-zIndex: 11000; }
+
 .buy-details-item .nav-pills .nav-item .nav-link {
   font-weight: 500;
   border-radius: 5px;
@@ -8600,7 +8611,7 @@ span.select2-container.select2-container--default.select2-container--open {
   font-size: 0;
   background: var(--white);
   border-radius: 50%;
-  z-index: 9999;
+  z-index: 2;
   transition: 0.5s all;
 }
 @media (max-width: 575.98px) {
