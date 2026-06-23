@@ -24,8 +24,8 @@
 @endif
 
 @if (Route::is(['rent-details', 'property.single']) || request()->is('property/*') || request()->is('*/property/*'))
-    <!-- Fancybox JS -->
-    <script src="{{URL::asset('build/plugins/fancybox/jquery.fancybox.min.js')}}"></script>
+    <!-- Fancybox v5 JS -->
+    <script src="{{URL::asset('build/plugins/fancybox/fancybox.umd.js')}}"></script>
 @endif
 
 @if (Route::is(['index', 'rent-details', 'property.single']) || request()->is('/') || request()->is('property/*') || request()->is('*/property/*'))
