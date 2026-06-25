@@ -78,7 +78,7 @@
 @endif
 
     <!-- Main CSS -->
-    <link rel="stylesheet" href="{{URL::asset('build/css/style.css')}}" id="app-style">
+    <link rel="stylesheet" href="{{URL::asset('build/css/style.css')}}?v={{ filemtime(public_path('build/css/style.css')) }}" id="app-style">
 
     <!-- Custom Language Spacing CSS -->
     <style>
