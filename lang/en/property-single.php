@@ -2,7 +2,7 @@
 
 return [
     // Page Title
-    'title' => 'Rent Details',
+    'title' => 'Property Details',
 
     // Badges
     'for_rent' => 'For Rent',
@@ -107,8 +107,8 @@ return [
     'review_3' => 'Thank you so much for your kind words! We\'re thrilled to hear that our location and views made your trip even more enjoyable. We hope to welcome you back soon for another scenic stay!',
 
     // Sidebar
-    'provider_details' => 'Provider Details',
-    'company_agent' => 'Company Agent',
+    'provider_details' => 'Agent Details',
+    'company_agent' => 'Agent',
     'call_us' => 'Call Us :',
     'email' => 'Email :',
     'whatsapp' => 'Whatsapp',

@@ -62,8 +62,8 @@
   "@@context": "https://schema.org",
   "@@type": "BreadcrumbList",
   "itemListElement": [
-    {"@@type":"ListItem","position":1,"name":"Home","item":@json(url($seoLocale))},
-    {"@@type":"ListItem","position":2,"name":"Properties","item":@json(url($seoLocale . '/property'))},
+    {"@@type":"ListItem","position":1,"name":@json(__('common.home')),"item":@json(url($seoLocale))},
+    {"@@type":"ListItem","position":2,"name":@json(__('property.title')),"item":@json(url($seoLocale . '/property'))},
     {"@@type":"ListItem","position":3,"name":@json($property['title'] ?? ''),"item":@json($seoUrl)}
   ]
 }
@@ -989,81 +989,16 @@
                             @endif
 
 
-                            <!-- Comments (shown only when there is at least one comment) -->
-                            @if(!empty($comments['items']))
-                            <div class="accordion-item mb-xl-0">
-                                <div class="accordion-header">
-                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-9" aria-expanded="true">
-                                        {{ __('property-single.comments') }}
-                                    </button>
-                                </div>
-                                <div id="accordion-9" class="accordion-collapse collapse show">
+                            <!-- Comments — skeleton-first: injected async into #ps-comments via /property/{slug}/extras -->
+                            <div id="ps-comments">
+                                <div class="accordion-item mb-xl-0">
                                     <div class="accordion-body">
-                                        <div class="sub-head mb-4">
-                                            <h6 class="fs-16 fw-semibold"> {{ __('property-single.comments') }} ({{ $comments['totalCount'] ?? 0 }}) </h6>
-                                        </div>
-
-                                        @foreach($comments['items'] as $comment)
-                                        @php
-                                            $__rName = $comment['authorName'] ?? __('property-single.anonymous');
-                                            $__rInitials = collect(explode(' ', $__rName))->map(fn($w) => mb_strtoupper(mb_substr($w, 0, 1)))->take(2)->implode('');
-                                            $__rDate = \Carbon\Carbon::parse($comment['createdAt'] ?? now());
-                                            $__rDateStr = $__rDate->format('d') . ' ' . __('property.' . strtolower($__rDate->format('M'))) . ', ' . $__rDate->format('Y');
-                                        @endphp
-                                        <div class="card shadow-none review-items">
-                                            <div class="card-body">
-                                                <div class="d-flex align-items-start gap-3 mb-3">
-                                                    <div class="rounded-circle bg-info d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style="width:48px;height:48px;font-size:16px;">
-                                                        {{ $__rInitials }}
-                                                    </div>
-                                                    <div class="flex-fill">
-                                                        <h6 class="fs-16 fw-semibold mb-0">{{ $__rName }}</h6>
-                                                        <p class="fs-13 text-muted mb-0">{{ $__rDateStr }}</p>
-                                                    </div>
-                                                    @if(!empty($comment['authorType']))
-                                                    <span class="badge bg-primary fs-11">{{ $comment['authorType'] }}</span>
-                                                    @endif
-                                                </div>
-
-                                                @if(!empty($comment['commentText']))
-                                                <p class="mb-2 text-body">{{ $comment['commentText'] }}</p>
-                                                @endif
-
-                                                @if(!empty($comment['replies']))
-                                                <div class="mt-3 ms-4 border-start ps-3">
-                                                    @foreach($comment['replies'] as $__reply)
-                                                    @php
-                                                        $__aName = $__reply['authorName'] ?? '';
-                                                        $__aInitials = collect(explode(' ', $__aName))->map(fn($w) => mb_strtoupper(mb_substr($w, 0, 1)))->take(2)->implode('');
-                                                        $__aDate = \Carbon\Carbon::parse($__reply['createdAt'] ?? now());
-                                                        $__aDateStr = $__aDate->format('d') . ' ' . __('property.' . strtolower($__aDate->format('M'))) . ', ' . $__aDate->format('Y');
-                                                    @endphp
-                                                    <div class="d-flex align-items-start gap-3 {{ !$loop->last ? 'mb-3' : '' }}">
-                                                        <div class="rounded-circle bg-success d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style="width:40px;height:40px;font-size:14px;">
-                                                            {{ $__aInitials }}
-                                                        </div>
-                                                        <div class="flex-fill">
-                                                            <div class="d-flex align-items-center gap-2 flex-wrap">
-                                                                <h6 class="fs-14 fw-semibold mb-0">{{ $__aName }}</h6>
-                                                                @if(!empty($__reply['isOwnerReply']))
-                                                                <span class="badge bg-primary fs-11">{{ __('property-single.owner_reply') }}</span>
-                                                                @endif
-                                                            </div>
-                                                            <p class="fs-12 text-muted mb-1">{{ $__aDateStr }}</p>
-                                                            <p class="mb-0 fs-14 text-body">{{ $__reply['replyText'] ?? '' }}</p>
-                                                        </div>
-                                                    </div>
-                                                    @endforeach
-                                                </div>
-                                                @endif
-                                            </div>
-                                        </div>
-                                        @endforeach
-
+                                        <div class="csk-block mb-3" style="width:170px;height:18px;border-radius:4px"></div>
+                                        <div class="csk-block mb-2" style="width:100%;height:64px;border-radius:8px"></div>
+                                        <div class="csk-block" style="width:100%;height:64px;border-radius:8px"></div>
                                     </div>
                                 </div>
                             </div>
-                            @endif
                         </div>
 
                     </div> <!-- col end -->
@@ -1336,15 +1271,19 @@
                 <!-- end row -->
 
 
-                <!-- Similar properties -->
-                @if(!empty($similar))
-                <h4 class="mt-5 mb-4 ps-2">{{ __('property-single.similar_properties') }}</h4>
-                <div class="row row-gap-4 custom-properties-items">
-                    @foreach($similar as $sim)
-                        <x-property-card :prop="$sim" />
-                    @endforeach
+                <!-- Similar properties — skeleton-first: injected async into #ps-similar via /property/{slug}/extras -->
+                <div id="ps-similar">
+                    <h4 class="mt-5 mb-4 ps-2 csk-block" style="width:240px;height:24px;border-radius:6px"></h4>
+                    <div class="row row-gap-4">
+                        @for($i = 0; $i < 3; $i++)
+                        <div class="col-xl-4 col-md-6">
+                            <div class="csk-block" style="width:100%;height:220px;border-radius:12px"></div>
+                            <div class="csk-block mt-2" style="width:80%;height:16px;border-radius:4px"></div>
+                            <div class="csk-block mt-2" style="width:50%;height:14px;border-radius:4px"></div>
+                        </div>
+                        @endfor
+                    </div>
                 </div>
-                @endif
 
             </div>
         </div>
@@ -1834,6 +1773,28 @@ document.getElementById('sharePropertyBtn')?.addEventListener('click', async fun
 });
 
 // Favorites button — handled by the global delegated handler in footer-scripts.blade.php
+</script>
+
+<script>
+// ── Skeleton-first: load similar + comments after the shell paints ──────────
+// The page shell (SEO head + core) renders instantly; these two sections show
+// skeletons, then get injected from /property/{slug}/extras (all cached 1h).
+(function () {
+    var extrasUrl = window.location.pathname.replace(/\/+$/, '') + '/extras';
+    fetch(extrasUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+            if (!data) return;
+            var sim = document.getElementById('ps-similar');
+            var com = document.getElementById('ps-comments');
+            if (sim) sim.innerHTML = data.similar || '';
+            if (com) com.innerHTML = data.comments || '';
+            // Re-apply favourite/compare state to the freshly injected similar cards
+            if (typeof window.applyFavIcons === 'function') window.applyFavIcons();
+            if (typeof window.applyCompareIcons === 'function') window.applyCompareIcons();
+        })
+        .catch(function () { /* keep skeletons on failure */ });
+}());
 </script>
 
 @endsection

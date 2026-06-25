@@ -217,6 +217,7 @@ Route::get('/', [HomeController::class, 'index']);
 // Property listing + single (API-driven)
 Route::get('/property', [PropertyController::class, 'index']);
 Route::get('/property/{slug}', [PropertyController::class, 'show']);
+Route::get('/property/{slug}/extras', [PropertyController::class, 'extras']); // skeleton-first: similar + comments
 Route::post('/api/property/{slug}/view',    [PropertyController::class, 'recordView']);
 Route::post('/api/property/{slug}/enquire', [PropertyController::class, 'enquire']);
 
@@ -249,6 +250,7 @@ Route::group(
         // Property listing + single (API-driven)
         Route::get('/property',        [PropertyController::class, 'index'])->name('property');
         Route::get('/property/{slug}', [PropertyController::class, 'show'])->name('property.single');
+        Route::get('/property/{slug}/extras', [PropertyController::class, 'extras'])->name('property.extras'); // skeleton-first: similar + comments
 
         // Map
         Route::get('/map', [PropertyController::class, 'map'])->name('map');
