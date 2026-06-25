@@ -136,19 +136,7 @@
                                         <input type="text" class="form-control">
                                     </div>
                                 </div><!-- end col -->
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">{{ __('contact-us.country') }}</label>
-                                        <select class="select">
-                                            <option>{{ __('contact-us.select') }}</option>
-                                            <option>{{ __('contact-us.america') }}</option>
-                                            <option>{{ __('contact-us.england') }}</option>
-                                            <option>{{ __('contact-us.russia') }}</option>
-                                            <option>{{ __('contact-us.india') }}</option>
-                                        </select>
-                                    </div>
-                                </div><!-- end col -->
-                                <div class="col-md-6">
+                                <div class="col-md-12">
                                     <div class="mb-3">
                                         <label class="form-label">{{ __('contact-us.subject') }}</label>
                                         <input type="text" class="form-control">

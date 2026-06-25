@@ -2,7 +2,7 @@
 
 return [
     // Page Title
-    'title' => 'Վարձակալության մանրամասներ',
+    'title' => 'Անշարժ գույքի մանրամասներ',
 
     // Badges
     'for_rent' => 'Վարձով',
@@ -98,8 +98,8 @@ return [
     'see_all_reviews' => 'Դիտել բոլոր կարծիքները',
 
     // Sidebar
-    'provider_details' => 'Մատակարարի տվյալներ',
-    'company_agent' => 'Ընկերության ներկայացուցիչ',
+    'provider_details' => 'Գործակալի տվյալներ',
+    'company_agent' => 'Գործակալ',
     'call_us' => 'Զանգահարեք մեզ՝',
     'email' => 'Էլ. փոստ՝',
     'whatsapp' => 'WhatsApp',

@@ -27,15 +27,18 @@
                         <h1>{{ __('index.hero_title') }} <span>{{ __('index.hero_title_highlight') }}</span> {{ __('index.hero_title_end') }}</h1>
                         <p>{{ __('index.hero_description') }}</p>
                     </div>
-                    <div class="banner-users d-flex align-items-center flex-wrap gap-2 mb-3">
-                        @if(!empty($stats['propertiesListed']))
-                        <div>
-                            <div class="d-flex align-items-center mb-1">
-                                <h6 class="mb-0 me-2 text-white fw-semibold fs-14">{{ $stats['propertiesListed'] }}+ {{ __('index.counter_rentals') }}</h6>
+                    <div class="banner-users mb-3">
+                        <div class="d-flex align-items-center flex-wrap gap-4 mb-1">
+                            <div>
+                                <h6 class="mb-0 text-white fw-semibold fs-20">{{ $stats['successfulDeals'] }}+</h6>
+                                <p class="mb-0 text-white fs-13">{{ __('index.counter_deals') }}</p>
                             </div>
-                            <p class="mb-0 text-white fs-13">{{ __('index.hero_trusted') }}</p>
+                            <div>
+                                <h6 class="mb-0 text-white fw-semibold fs-20">{{ $stats['activeProperties'] }}+</h6>
+                                <p class="mb-0 text-white fs-13">{{ __('index.counter_active') }}</p>
+                            </div>
                         </div>
-                        @endif
+                        <p class="mb-0 text-white fs-13">{{ __('index.hero_trusted') }}</p>
                     </div>
                     <div class="d-flex align-items-center">
                         <a href="/{{ app()->getLocale() }}/property" class="btn btn-primary btn-lg d-inline-flex align-items-center me-3"><i class="material-icons-outlined me-2">shopping_basket</i>{{ __('index.hero_buy_property') }}</a>
