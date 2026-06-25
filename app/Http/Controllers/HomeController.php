@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use TouchEstate\Sdk\TouchEstateClient;
+use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
@@ -15,19 +16,27 @@ class HomeController extends Controller
         $allItems   = [];
         $stats      = ['propertiesListed' => 0, 'happyClients' => 0, 'citiesCovered' => 0, 'satisfactionRate' => 98];
 
+        // Cached 1h (no admin panel — listings change rarely). Fixed query, no params.
         try {
-            $batch    = $this->client->properties()->list([
-                'pageSize'  => 100,
-                'sortBy'    => 'viewCount',
-                'sortOrder' => true,
-                'status'    => 'Active',
-            ]);
-            $allItems = $batch['items'] ?? [];
+            $allItems = Cache::remember('te_home_100', 3600, function () {
+                return $this->client->properties()->list([
+                    'pageSize'  => 100,
+                    'sortBy'    => 'viewCount',
+                    'sortOrder' => true,
+                    'status'    => 'Active',
+                ])['items'] ?? [];
+            });
         } catch (\Throwable) {}
 
         try {
-            $stats = $this->client->properties()->stats();
+            $stats = Cache::remember('te_stats', 3600, function () {
+                return $this->client->properties()->stats();
+            });
         } catch (\Throwable) {}
+
+        // Hero marketing figures — fixed (API only counts what's been entered so far). Editable in config/site.php / .env.
+        $stats['successfulDeals']  = (int) config('site.stats.deals', 1000);
+        $stats['activeProperties'] = (int) config('site.stats.active', 200);
 
         // Rent / Sale tabs — top 6 each
         $rentProperties = array_values(array_slice(

@@ -88,6 +88,9 @@
     <!-- Main JS -->
     <script src="{{URL::asset('build/js/script.js')}}?v={{ filemtime(public_path('build/js/script.js')) }}"></script>
 
+    <!-- instant.page — prefetch internal links on hover/mousedown → near-instant navigation -->
+    <script src="{{URL::asset('build/js/instantpage.js')}}?v={{ filemtime(public_path('build/js/instantpage.js')) }}" type="module"></script>
+
     <!-- Property Share -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {

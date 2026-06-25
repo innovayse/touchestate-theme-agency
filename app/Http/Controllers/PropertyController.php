@@ -193,8 +193,13 @@ class PropertyController extends Controller
     {
         $this->validateFilters();
 
+        // Cache each unique filter/page combination 1h (no admin panel). Repeat listings
+        // (and the AJAX filter/load-more fetches) become instant.
+        $filters = $this->buildFilters();
         try {
-            $properties = $this->client->properties()->list($this->buildFilters());
+            $properties = Cache::remember('te_list:' . md5(serialize($filters)), 3600, function () use ($filters) {
+                return $this->client->properties()->list($filters);
+            });
         } catch (\Exception $e) {
             $properties = ['items' => [], 'totalCount' => 0, 'hasNextPage' => false];
         }
@@ -370,29 +375,68 @@ class PropertyController extends Controller
     {
         set_time_limit(60);
 
+        // Cached 1h (no admin panel — property data changes rarely). Cache the fully-built
+        // array; on API failure the exception propagates out of remember() → not cached → 404.
         try {
-            $property = $this->client->properties()->retrieve($slug);
-            $property['slug'] = $slug;
+            $property = Cache::remember('te_prop:' . $slug, 3600, function () use ($slug) {
+                $property = $this->client->properties()->retrieve($slug);
+                $property['slug'] = $slug;
 
-            // Build fullAddress from components (retrieve() doesn't return it)
-            $addrParts = array_filter([
-                $property['street'] ?? null,
-                $property['buildingNumber'] ?? null,
-                $property['district'] ?? null,
-                $property['city'] ?? null,
-                $property['country'] ?? null,
-            ]);
-            if ($addrParts) {
-                $property['fullAddress'] = implode(', ', $addrParts);
-            }
+                // Build fullAddress from components (retrieve() doesn't return it)
+                $addrParts = array_filter([
+                    $property['street'] ?? null,
+                    $property['buildingNumber'] ?? null,
+                    $property['district'] ?? null,
+                    $property['city'] ?? null,
+                    $property['country'] ?? null,
+                ]);
+                if ($addrParts) {
+                    $property['fullAddress'] = implode(', ', $addrParts);
+                }
+                return $property;
+            });
         } catch (\Exception $e) {
             abort(404);
         }
 
-        // Similar = listings from OUR OWN account (via the connection key), NOT the TouchEstate
-        // marketplace. Exclude the current property; prioritise same transaction type / type / city.
+        // Skeleton-first: similar + comments are loaded async via extras() after the shell
+        // renders, so the page (with SEO head + core) appears instantly.
+        return view('property-single', compact('property'));
+    }
+
+    /**
+     * Async extras for the skeleton-first property page: similar listings + comments.
+     * Returned as rendered HTML fragments; the page JS injects them into their skeletons.
+     * All API calls cached 1h (no admin panel — data changes rarely).
+     */
+    public function extras(string $slug)
+    {
         try {
-            $items = $this->client->properties()->list(['pageSize' => 50, 'status' => 'Active'])['items'] ?? [];
+            $property = Cache::remember('te_prop:' . $slug, 3600, function () use ($slug) {
+                $property = $this->client->properties()->retrieve($slug);
+                $property['slug'] = $slug;
+                $addrParts = array_filter([
+                    $property['street'] ?? null,
+                    $property['buildingNumber'] ?? null,
+                    $property['district'] ?? null,
+                    $property['city'] ?? null,
+                    $property['country'] ?? null,
+                ]);
+                if ($addrParts) {
+                    $property['fullAddress'] = implode(', ', $addrParts);
+                }
+                return $property;
+            });
+        } catch (\Exception $e) {
+            $property = ['slug' => $slug];
+        }
+
+        // Similar = our own Active listings (cached globally 1h — identical for every page),
+        // scored/filtered per-property in PHP.
+        try {
+            $items = Cache::remember('te_active_50', 3600, function () {
+                return $this->client->properties()->list(['pageSize' => 50, 'status' => 'Active'])['items'] ?? [];
+            });
             $similar = collect($items)
                 ->reject(fn ($p) => ($p['slug'] ?? null) === $slug)
                 ->sortByDesc(function ($p) use ($property) {
@@ -410,16 +454,21 @@ class PropertyController extends Controller
         }
 
         try {
-            $comments = $this->client->properties()->comments($slug, [
-                'pageNumber' => 1,
-                'pageSize'   => 10,
-                'sortBy'     => 'recent',
-            ]);
+            $comments = Cache::remember('te_comments:' . $slug, 3600, function () use ($slug) {
+                return $this->client->properties()->comments($slug, [
+                    'pageNumber' => 1,
+                    'pageSize'   => 10,
+                    'sortBy'     => 'recent',
+                ]);
+            });
         } catch (\Exception $e) {
             $comments = ['items' => []];
         }
 
-        return view('property-single', compact('property', 'similar', 'comments'));
+        return response()->json([
+            'similar'  => view('partials.property-single-similar', compact('similar'))->render(),
+            'comments' => view('partials.property-single-comments', compact('comments'))->render(),
+        ]);
     }
 
     public function enquire(string $slug)
