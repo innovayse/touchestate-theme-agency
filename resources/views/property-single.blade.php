@@ -448,6 +448,9 @@
                         <!-- Accordion sections -->
                         <div class="accordion accordions-items-seperate">
 
+                            <!-- Media: Video / 360 / FloorPlan / Documents (auto-shown when present in API media[]) -->
+                            @include('partials.property-single-media')
+
                             <!-- Description -->
                             @if($property['description'] ?? null)
                             <div class="accordion-item">

@@ -29,6 +29,9 @@ return [
     'floor_plan' => 'Floor Plan',
     'gallery' => 'Gallery',
     'video' => 'Video',
+    'panorama_360' => '360° View',
+    'documents' => 'Documents',
+    'download' => 'Download',
     'faq' => 'Frequently Asked Questions',
     'reviews' => 'Reviews',
 

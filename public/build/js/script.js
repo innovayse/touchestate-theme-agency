@@ -265,21 +265,21 @@ Template Name: Dreams Estate - Bootstrap Template
 	if ($('#phone').length > 0 && typeof window.intlTelInput !== 'undefined') {
 		var input = document.querySelector("#phone");
 		window.intlTelInput(input, {
-			utilsScript: "build/plugins/intltelinput/js/utils.js",
+			utilsScript: "/build/plugins/intltelinput/js/utils.js", separateDialCode: true, initialCountry: "am", preferredCountries: [],
 		});
 	}
 
 	if ($('#phone2').length > 0 && typeof window.intlTelInput !== 'undefined') {
 		var input = document.querySelector("#phone2");
 		window.intlTelInput(input, {
-			utilsScript: "build/plugins/intltelinput/js/utils.js",
+			utilsScript: "/build/plugins/intltelinput/js/utils.js", separateDialCode: true, initialCountry: "am", preferredCountries: [],
 		});
 	}
 
 	if ($('#phone3').length > 0 && typeof window.intlTelInput !== 'undefined') {
 		var input = document.querySelector("#phone3");
 		window.intlTelInput(input, {
-			utilsScript: "build/plugins/intltelinput/js/utils.js",
+			utilsScript: "/build/plugins/intltelinput/js/utils.js", separateDialCode: true, initialCountry: "am", preferredCountries: [],
 		});
 	}
 
@@ -1043,3 +1043,34 @@ window.initCustomSelects = function () {
 };
 
 })(); // End: Dreams Estate Template Main JS
+
+// intl-tel-input (v17 has no built-in search) — inject a filter box into the country dropdown
+document.addEventListener('DOMContentLoaded', function () {
+	setTimeout(function () {
+		document.querySelectorAll('.iti__country-list').forEach(function (list) {
+			if (list.querySelector('.iti__search')) return;
+			var iti = list.closest('.iti');
+			var inp = iti && iti.querySelector('input');
+			var search = document.createElement('input');
+			search.type = 'text';
+			search.className = 'iti__search';
+			search.autocomplete = 'off';
+			search.placeholder = (inp && inp.getAttribute('data-search-placeholder')) || 'Search';
+			list.prepend(search);
+			search.addEventListener('click', function (e) { e.stopPropagation(); });
+			search.addEventListener('keydown', function (e) { e.stopPropagation(); });
+			search.addEventListener('input', function () {
+				var q = this.value.trim().toLowerCase();
+				list.querySelectorAll('.iti__country').forEach(function (li) {
+					var n = li.querySelector('.iti__country-name');
+					li.style.display = (!q || (li.textContent.toLowerCase().indexOf(q) !== -1)) ? '' : 'none';
+				});
+				list.querySelectorAll('.iti__divider').forEach(function (d) { d.style.display = q ? 'none' : ''; });
+			});
+			var flag = iti && iti.querySelector('.iti__selected-flag');
+			if (flag) flag.addEventListener('click', function () {
+				setTimeout(function () { search.value = ''; search.dispatchEvent(new Event('input')); search.focus(); }, 0);
+			});
+		});
+	}, 0);
+});
