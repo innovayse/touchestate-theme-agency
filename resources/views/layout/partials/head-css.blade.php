@@ -22,7 +22,7 @@
 	<link rel="stylesheet" href="{{URL::asset('build/plugins/fontawesome/css/fontawesome.min.css')}}">
 	<link rel="stylesheet" href="{{URL::asset('build/plugins/fontawesome/css/all.min.css')}}">
 
-@if (Route::is(['faq']))
+@if (Route::is(['faq']) || request()->is('faq') || request()->is('*/faq'))
     <!-- Tabler Icon CSS -->
     <link rel="stylesheet" href="{{URL::asset('build/plugins/tabler-icons/tabler-icons.min.css')}}">
 @endif
@@ -35,7 +35,7 @@
 	<!-- Simplebar CSS -->
     <link rel="stylesheet" href="{{URL::asset('build/plugins/simplebar/simplebar.min.css')}}">
 
-@if (Route::is(['checkout', 'contact-us', 'rental-order-confirmation', 'rental-order-details']))
+@if (Route::is(['checkout', 'contact-us', 'rental-order-confirmation', 'rental-order-details']) || request()->is('contact-us') || request()->is('*/contact-us'))
     <!-- intel input -->
     <link rel="stylesheet" href="{{URL::asset('build/plugins/intltelinput/css/intlTelInput.css')}}">
 @endif
@@ -72,7 +72,7 @@
     <link rel="stylesheet" href="{{URL::asset('build/plugins/lightbox/glightbox.min.css')}}">
 @endif
 
-@if (Route::is(['index', 'index-2', 'index-3']))
+@if (Route::is(['index', 'index-2', 'index-3']) || request()->is('/'))
 	<!-- Aos CSS -->
 	<link rel="stylesheet" href="{{URL::asset('build/css/aos.css')}}">
 @endif
