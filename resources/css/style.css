@@ -11444,3 +11444,116 @@ html[data-theme="dark"] [class*="ymaps-"][class*="zoom__button"] {
 [data-theme=dark] .cmc-best-star { color: #4ade80; }
 
 /*# sourceMappingURL=style.css.map */
+
+/* ===== Contact-us page — FAQ-style soft cards & inputs ===== */
+.contact-us-wrap-02 img { border-radius: 16px; }
+.contact-us-wrap-02 .contact-us-item-01 {
+  border: 1px solid var(--gray-100);
+  border-radius: 16px;
+  box-shadow: none;
+  transition: box-shadow .2s ease;
+}
+.contact-us-wrap-02 .contact-us-item-01:hover {
+  box-shadow: 0 8px 24px rgba(5, 19, 33, 0.06);
+}
+.contact-us-wrap-02 .contact-us-item-01 span {
+  border: 0;
+  padding: 0;
+  width: 52px;
+  height: 52px;
+  font-size: 26px;
+  border-radius: 12px;
+  background: var(--primary-100);
+  color: var(--primary-950);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.contact-us-wrap-02 .contact-us-item-02 {
+  border: 1px solid var(--gray-100);
+  border-radius: 16px;
+  box-shadow: none;
+}
+.contact-us-wrap-02 .contact-us-item-02 .form-control {
+  border-radius: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--gray-100);
+  transition: border-color .2s, box-shadow .2s;
+}
+.contact-us-wrap-02 .contact-us-item-02 .form-control:focus {
+  border-color: var(--primary-900);
+  box-shadow: 0 0 0 4px var(--primary-100);
+}
+.contact-us-wrap-02 .contact-us-item-02 .btn {
+  border-radius: 12px;
+  padding: 12px 22px;
+}
+
+.contact-us-wrap-02 img { object-fit: cover; }
+
+/* Contact form — phone field (intl-tel-input) full width */
+.contact-us-wrap-02 .iti { width: 100%; display: block; }
+
+/* intl-tel-input — modern searchable country dropdown */
+.iti__country-list {
+  background: var(--white);
+  border: 1px solid var(--gray-100);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(5, 19, 33, 0.12);
+  margin-top: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+.iti__country-list::-webkit-scrollbar { display: none; }
+.iti__search {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--gray-100);
+  border-radius: 12px 12px 0 0;
+  padding: 12px 16px;
+  background: var(--white);
+  color: var(--gray-900);
+  outline: none;
+}
+.iti__search::placeholder { color: var(--gray-500); }
+.iti__country { padding: 9px 14px; }
+.iti__country:hover,
+.iti__country.iti__highlight { background: var(--primary-100); }
+.iti__country-name { color: var(--gray-900); }
+.iti__dial-code { color: var(--gray-500); }
+
+/* Contact form — equal field height (phone/iti input matches the rest) */
+.contact-us-wrap-02 .contact-us-item-02 .form-control { min-height: 50px; }
+.contact-us-wrap-02 .iti input.form-control {
+  min-height: 50px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  padding-left: 52px;
+  padding-right: 12px;
+}
+
+/* intl-tel-input dropdown — polish to match the project */
+.iti__country-list { min-width: 280px; padding-top: 0; }
+.iti__search {
+  padding: 12px 16px 12px 42px;
+  font-size: 14px;
+  background: var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235D6772' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E") no-repeat 16px center;
+}
+.iti__country {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  font-size: 14px;
+}
+.iti__country .iti__flag-box { margin-right: 10px; }
+.iti__country-name { color: var(--gray-900); }
+.iti__country .iti__dial-code { margin-left: auto; padding-left: 12px; color: var(--gray-500); }
+.iti__divider { display: none; }
+
+/* Contact info cards — equal height in a row */
+.contact-us-wrap-02 .contact-us-item-01 { height: 100%; margin-bottom: 0; }

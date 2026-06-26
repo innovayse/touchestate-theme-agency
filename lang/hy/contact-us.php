@@ -17,4 +17,5 @@ return [
     'submit_enquiry' => 'Ուղարկել հարցում',
     'email' => 'Էլ. փոստ',
     'working_hours' => 'Աշխատանքային ժամեր',
+    'search_country' => 'Որոնել երկիր…',
 ];

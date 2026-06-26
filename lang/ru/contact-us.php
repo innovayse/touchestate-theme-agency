@@ -17,4 +17,5 @@ return [
     'submit_enquiry' => 'Отправить запрос',
     'email' => 'Эл. почта',
     'working_hours' => 'Часы работы',
+    'search_country' => 'Поиск страны…',
 ];

@@ -35,7 +35,7 @@
 	<!-- Simplebar CSS -->
     <link rel="stylesheet" href="{{URL::asset('build/plugins/simplebar/simplebar.min.css')}}">
 
-@if (Route::is(['checkout', 'contact-us', 'rental-order-confirmation', 'rental-order-details']))
+@if (Route::is(['checkout', 'contact-us', 'rental-order-confirmation', 'rental-order-details']) || request()->is('contact-us') || request()->is('*/contact-us'))
     <!-- intel input -->
     <link rel="stylesheet" href="{{URL::asset('build/plugins/intltelinput/css/intlTelInput.css')}}">
 @endif
