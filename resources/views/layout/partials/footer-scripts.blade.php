@@ -13,7 +13,7 @@
 	<!-- Simplebar JS -->
     <script src="{{URL::asset('build/plugins/simplebar/simplebar.min.js')}}"></script>
 
-@if (Route::is(['checkout', 'contact-us', 'rental-order-confirmation', 'rental-order-details']))
+@if (Route::is(['checkout', 'contact-us', 'rental-order-confirmation', 'rental-order-details']) || request()->is('contact-us') || request()->is('*/contact-us'))
     <!-- intel Input -->
     <script src="{{URL::asset('build/plugins/intltelinput/js/intlTelInput.js')}}"></script>
 @endif
