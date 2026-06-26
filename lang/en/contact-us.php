@@ -17,4 +17,5 @@ return [
     'submit_enquiry' => 'Submit Enquiry',
     'email' => 'Email',
     'working_hours' => 'Working Hours',
+    'search_country' => 'Search country…',
 ];
