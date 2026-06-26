@@ -49,4 +49,11 @@ return [
     'a17' => 'Closing costs are fees paid at the end of a property purchase for services and taxes.',
     'q18' => 'Can I get assistance as a first-time homebuyer?',
     'a18' => 'Yes, many programs offer assistance and benefits specifically for first-time homebuyers.',
+    'heading' => 'How can we help?',
+    'subheading' => 'Find quick answers to the most common questions.',
+    'search_placeholder' => 'Search questions…',
+    'no_results' => 'Nothing found. Try a different wording.',
+    'still_questions' => 'Didn’t find an answer?',
+    'contact_desc' => 'Reach out directly — we’ll be happy to help.',
+    'contact_btn' => 'Contact Us',
 ];
