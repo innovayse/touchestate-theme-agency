@@ -6,12 +6,20 @@
 @extends('layout.mainlayout')
 @section('content')
 
+    @php
+        // Contact block — messengers come as raw numbers (see footer pattern)
+        $faqWa    = !empty($workspace['messengers']['whatsApp']) ? preg_replace('/\D+/', '', $workspace['messengers']['whatsApp']) : null;
+        $faqViber = !empty($workspace['messengers']['viber'])    ? preg_replace('/\D+/', '', $workspace['messengers']['viber'])    : null;
+        $faqTel   = !empty($workspace['phone']) ? preg_replace('/[^\d+]/', '', $workspace['phone']) : null;
+    @endphp
+
     <!-- ========================
         Start Page Content
     ========================= -->
 
     <div class="page-wrapper">
 
+        <!-- Breadcrumb -->
         @component('components.breadcrumb')
             @slot('title')
                 {{ __('common.faq') }}
@@ -25,17 +33,28 @@
         @endcomponent
 
         <!-- Start Content -->
-        <div class="content">
+        <div class="content faq-page">
 
             <div class="container">
 
-                <!-- start row -->
+                <!-- FAQ header + search -->
+                <div class="faq-head">
+                    <h3>{{ __('faq.heading') }}</h3>
+                    <p class="faq-sub">{{ __('faq.subheading') }}</p>
+                    <div class="faq-search">
+                        <i class="ti ti-search"></i>
+                        <input type="text" id="faqSearch" placeholder="{{ __('faq.search_placeholder') }}" autocomplete="off">
+                    </div>
+                    <p class="faq-no-results" id="faqNoResults" hidden>{{ __('faq.no_results') }}</p>
+                </div>
+
+                <!-- FAQ body: table of contents + accordions -->
                 <div class="row" id="cart-wrap">
                     <div class="col-lg-12 mx-auto">
 
                         <div class="cart-item-wrap">
-                            <!-- start row -->
                             <div class="row row-gap-3">
+                                <!-- Table of Contents (sticky sidebar nav) -->
                                 <div class="col-lg-3" style="padding-top: 45px;">
                                     <div class="card faq-sidebar mb-lg-0">
                                         <div class="card-body">
@@ -51,10 +70,12 @@
                                         </div>
                                     </div>
                                 </div><!-- end col -->
+                                <!-- Questions grouped by category -->
                                 <div class="col-lg-9">
                                     <div>
-                                        <div class="mb-4" id="general">
-                                            <h4 class="mb-3">{{ __('faq.general') }}</h4>
+                                        <!-- Category: General -->
+                                        <div class="mb-4 faq-cat" id="general">
+                                            <h4 class="mb-3"><span class="faq-cat-ic"><i class="ti ti-help-circle"></i></span>{{ __('faq.general') }}</h4>
                                             <div class="accordion accordion-bordered accordion-custom-icon accordion-arrow-none" id="CustomIconaccordionExample">
                                                 <div class="accordion-item">
                                                     <h6 class="accordion-header" id="CustomIconheading1">
@@ -100,18 +121,19 @@
                                         </div>
                                         <hr class="my-4">
 
-                                        <div class="mb-4" id="buying">
-                                            <h4 class="mb-3">{{ __('faq.buying') }}</h4>
+                                        <!-- Category: Buying -->
+                                        <div class="mb-4 faq-cat" id="buying">
+                                            <h4 class="mb-3"><span class="faq-cat-ic"><i class="ti ti-home"></i></span>{{ __('faq.buying') }}</h4>
                                             <div class="accordion accordion-bordered accordion-custom-icon accordion-arrow-none" id="CustomIconaccordionExample4">
                                                 <div class="accordion-item">
                                                     <h6 class="accordion-header" id="CustomIconheading4">
-                                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#CustomIconcollapse4" aria-expanded="false" aria-controls="CustomIconcollapse4">
+                                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#CustomIconcollapse4" aria-expanded="true" aria-controls="CustomIconcollapse4">
                                                             {{ __('faq.q4') }}
                                                             <i class="ti ti-plus accordion-icon accordion-icon-on"></i>
                                                             <i class="ti ti-minus accordion-icon accordion-icon-off"></i>
                                                         </button>
                                                     </h6>
-                                                    <div id="CustomIconcollapse4" class="accordion-collapse collapse" aria-labelledby="CustomIconheading4" data-bs-parent="#CustomIconaccordionExample4">
+                                                    <div id="CustomIconcollapse4" class="accordion-collapse collapse show" aria-labelledby="CustomIconheading4" data-bs-parent="#CustomIconaccordionExample4">
                                                         <div class="accordion-body">{{ __('faq.a4') }}</div>
                                                     </div>
                                                 </div>
@@ -147,18 +169,19 @@
                                         </div>
                                         <hr class="my-4">
 
-                                        <div class="mb-4" id="selling">
-                                            <h4 class="mb-3">{{ __('faq.selling') }}</h4>
+                                        <!-- Category: Selling -->
+                                        <div class="mb-4 faq-cat" id="selling">
+                                            <h4 class="mb-3"><span class="faq-cat-ic"><i class="ti ti-tag"></i></span>{{ __('faq.selling') }}</h4>
                                             <div class="accordion accordion-bordered accordion-custom-icon accordion-arrow-none" id="CustomIconaccordionExample7">
                                                 <div class="accordion-item">
                                                     <h6 class="accordion-header" id="CustomIconheading7">
-                                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#CustomIconcollapse7" aria-expanded="false" aria-controls="CustomIconcollapse7">
+                                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#CustomIconcollapse7" aria-expanded="true" aria-controls="CustomIconcollapse7">
                                                             {{ __('faq.q7') }}
                                                             <i class="ti ti-plus accordion-icon accordion-icon-on"></i>
                                                             <i class="ti ti-minus accordion-icon accordion-icon-off"></i>
                                                         </button>
                                                     </h6>
-                                                    <div id="CustomIconcollapse7" class="accordion-collapse collapse" aria-labelledby="CustomIconheading7" data-bs-parent="#CustomIconaccordionExample7">
+                                                    <div id="CustomIconcollapse7" class="accordion-collapse collapse show" aria-labelledby="CustomIconheading7" data-bs-parent="#CustomIconaccordionExample7">
                                                         <div class="accordion-body">{{ __('faq.a7') }}</div>
                                                     </div>
                                                 </div>
@@ -194,18 +217,19 @@
                                         </div>
                                         <hr class="my-4">
 
-                                        <div class="mb-4" id="renting">
-                                            <h4 class="mb-3">{{ __('faq.renting') }}</h4>
+                                        <!-- Category: Renting -->
+                                        <div class="mb-4 faq-cat" id="renting">
+                                            <h4 class="mb-3"><span class="faq-cat-ic"><i class="ti ti-key"></i></span>{{ __('faq.renting') }}</h4>
                                             <div class="accordion accordion-bordered accordion-custom-icon accordion-arrow-none" id="CustomIconaccordionExample10">
                                                 <div class="accordion-item">
                                                     <h6 class="accordion-header" id="CustomIconheading10">
-                                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#CustomIconcollapse10" aria-expanded="false" aria-controls="CustomIconcollapse10">
+                                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#CustomIconcollapse10" aria-expanded="true" aria-controls="CustomIconcollapse10">
                                                             {{ __('faq.q10') }}
                                                             <i class="ti ti-plus accordion-icon accordion-icon-on"></i>
                                                             <i class="ti ti-minus accordion-icon accordion-icon-off"></i>
                                                         </button>
                                                     </h6>
-                                                    <div id="CustomIconcollapse10" class="accordion-collapse collapse" aria-labelledby="CustomIconheading10" data-bs-parent="#CustomIconaccordionExample10">
+                                                    <div id="CustomIconcollapse10" class="accordion-collapse collapse show" aria-labelledby="CustomIconheading10" data-bs-parent="#CustomIconaccordionExample10">
                                                         <div class="accordion-body">{{ __('faq.a10') }}</div>
                                                     </div>
                                                 </div>
@@ -241,18 +265,19 @@
                                         </div>
                                         <hr class="my-4">
 
-                                        <div class="mb-4" id="legal">
-                                            <h4 class="mb-3">{{ __('faq.legal') }}</h4>
+                                        <!-- Category: Legal -->
+                                        <div class="mb-4 faq-cat" id="legal">
+                                            <h4 class="mb-3"><span class="faq-cat-ic"><i class="ti ti-scale"></i></span>{{ __('faq.legal') }}</h4>
                                             <div class="accordion accordion-bordered accordion-custom-icon accordion-arrow-none" id="CustomIconaccordionExample13">
                                                 <div class="accordion-item">
                                                     <h6 class="accordion-header" id="CustomIconheading13">
-                                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#CustomIconcollapse13" aria-expanded="false" aria-controls="CustomIconcollapse13">
+                                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#CustomIconcollapse13" aria-expanded="true" aria-controls="CustomIconcollapse13">
                                                             {{ __('faq.q13') }}
                                                             <i class="ti ti-plus accordion-icon accordion-icon-on"></i>
                                                             <i class="ti ti-minus accordion-icon accordion-icon-off"></i>
                                                         </button>
                                                     </h6>
-                                                    <div id="CustomIconcollapse13" class="accordion-collapse collapse" aria-labelledby="CustomIconheading13" data-bs-parent="#CustomIconaccordionExample13">
+                                                    <div id="CustomIconcollapse13" class="accordion-collapse collapse show" aria-labelledby="CustomIconheading13" data-bs-parent="#CustomIconaccordionExample13">
                                                         <div class="accordion-body">{{ __('faq.a13') }}</div>
                                                     </div>
                                                 </div>
@@ -288,18 +313,19 @@
                                         </div>
                                         <hr class="my-4">
 
-                                        <div class="mb-0" id="financial">
-                                            <h4 class="mb-3">{{ __('faq.financial') }}</h4>
+                                        <!-- Category: Financial -->
+                                        <div class="mb-0 faq-cat" id="financial">
+                                            <h4 class="mb-3"><span class="faq-cat-ic"><i class="ti ti-coin"></i></span>{{ __('faq.financial') }}</h4>
                                             <div class="accordion accordion-bordered accordion-custom-icon accordion-arrow-none" id="CustomIconaccordionExample16">
                                                 <div class="accordion-item">
                                                     <h6 class="accordion-header" id="CustomIconheading16">
-                                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#CustomIconcollapse16" aria-expanded="false" aria-controls="CustomIconcollapse16">
+                                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#CustomIconcollapse16" aria-expanded="true" aria-controls="CustomIconcollapse16">
                                                             {{ __('faq.q16') }}
                                                             <i class="ti ti-plus accordion-icon accordion-icon-on"></i>
                                                             <i class="ti ti-minus accordion-icon accordion-icon-off"></i>
                                                         </button>
                                                     </h6>
-                                                    <div id="CustomIconcollapse16" class="accordion-collapse collapse" aria-labelledby="CustomIconheading16" data-bs-parent="#CustomIconaccordionExample16">
+                                                    <div id="CustomIconcollapse16" class="accordion-collapse collapse show" aria-labelledby="CustomIconheading16" data-bs-parent="#CustomIconaccordionExample16">
                                                         <div class="accordion-body">{{ __('faq.a16') }}</div>
                                                     </div>
                                                 </div>
@@ -344,6 +370,24 @@
                 </div>
                 <!-- end row -->
 
+                <!-- Still have questions? Contact block -->
+                <div class="faq-contact">
+                    <h4>{{ __('faq.still_questions') }}</h4>
+                    <p>{{ __('faq.contact_desc') }}</p>
+                    <div class="faq-contact-actions">
+                        @if($faqTel)
+                        <a href="tel:{{ $faqTel }}" class="faq-c"><i class="ti ti-phone"></i>{{ $workspace['phone'] }}</a>
+                        @endif
+                        @if($faqWa)
+                        <a href="https://wa.me/{{ $faqWa }}" target="_blank" rel="noopener" class="faq-c"><i class="ti ti-brand-whatsapp"></i>WhatsApp</a>
+                        @endif
+                        @if($faqViber)
+                        <a href="viber://chat?number=+{{ $faqViber }}" class="faq-c"><i class="ti ti-brand-viber"></i>Viber</a>
+                        @endif
+                        <a href="/{{ app()->getLocale() }}/contact-us" class="btn btn-primary">{{ __('faq.contact_btn') }}</a>
+                    </div>
+                </div>
+
             </div>
 
         </div>
@@ -357,6 +401,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Sidebar scroll-spy + smooth scroll for the table of contents
     var links = document.querySelectorAll('ul.faq-sidebar .nav-link');
     var sections = [];
     links.forEach(function (link) {
@@ -396,6 +441,36 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+
+    // Live search filter over questions
+    var search = document.getElementById('faqSearch');
+    if (search) {
+        var cats = Array.prototype.slice.call(document.querySelectorAll('.faq-page .faq-cat'));
+        var seps = Array.prototype.slice.call(document.querySelectorAll('.faq-page hr'));
+        var noRes = document.getElementById('faqNoResults');
+        search.addEventListener('input', function () {
+            var q = this.value.trim().toLowerCase();
+            var words = q.split(/\s+/).filter(Boolean);
+            var anyVisible = false;
+            cats.forEach(function (cat) {
+                var heading = cat.querySelector('h4');
+                var catTitle = heading ? heading.textContent : '';
+                var items = cat.querySelectorAll('.accordion');
+                var catVisible = false;
+                items.forEach(function (it) {
+                    // search across category title + question + answer, by words (any order, gaps ok)
+                    var text = (catTitle + ' ' + it.textContent).toLowerCase();
+                    var match = !words.length || words.every(function (w) { return text.indexOf(w) !== -1; });
+                    it.style.display = match ? '' : 'none';
+                    if (match) catVisible = true;
+                });
+                cat.style.display = catVisible ? '' : 'none';
+                if (catVisible) anyVisible = true;
+            });
+            seps.forEach(function (hr) { hr.style.display = q ? 'none' : ''; });
+            if (noRes) noRes.hidden = anyVisible;
+        });
+    }
 });
 </script>
 
