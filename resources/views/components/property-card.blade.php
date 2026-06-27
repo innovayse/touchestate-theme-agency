@@ -62,8 +62,8 @@
                 </div>
                 <div class="d-flex gap-1">
                     <a href="javascript:void(0)" class="compare-btn"
-                       style="border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.15);">
-                        <x-icon name="balance" size="17"/>
+                       style="background:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.15);">
+                        <x-icon name="balance" size="17" style="color:#555"/>
                     </a>
                     <a href="javascript:void(0)" class="favourite"
                        style="background:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.15);">
