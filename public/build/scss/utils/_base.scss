@@ -1,0 +1,107 @@
+@use 'typography' as *;
+@use 'colors' as *;
+@use 'mixins' as *;
+
+body {
+	font-family: $font-family-primary;
+	font-size: $font-size-base;
+	color: var(--body-color);
+	background: var(--white);
+	scroll-behavior: smooth;
+	overflow-x: hidden;
+}
+
+a {
+	text-decoration: none;
+	color: var(--gray-900);
+	&:hover {
+		color: var(--primary);
+	}
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	color: var(--heading-color);
+	font-weight: $font-weight-bold;
+}
+
+h1 {
+	font-size: 36px;
+	@include respond-below(lg) {
+		font-size: 32px;
+	}
+	@include respond-below(md) {
+		font-size: 30px;
+	}
+}
+  
+h2 {
+    font-size: 32px;
+	@include respond-below(lg) {
+		font-size: 30px;
+	}
+	@include respond-below(md) {
+		font-size: 28px;
+	}
+}
+
+h3 {
+    font-size: 28px;
+	@include respond-below(lg) {
+		font-size: 24px;
+	}
+	@include respond-below(md) {
+		font-size: 22px;
+	}
+}
+
+h4 {
+    font-size: 24px;
+	@include respond-below(lg) {
+		font-size: 22px;
+	}
+	@include respond-below(md) {
+		font-size: 20px;
+	}
+}
+
+h5 {
+    font-size: 20px;
+	@include respond-below(lg) {
+		font-size: 18px;
+	}
+	@include respond-below(md) {
+		font-size: 16px;
+	}
+}
+
+h6 {
+    font-size: 18px;
+	@include respond-below(lg) {
+		font-size: 16px;
+	}
+}
+
+ul {
+	margin: 0px;
+	padding: 0px;
+	list-style: none;
+}
+
+img {
+	max-width: 100%;
+}
+
+p:last-child {
+	margin-bottom: 0;
+}
+
+::selection {
+    background: var(--primary);
+    color: var(--white);
+    text-shadow: none;
+}

@@ -1,0 +1,104 @@
+@use '../utils' as *;
+@include respond-above(lg) {
+    .header {
+        &.header-three {
+            background-color: transparent;
+            margin-top: 10px;
+            .header-nav {
+                padding: 0;
+            }
+            .main-menu-wrapper .main-nav > li {
+                > a {
+                color: var(--white);
+                font-size: 14px;
+                font-weight: 500;
+                } 
+                &.active {
+                    > a {
+                        color: var(--primary) !important;
+                    }
+                }
+            }
+            &.nav-fixed {
+                .main-menu-wrapper .main-nav > li > a {
+                    color: var(gray-900);
+                }
+            }
+            .header-items {
+                .topbar-link {
+                    background: #FFFFFF33;
+                    border-color: transparent;
+                    backdrop-filter: blur(14px);
+                i {
+                    color: var(--white);
+                }
+                }
+            }
+            .logo-dark {
+                display: none !important;
+            }
+        }
+    }
+}
+
+.logo-dark {
+    display: none !important;
+}
+
+.header-three.fixed {
+    position: fixed !important;
+	margin-top: 0;
+	left: 0;
+	right: 0;
+	background: var(--white);
+	.logo-dark {
+		display: block !important;
+	}
+	.logo {
+		display: none;
+	}
+	.header-nav {
+        padding: 0;
+    }
+    .main-menu-wrapper .main-nav > li {
+        > a {
+        color: var(--gray-900);
+        font-size: 14px;
+        font-weight: 500;
+        }
+        &.active {
+          > a {
+                color: var(--primary) !important;
+            }
+        }
+    } 
+    &.nav-fixed {
+        .main-menu-wrapper .main-nav > li > a {
+            color: var(--gray-900);
+        }
+    }
+	.header-nav {
+	position: unset;
+	}
+	.header-items {
+        .topbar-link {
+            background: var(--light);
+            border-color: transparent;
+            i {
+                color: var(--gray-900);
+            }
+        }
+    }
+}
+@include respond-below(lg) {
+    .header-three {
+        .navbar-header {
+            .logo {
+                display: none !important;
+            }
+            .logo-dark {
+                display: block !important;
+            }
+        }
+    }
+}

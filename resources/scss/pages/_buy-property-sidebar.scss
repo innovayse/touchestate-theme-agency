@@ -1,0 +1,61 @@
+@use '../utils/' as *;
+@use '../utils/colors' as *;
+
+
+.filter-sidebar {
+    
+    .filter-body {
+        h6 { 
+            font-size: 16px;
+            font-weight: $font-weight-semibold;
+            color: var(--gray-900);
+            i {
+
+            }
+        }
+        .view-all {
+            margin-top: 8px;
+            a {
+                font-size: 14px;
+                text-decoration: underline;
+            }
+        }
+        .irs--flat {
+            .irs-min {
+                display: none;
+            }
+            .irs-max {
+                display: none;
+            }
+            .irs-line{
+                height: 2px;
+                background-color: var(--gray-100);
+            }
+            .irs-bar{
+                height: 2px;
+                background-color: var(--secondary);
+            }
+            .irs-from,.irs-to{
+                background-color: var(--secondary);
+
+            }
+            .irs-handle>i:first-child {
+                top: -1px;
+                left: 50%;
+                width: 10px;
+                height: 10px;
+                background-color: var(--secondary);
+                border-radius: 50%;
+            }
+        }
+        .irs-with-grid .irs-grid {
+            display: none;
+        }
+        .filter-range{
+            p{
+                font-size: 14px;
+            }
+        }
+    }
+
+}

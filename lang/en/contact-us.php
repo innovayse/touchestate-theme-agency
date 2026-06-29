@@ -1,0 +1,21 @@
+<?php
+return [
+    'sales_heading' => 'Talk to Member of Sales Team',
+    'sales_text' => 'Connect with our expert sales team for personalized guidance, property insights, and support tailored to your real estate needs.',
+    'toll_free' => 'Toll Free',
+    'support_heading' => 'Product & Account Support',
+    'support_text' => 'Get dedicated help with your account, features, and services through our expert Product & Account Support team today.',
+    'go_to_faq' => 'Go to FAQ',
+    'email_address' => 'Email Address',
+    'phone_number' => 'Phone Number',
+    'address' => 'Address',
+    'get_in_touch' => 'Get In Touch',
+    'your_name' => 'Your Name',
+    'subject' => 'Subject',
+    'description' => 'Description',
+    'comments' => 'Comments',
+    'submit_enquiry' => 'Submit Enquiry',
+    'email' => 'Email',
+    'working_hours' => 'Working Hours',
+    'search_country' => 'Search country…',
+];

@@ -1,0 +1,36 @@
+@use '../utils/colors' as *;
+@use '../utils/root' as *;
+
+// Background Color
+@each $color, $value in $theme-colors {
+    .bg-#{$color} {
+        background-color: var(--#{$color}) !important;
+    }
+}
+
+// Text Color
+@each $color, $value in $theme-colors {
+    .text-#{$color} {
+        color: var(--#{$color}) !important;
+    }
+}
+
+// Link Color
+@each $color, $value in $theme-colors {
+    .link-#{$color} {
+        color: var(--#{$color}) !important;
+        &:hover, &:focus {
+            color: var(--#{$color}-dark) !important;
+        }
+    }
+}
+
+.text-body {
+    color: var(--gray-500) !important;
+}
+.link-body {
+    color: var(--gray-500) !important;
+    &:hover {
+        color: var(--primary) !important;
+    }
+}

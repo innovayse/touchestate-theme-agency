@@ -1,0 +1,112 @@
+@use '../utils' as *;
+
+.breadcrumb-bar {
+  padding: 40px 0;
+  padding-top: 100px;
+  background: var(--dark);
+  position: relative;
+  overflow: hidden;
+  .breadcrumb-title {
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+  .breadcrumb-bg-01 {
+    position: absolute;
+    bottom: -4px;
+    left: 20px;
+  }
+  .breadcrumb-bg-02 {
+    position: absolute;
+    top: -4px;
+    right: 200px;
+  }
+  .breadcrumb-bg-03 {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+  }
+  .breadcrumb-icons {
+    a {
+      width: 40px;
+      height: 40px;
+      border-radius: 5px;
+      background: #03bd9d59;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      backdrop-filter: blur(13px);
+      transition: 0.6s;
+      &:hover {
+        transition: 0.6s;
+        background: var(--primary);
+        transform: translateY(-5px);
+      }
+    }
+  }
+  .fa-circle {
+    font-size: 4px;
+    line-height: 0px;
+  }
+}
+.custom-breadcrumb-bar {
+    padding: 80px 0px 77px;
+    background: transparent;
+    @include respond-below(lg) {
+      padding: 80px 0px 50px;
+    }
+}
+
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0;
+  .breadcrumb-item {
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    a {
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      &:hover {
+        color: var(--primary);
+      }
+    }
+    &.active {
+      color: var(--white);
+    }
+  }
+}
+.breadcrumb-item {
+    span {
+      line-height: 0;
+        i {
+            color: var(--primary);
+        }
+    }
+}
+.breadcrumb-item+.breadcrumb-item::before {
+  color: var(--gray-600);
+  opacity: 0.4;
+}
+.breadcrumb-arrow {
+  .breadcrumb-item + .breadcrumb-item::before {
+    font-family: 'Font Awesome 7 Free';
+    font-weight: 900;
+    content: "\f054";
+    color: var(--white);
+    font-size: 16px;
+    opacity: 1;
+    line-height: 0;
+    position: relative;
+    top: 2px;
+  }
+}
+[data-theme-mode="dark"] {
+  .embedded-breadcrumb:before {
+    filter: invert(1);
+  }
+}

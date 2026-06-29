@@ -1,0 +1,41 @@
+@use '../utils' as *;
+@use '../utils/colors' as *;
+
+.coming-soon-cover {
+    .coming-soon-item {
+        h1 {
+            font-size: 140px;
+            margin-bottom: 40px;
+            text-align: center;
+            @include respond-below(lg) {
+                font-size: 80px;
+            }
+            @include respond-below(md) {
+                font-size: 54px;
+                margin-bottom: 20px;
+            }
+        }
+        .timer-cover {
+            width: 45px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--light);
+            border-radius: 5px;
+            margin-bottom: 4px;
+        }
+        .subscribe-form {
+            position: relative;
+            input {
+                position: relative;
+                height: 48px;
+            }
+            .btn {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+            }
+        }
+    }
+}

@@ -1,0 +1,8 @@
+@use '../utils' as *;
+
+.content {
+  padding: 60px 0;
+  @include respond-below(lg) {
+  padding: 50px 0;
+  }
+}

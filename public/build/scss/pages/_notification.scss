@@ -1,0 +1,186 @@
+@use '../utils' as *;
+@use '../utils/colors' as *;
+
+.notication-item {
+	padding: 20px;
+	margin-bottom: 16px;
+	border: 1px solid var(--gray-100);
+	border-radius: 10px;
+	box-shadow: 0px 4.4px 12px -1px #DEDEDE5C;
+	position: relative;
+	.notication-content {
+		display: -webkit-box;
+		display: -ms-flexbox;
+		display: flex;
+		align-items: center;
+		p {
+			margin-bottom: 2px;
+			i {
+				color: var(--danger);
+				font-size: 8px;
+			}
+		}
+		.notify-time {
+			margin-bottom: 0;
+			color: var(--gray-500);
+		}
+	}
+    .m-0 {
+        @include respond-below(sm) {
+            padding-top: 10px;
+            text-align: center;
+        }
+    }
+	span {
+			flex-shrink: 0;
+		img {
+			margin-right: 16px;
+			width: 45px;
+			height: 45px;
+			border-radius: 50%;
+		}
+	}
+	&:last-child {
+		margin-bottom: 0;
+	}
+	&:hover {
+		background: var(--light);
+		transition: all 0.6s;
+		.notification-btn {
+			.delete-btn {
+				-webkit-transition: all .2s ease;
+				transition: all .2s ease;
+				display: -webkit-inline-box;
+				display: -ms-inline--flexbox;
+				display: inline-flex;
+				align-items: center;
+				@include respond-below(lg) {
+					margin-top: 15px;
+				}
+				span {
+					font-size: 13px;
+					margin-right: 4px;
+				}
+			}
+		}
+		.delete-btn {
+			opacity: 1;
+			transition: 0.5s all;
+			&:hover {
+				background: var(--danger);
+				color: var(--white);
+			}
+		}
+	}
+	.notification-btn {
+		.btn {
+			display: none;
+			-webkit-transition: all .2s ease;
+			transition: all .2s ease;
+			font-weight: $font-weight-semibold;
+		}
+	}
+	.btn-danger {
+		top: 16%;
+		right: 12%;
+		opacity: 0;
+		&:hover {
+			background-color: var(--primary);
+			transition: 0.5s all;
+			border-color: var(--primary);
+		}
+        @include respond-below(lg) {
+            position: absolute;
+            top: 53%;
+            right: 4%;
+        }
+        @include respond-below(sm) {
+            top:unset;
+			bottom: 4%;
+       }
+	}
+}
+.notification-header {
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-align: center;
+	-ms-flex-align: center;
+	align-items: center;
+	justify-content: space-between;
+	-webkit-justify-content: space-between;
+	-ms-flex-pack: space-between;
+	flex-wrap: wrap;
+	margin-bottom: 16px;
+	.notication-title {
+		margin-bottom: 16px;
+	}
+	ul {
+		display: flex;
+		align-items: center;
+		li {
+			display: inline-block;
+			margin: 0 10px 24px 0;
+			&:last-child {
+				margin-right: 0;
+			}
+			.mark-all-btn {
+				border: 1px solid var(--gray-100);
+				border-radius: 5px;
+				font-size: 13px;
+				font-weight: $font-weight-semibold;
+				display: -webkit-box;
+				display: -ms-flexbox;
+				display: flex;
+				-webkit-box-align: center;
+				-ms-flex-align: center;
+				align-items: center;
+				padding: 7px 14px;
+				background: var(--light);
+				span {
+					font-size: 13px;
+					margin-right: 4px;
+				}
+				&:hover {
+					background: var(--primary);
+					border-color: var(--primary);
+					color: var(--white);
+				}
+			}
+			.delete-all-btn {
+				display: inline-flex;
+				align-items: center;
+				font-size: 13px;
+				font-weight: $font-weight-semibold;
+				background: var(--danger);
+				color: var(--white);
+				span {
+					font-size: 13px;
+					margin-right: 4px;
+				}
+				&:hover {
+					background: var(--primary);
+					border-color: var(--primary);
+					color: var(--white);
+				}
+			}
+		}
+	}
+}
+.notification-btn {
+    @include respond-below(sm) {
+		text-align: center;
+	}
+	.btn {
+		padding: 6px 15px;
+		font-size: 13px;
+		font-weight: $font-weight-medium;
+		border: 1px solid var(--danger);
+		color: var(--danger);
+		+ {
+			.btn {
+				margin-left: 15px;
+			}
+		}
+	}
+}
