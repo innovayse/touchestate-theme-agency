@@ -16,10 +16,7 @@
         <nav class="navbar navbar-expand-lg header-nav">
             <div class="navbar-header">
                 <a href="{{url('/')}}" class="navbar-brand logo d-flex align-items-center gap-2">
-                    @if(!empty($workspace['logoUrl']))
-                        <img src="{{ $workspace['logoUrl'] }}" class="img-fluid" style="max-height:36px;width:auto" alt="{{ $workspace['name'] ?? 'Logo' }}">
-                    @endif
-                    <span class="fw-semibold fs-16">{{ !empty($workspace['name']) ? $workspace['name'] : 'TouchEstate' }}</span>
+                    @include('layout.partials.brand')
                 </a>
                 @if(!$isAuthPage)
                 <a id="mobile_btn" href="javascript:void(0);">
@@ -32,10 +29,7 @@
 
                 <div class="menu-header">
                     <a href="{{url('/')}}" class="menu-logo d-flex align-items-center gap-2">
-                        @if(!empty($workspace['logoUrl']))
-                            <img src="{{ $workspace['logoUrl'] }}" class="img-fluid" style="max-height:36px;width:auto" alt="{{ $workspace['name'] ?? 'Logo' }}">
-                        @endif
-                        <span class="fw-semibold fs-16">{{ !empty($workspace['name']) ? $workspace['name'] : 'TouchEstate' }}</span>
+                        @include('layout.partials.brand')
                     </a>
                     <a id="menu_close" class="menu-close" href="javascript:void(0);">
                         <x-icon name="close"/>

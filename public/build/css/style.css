@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /****** Utils ******/
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800;900&display=swap");
@@ -23,16 +24,16 @@ header {
   --primary-800: #925441;
   --primary-900: #7A4334;
   --primary-950: #5E3327;
-  --secondary-100: #E4DDFC;
-  --secondary-200: #D6CCFB;
-  --secondary-300: #C9BBF9;
-  --secondary-400: #BBAAF8;
-  --secondary-500: #AD99F7;
-  --secondary-600: #A088F5;
-  --secondary-700: #9277F4;
-  --secondary-800: #8566F2;
-  --secondary-900: #7755F1;
-  --secondary-950: #6E3FE8;
+  --secondary-100: #ECE0D2;
+  --secondary-200: #DECBB3;
+  --secondary-300: #D0B595;
+  --secondary-400: #C2A077;
+  --secondary-500: #B48B5A;
+  --secondary-600: #9F7748;
+  --secondary-700: #87633B;
+  --secondary-800: #6E4F2F;
+  --secondary-900: #553D24;
+  --secondary-950: #3D2B19;
   --gray-100: #E2E4E6;
   --gray-200: #C6CACE;
   --gray-300: #AAB0B6;
@@ -175,9 +176,9 @@ header {
   --primary: #A6644F;
   --primary-rgb: 166, 100, 79;
   --primary-dark: rgb(141.1, 85, 67.15);
-  --secondary: #6842EF;
-  --secondary-rgb: 104, 66, 239;
-  --secondary-dark: rgb(88.4, 56.1, 203.15);
+  --secondary: #8A5A43;
+  --secondary-rgb: 138, 90, 67;
+  --secondary-dark: rgb(117.3, 76.5, 56.95);
   --dark: #2B2A26;
   --dark-rgb: 43, 42, 38;
   --dark-dark: rgb(36.55, 35.7, 32.3);
@@ -1438,6 +1439,36 @@ html.menu-opened body {
 
 .menu-logo-dark {
   display: none;
+}
+
+/* ── GOLDHOUSE brand mark ── */
+.navbar-brand .brand-mark,
+.menu-logo .brand-mark {
+  display: inline-flex;
+  align-items: center;
+  color: var(--dark);
+}
+.navbar-brand .brand-text,
+.menu-logo .brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+.navbar-brand .brand-name,
+.menu-logo .brand-name {
+  font-family: "Playfair Display", serif;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.06em;
+  color: var(--dark);
+}
+.navbar-brand .brand-sub,
+.menu-logo .brand-sub {
+  font-size: 9px;
+  letter-spacing: 0.34em;
+  color: var(--primary);
+  margin-top: 2px;
+  font-weight: 600;
 }
 
 .main-header-two {

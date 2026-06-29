@@ -1046,3 +1046,31 @@ html.menu-opened body {
 .menu-logo-dark {
     display: none;
 }
+/* ── GOLDHOUSE brand mark ── */
+.navbar-brand,
+.menu-logo {
+    .brand-mark {
+        display: inline-flex;
+        align-items: center;
+        color: var(--dark);
+    }
+    .brand-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1;
+    }
+    .brand-name {
+        font-family: $font-family-display;
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: 0.06em;
+        color: var(--dark);
+    }
+    .brand-sub {
+        font-size: 9px;
+        letter-spacing: 0.34em;
+        color: var(--primary);
+        margin-top: 2px;
+        font-weight: 600;
+    }
+}
