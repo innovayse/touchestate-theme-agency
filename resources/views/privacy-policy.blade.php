@@ -25,13 +25,14 @@
         @endcomponent
 
         <!-- Start Content -->
-        <div class="content">
+        <div class="content legal-page">
 
             <div class="container">
 
-                <!-- start row -->
-                <div class="row">
-                    <div class="col-lg-12">
+                <!-- Legal content card -->
+                <div class="row justify-content-center">
+                    <div class="col-lg-10">
+                        <div class="legal-card">
                         <p class="mb-3">{{ __('privacy-policy.intro_text') }}</p>
                         <h6 class="mb-3">{{ __('privacy-policy.section_intro') }}</h6>
                         <p>{{ __('privacy-policy.intro_body') }}</p>
@@ -67,6 +68,7 @@
                         <p class="mb-3">{{ __('privacy-policy.international_body') }}</p>
                         <h6 class="mb-3">{{ __('privacy-policy.section_changes') }}</h6>
                         <p class="mb-0">{{ __('privacy-policy.changes_body') }}</p>
+                        </div>
                     </div>
                 </div>
                 <!-- end row -->
@@ -75,6 +77,8 @@
 
         </div>
         <!-- End Content -->
+
+    </div>
 
     <!-- ========================
         End Page Content

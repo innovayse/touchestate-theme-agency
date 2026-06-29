@@ -393,7 +393,7 @@
         </div>
 
         <!-- Start Content -->
-        <div class="content">
+        <div class="content ps-page">
             <div class="container">
 
                 <!-- start row -->
@@ -478,7 +478,7 @@
                                     <div class="accordion-body">
                                         <div class="row row-gap-3">
                                             @if($property['bedrooms'] ?? null)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="bed" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.bedrooms') }}</small><strong>{{ $property['bedrooms'] }}</strong></div>
@@ -486,7 +486,7 @@
                                             </div>
                                             @endif
                                             @if($property['bathrooms'] ?? null)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="bathtub" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.bathrooms') }}</small><strong>{{ $property['bathrooms'] }}</strong></div>
@@ -494,7 +494,7 @@
                                             </div>
                                             @endif
                                             @if($property['rooms'] ?? null)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="meeting_room" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.rooms') }}</small><strong>{{ $property['rooms'] }}</strong></div>
@@ -502,7 +502,7 @@
                                             </div>
                                             @endif
                                             @if($property['areaTotal'] ?? null)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="straighten" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.area') }}</small><strong>{{ $property['areaTotal'] }} {{ __('property-single.meters') }}²</strong></div>
@@ -510,7 +510,7 @@
                                             </div>
                                             @endif
                                             @if($property['areaLiving'] ?? null)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="crop_square" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.area_living') }}</small><strong>{{ $property['areaLiving'] }} {{ __('property-single.meters') }}²</strong></div>
@@ -518,7 +518,7 @@
                                             </div>
                                             @endif
                                             @if($property['floor'] ?? null)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="layers" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.floor') }}</small><strong>{{ $property['floor'] }}@if($property['floorsTotal'] ?? null) / {{ $property['floorsTotal'] }}@endif</strong></div>
@@ -526,7 +526,7 @@
                                             </div>
                                             @endif
                                             @if($property['yearBuilt'] ?? null)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="calendar_today" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.year_built') }}</small><strong>{{ $property['yearBuilt'] }}</strong></div>
@@ -534,7 +534,7 @@
                                             </div>
                                             @endif
                                             @if($property['ceilingHeight'] ?? null)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="height" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.ceiling_height') }}</small><strong>{{ $property['ceilingHeight'] }} {{ __('property-single.meters') }}</strong></div>
@@ -542,7 +542,7 @@
                                             </div>
                                             @endif
                                             @if($property['landArea'] ?? null)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="landscape" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.land_area') }}</small><strong>{{ $property['landArea'] }} {{ __('property-single.meters') }}²</strong></div>
@@ -550,7 +550,7 @@
                                             </div>
                                             @endif
                                             @if($property['parkingSpaces'] ?? null)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="local_parking" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.parking_spaces') }}</small><strong>{{ $property['parkingSpaces'] }}</strong></div>
@@ -558,7 +558,7 @@
                                             </div>
                                             @endif
                                             @if($property['pricePerSqm'] ?? null)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="payments" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.price_per_sqm') }}</small><strong>{{ number_format($property['pricePerSqm'], 0) }} {{ $property['currency'] ?? '' }}</strong></div>
@@ -566,7 +566,7 @@
                                             </div>
                                             @endif
                                             @if($property['totalUnits'] ?? null)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="apartment" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.total_units') }}</small><strong>{{ $property['totalUnits'] }}</strong></div>
@@ -574,7 +574,7 @@
                                             </div>
                                             @endif
                                             @if($property['availableUnits'] ?? null)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="door_front" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.available_units') }}</small><strong>{{ $property['availableUnits'] }}</strong></div>
@@ -582,7 +582,7 @@
                                             </div>
                                             @endif
                                             @if($property['totalBuildings'] ?? null)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="domain" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.total_buildings') }}</small><strong>{{ $property['totalBuildings'] }}</strong></div>
@@ -590,7 +590,7 @@
                                             </div>
                                             @endif
                                             @if($property['code'] ?? null)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="tag" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.code') }}</small><strong>#{{ $property['code'] }}</strong></div>
@@ -598,7 +598,7 @@
                                             </div>
                                             @endif
                                             @if($property['renovationType'] ?? null)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="construction" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.renovation_type') }}</small><strong>{{ __($enumKey('renovation', $property['renovationType'])) }}</strong></div>
@@ -606,7 +606,7 @@
                                             </div>
                                             @endif
                                             @if($property['constructionType'] ?? null)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="architecture" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.construction_type') }}</small><strong>{{ __($enumKey('construction', $property['constructionType'])) }}</strong></div>
@@ -614,7 +614,7 @@
                                             </div>
                                             @endif
                                             @if($property['furnitureType'] ?? null)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="chair" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.furniture_type') }}</small><strong>{{ __($enumKey('furniture', $property['furnitureType'])) }}</strong></div>
@@ -622,7 +622,7 @@
                                             </div>
                                             @endif
                                             @if($property['balconyType'] ?? null)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="balcony" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.balcony_type') }}</small><strong>{{ __($enumKey('balcony', $property['balconyType'])) }}</strong></div>
@@ -630,7 +630,7 @@
                                             </div>
                                             @endif
                                             @if($property['terraceType'] ?? null)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="deck" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.terrace_type') }}</small><strong>{{ __($enumKey('terrace', $property['terraceType'])) }}</strong></div>
@@ -639,7 +639,7 @@
                                             @endif
                                             {{-- Tiles below show only single-value variants; multi-value sets render in the "additional_details" accordion below. --}}
                                             @if(!empty($property['heatingType']) && count((array)$property['heatingType']) === 1)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="thermostat" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.heating_type') }}</small><strong>{{ __($enumKey('heating', ((array)$property['heatingType'])[0])) }}</strong></div>
@@ -647,7 +647,7 @@
                                             </div>
                                             @endif
                                             @if(!empty($property['parkingType']) && count((array)$property['parkingType']) === 1)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="local_parking" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.parking_type') }}</small><strong>{{ __($enumKey('parking', ((array)$property['parkingType'])[0])) }}</strong></div>
@@ -655,7 +655,7 @@
                                             </div>
                                             @endif
                                             @if(!empty($property['windowView']) && count((array)$property['windowView']) === 1)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="panorama" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.window_view') }}</small><strong>{{ __($enumKey('view', ((array)$property['windowView'])[0])) }}</strong></div>
@@ -663,7 +663,7 @@
                                             </div>
                                             @endif
                                             @if(!empty($property['zoningType']))
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="map" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.zoning_type') }}</small><strong>{{ __($enumKey('zoning', $property['zoningType'])) }}</strong></div>
@@ -671,7 +671,7 @@
                                             </div>
                                             @endif
                                             @if(isset($property['sunDirection']) && $property['sunDirection'] !== null && $property['sunDirection'] !== false)
-                                            <div class="col-12 col-sm-6 col-md-4 col-xxl-3">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="wb_sunny" class="text-warning"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.sun_direction') }}</small><strong>{{ $property['sunDirection'] ? __('property-single.yes') : __('property-single.no') }}</strong></div>
@@ -740,11 +740,11 @@
                                     <div class="accordion-body">
                                         <div class="row row-gap-2">
                                             @foreach($boolFeatures as $feat)
-                                            <div class="col-lg-4 col-md-6">
-                                                <p class="mb-2 d-flex align-items-center gap-2">
-                                                    <i class="fa-solid fa-circle-check text-success fs-18"></i>
-                                                    {{ $feat['label'] }}
-                                                </p>
+                                            <div class="col-12 col-md-6 col-lg-4">
+                                                <div class="bool-pill d-inline-flex align-items-center gap-2">
+                                                    <x-icon :name="$feat['icon']" class="text-primary" size="18"/>
+                                                    <span>{{ $feat['label'] }}</span>
+                                                </div>
                                             </div>
                                             @endforeach
                                         </div>
@@ -766,7 +766,7 @@
                                         <div class="row row-gap-3">
                                             @foreach($property['amenities'] as $amenity)
                                             @php $__amKey = 'property-single.amenity_' . strtolower($amenity); @endphp
-                                            <div class="col-lg-4 col-md-6 col-6">
+                                            <div class="col-12 col-md-6 col-xl-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="check" class="text-secondary"/>
                                                     <span>{{ __($__amKey) !== $__amKey ? __($__amKey) : $amenity }}</span>
@@ -792,7 +792,7 @@
                                         <div class="row row-gap-2">
                                             @foreach($property['features'] as $feat)
                                             @php $fKey = strtolower($feat); @endphp
-                                            <div class="col-lg-4 col-md-6 col-6">
+                                            <div class="col-12 col-md-6 col-xl-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon :name="$featureIconMap[$fKey] ?? 'check_circle'" class="text-success"/>
                                                     <span>{{ __($enumKey('feature', $feat)) }}</span>
@@ -818,7 +818,7 @@
                                         <div class="row row-gap-2">
                                             @foreach($property['appliances'] as $appl)
                                             @php $aKey = strtolower($appl); @endphp
-                                            <div class="col-lg-4 col-md-6 col-6">
+                                            <div class="col-12 col-md-6 col-xl-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon :name="$applianceIconMap[$aKey] ?? 'devices'" class="text-primary"/>
                                                     <span>{{ __($enumKey('appliance', $appl)) }}</span>
@@ -844,7 +844,7 @@
                                         <div class="row row-gap-2">
                                             @foreach($property['utilities'] as $util)
                                             @php $uKey = strtolower($util); @endphp
-                                            <div class="col-lg-4 col-md-6 col-6">
+                                            <div class="col-12 col-md-6 col-xl-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon :name="$utilityIconMap[$uKey] ?? 'power'" class="text-warning"/>
                                                     <span>{{ __($enumKey('utility', $util)) }}</span>
@@ -869,48 +869,48 @@
                                     <div class="accordion-body">
                                         <div class="row row-gap-3">
                                             @if($property['deposit'] ?? null)
-                                            <div class="col-lg-3 col-md-4 col-6">
-                                                <div class="feature-item d-flex align-items-center gap-2">
+                                            <div class="col-12 col-sm-6 col-lg-4">
+                                                <div class="feature-item d-flex align-items-center gap-1">
                                                     <x-icon name="account_balance_wallet" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.deposit') }}</small><strong>{{ number_format($property['deposit'], 0) }} {{ $property['currency'] ?? '' }}</strong></div>
                                                 </div>
                                             </div>
                                             @endif
                                             @if($property['utilitiesPolicy'] ?? null)
-                                            <div class="col-lg-3 col-md-4 col-6">
-                                                <div class="feature-item d-flex align-items-center gap-2">
+                                            <div class="col-12 col-sm-6 col-lg-4">
+                                                <div class="feature-item d-flex align-items-center gap-1">
                                                     <x-icon name="receipt_long" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.utilities_policy') }}</small><strong>{{ __($enumKey('utilities', $property['utilitiesPolicy'])) }}</strong></div>
                                                 </div>
                                             </div>
                                             @endif
                                             @if($property['petsPolicy'] ?? null)
-                                            <div class="col-lg-3 col-md-4 col-6">
-                                                <div class="feature-item d-flex align-items-center gap-2">
+                                            <div class="col-12 col-sm-6 col-lg-4">
+                                                <div class="feature-item d-flex align-items-center gap-1">
                                                     <x-icon name="pets" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.pets_policy') }}</small><strong>{{ __($enumKey('policy', $property['petsPolicy'])) }}</strong></div>
                                                 </div>
                                             </div>
                                             @endif
                                             @if($property['childrenPolicy'] ?? null)
-                                            <div class="col-lg-3 col-md-4 col-6">
-                                                <div class="feature-item d-flex align-items-center gap-2">
+                                            <div class="col-12 col-sm-6 col-lg-4">
+                                                <div class="feature-item d-flex align-items-center gap-1">
                                                     <x-icon name="child_care" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.children_policy') }}</small><strong>{{ __($enumKey('policy', $property['childrenPolicy'])) }}</strong></div>
                                                 </div>
                                             </div>
                                             @endif
                                             @if(!empty($property['isNegotiable']))
-                                            <div class="col-lg-3 col-md-4 col-6">
-                                                <div class="feature-item d-flex align-items-center gap-2">
+                                            <div class="col-12 col-sm-6 col-lg-4">
+                                                <div class="feature-item d-flex align-items-center gap-1">
                                                     <x-icon name="handshake" class="text-success"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.negotiable') }}</small><strong>{{ __('property-single.yes') }}</strong></div>
                                                 </div>
                                             </div>
                                             @endif
                                             @if(!empty($property['isLongTermRental']))
-                                            <div class="col-lg-3 col-md-4 col-6">
-                                                <div class="feature-item d-flex align-items-center gap-2">
+                                            <div class="col-12 col-sm-6 col-lg-4">
+                                                <div class="feature-item d-flex align-items-center gap-1">
                                                     <x-icon name="date_range" class="text-primary"/>
                                                     <div><small class="text-muted d-block">{{ __('property-single.long_term_rental') }}</small><strong>{{ __('property-single.yes') }}</strong></div>
                                                 </div>
@@ -934,7 +934,7 @@
                                     <div class="accordion-body">
                                         <div class="row row-gap-3">
                                             @foreach($property['extendedAttributes'] as $attrKey => $attrVal)
-                                            <div class="col-lg-3 col-md-4 col-6">
+                                            <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item">
                                                     <small class="text-muted d-block">{{ $attrKey }}</small>
                                                     <strong>{{ $attrVal }}</strong>
@@ -1017,86 +1017,70 @@
                             <div class="card-header">
                                 <h5 class="mb-0">{{ __('property-single.provider_details') }}</h5>
                             </div>
-                            <div class="card-body">
-                                {{-- Workspace (company) --}}
+                            <div class="card-body agent-card-body text-center">
+
+                                {{-- Workspace: logo or initial --}}
                                 @if(!empty($workspace['name']))
-                                <div class="card bg-light border-0 rounded shadow-none custom-btn mb-3">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <div class="avatar avatar-lg flex-shrink-0">
-                                                @if(!empty($workspace['logoUrl']))
-                                                <img src="{{ $workspace['logoUrl'] }}" alt="{{ $workspace['name'] }}" class="rounded-circle" style="width:48px;height:48px;object-fit:cover;">
-                                                @else
-                                                <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold" style="width:48px;height:48px;font-size:18px;">
-                                                    {{ mb_strtoupper(mb_substr($workspace['name'], 0, 1)) }}
-                                                </div>
-                                                @endif
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-0 fs-16 fw-semibold">{{ $workspace['name'] }}</h6>
-                                                @if(!empty($workspace['description']))
-                                                <p class="mb-0 fs-13 text-muted">{{ Str::limit($workspace['description'], 60) }}</p>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div class="agent-ws-row mb-3">
+                                    @if(!empty($workspace['logoUrl']))
+                                    <img src="{{ $workspace['logoUrl'] }}" alt="{{ $workspace['name'] }}" class="agent-ws-logo">
+                                    @else
+                                    <div class="agent-ws-initial">{{ mb_strtoupper(mb_substr($workspace['name'], 0, 1)) }}</div>
+                                    @endif
+                                    <p class="mb-0 fw-semibold fs-15 mt-2">{{ $workspace['name'] }}</p>
                                 </div>
                                 @endif
 
-                                {{-- Agent name --}}
+                                {{-- Agent --}}
                                 @php $agentName = $property['assignedAgentName'] ?? ''; @endphp
                                 @if($agentName)
-                                <div class="d-flex align-items-center gap-2 mb-3">
-                                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style="width:40px;height:40px;font-size:16px;">
-                                        {{ mb_strtoupper(mb_substr($agentName, 0, 1)) }}
-                                    </div>
-                                    <div>
-                                        <p class="mb-0 fw-semibold fs-15">{{ $agentName }}</p>
-                                        <p class="mb-0 fs-13 text-muted">{{ __('property-single.company_agent') }}</p>
-                                    </div>
-                                </div>
+                                @if(!empty($workspace['name']))<hr class="my-3">@endif
+                                <div class="agent-avatar-circle mb-2">{{ mb_strtoupper(mb_substr($agentName, 0, 1)) }}</div>
+                                <p class="mb-0 fw-bold fs-16">{{ $agentName }}</p>
+                                <p class="mb-3 fs-13 text-muted">{{ __('property-single.company_agent') }}</p>
                                 @endif
 
-                                <!-- Agent contact: phone + Viber + WhatsApp (rendered only when phone is known) -->
+                                <!-- Agent contact: phone + Viber + WhatsApp -->
                                 @if(!empty($property['agentPhoneE164']))
                                 @php
-                                    $phoneE164   = $property['agentPhoneE164'];
-                                    $phoneShown  = $property['assignedAgentPhone'] ?: $phoneE164;
+                                    $phoneE164  = $property['agentPhoneE164'];
+                                    $phoneShown = $property['assignedAgentPhone'] ?: $phoneE164;
                                 @endphp
-                                <a href="tel:{{ $phoneE164 }}" class="btn btn-outline-dark w-100 d-flex align-items-center justify-content-center gap-2 mb-2 py-2">
+                                <a href="tel:{{ $phoneE164 }}" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2 mb-2 py-2">
                                     <x-icon name="phone" size="18"/>
                                     <span class="fw-semibold">{{ $phoneShown }}</span>
                                 </a>
-                                <div class="d-flex gap-2 mb-3">
-                                    <a href="viber://chat?number=+{{ $phoneE164 }}" class="btn btn-light flex-grow-1 d-flex align-items-center justify-content-center gap-2 py-2" style="background:#7360f2;color:#fff;border:0;">
+                                <div class="d-flex gap-2">
+                                    <a href="viber://chat?number=+{{ $phoneE164 }}" class="btn flex-grow-1 d-flex align-items-center justify-content-center gap-2 py-2" style="background:#7360f2;color:#fff;border:0;">
                                         <svg width="18" height="18" fill="currentColor" aria-hidden="true" viewBox="0 0 24 24"><path d="M11.4 0C9.473.024 5.333.34 3.02 2.464 1.302 4.187.696 6.7.633 9.819.572 12.93.494 18.762 6.18 20.378v2.463s-.04 1.005.61 1.205c.795.246 1.252-.5 2.005-1.293.42-.435.992-1.082 1.43-1.59 3.85.327 6.812-.41 7.144-.515.78-.254 5.187-.811 5.91-6.66.74-6.034-.376-9.86-2.394-11.582l-.013-.005C20.27.65 16.36.027 13.59 0c0 0-.193-.011-.633-.014-.222 0-.598-.005-.998 0-.4-.005-.776 0-.998 0-.44.003-.633.014-.633.014z"/></svg>
                                         Viber
                                     </a>
-                                    <a href="https://wa.me/{{ $phoneE164 }}" target="_blank" rel="noopener" class="btn btn-light flex-grow-1 d-flex align-items-center justify-content-center gap-2 py-2" style="background:#25d366;color:#fff;border:0;">
+                                    <a href="https://wa.me/{{ $phoneE164 }}" target="_blank" rel="noopener" class="btn flex-grow-1 d-flex align-items-center justify-content-center gap-2 py-2" style="background:#25d366;color:#fff;border:0;">
                                         <svg width="18" height="18" fill="currentColor" aria-hidden="true" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 0 1-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 0 1 8.413 3.488 11.824 11.824 0 0 1 3.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 0 1-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 0 0 1.51 5.26l.236.375-.999 3.648 3.742-.982zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.296-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.71.306 1.263.489 1.695.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
                                         WhatsApp
                                     </a>
                                 </div>
                                 @endif
+
                             </div>
                         </div>
 
                         <!-- Property Details -->
-                        <div class="card">
+                        <div class="card prop-details-card">
                             <div class="card-header">
                                 <h5 class="mb-0">{{ __('property-single.property_details') }}</h5>
                             </div>
                             <div class="card-body">
                                 @if($property['propertyType'] ?? null)
                                 @php $__pdType = 'property.' . strtolower($property['propertyType']); @endphp
-                                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                <div class="d-flex justify-content-between align-items-center py-2">
                                     <span class="text-muted">{{ __('property-single.property_type') }}</span>
                                     <span class="fw-semibold">{{ __($__pdType) !== $__pdType ? __($__pdType) : $property['propertyType'] }}</span>
                                 </div>
                                 @endif
                                 @if($property['transactionType'] ?? null)
                                 @php $__pdTx = strtolower($property['transactionType']); @endphp
-                                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                <div class="d-flex justify-content-between align-items-center py-2">
                                     <span class="text-muted">{{ __('property-single.transaction_type') }}</span>
                                     <span class="fw-semibold">
                                         @if($__pdTx === 'rentdaily') {{ __('property-single.rent_daily') }}
@@ -1108,7 +1092,7 @@
                                 @endif
                                 @if($property['status'] ?? null)
                                 @php $__pdStatus = ucfirst(strtolower($property['status'])); @endphp
-                                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                <div class="d-flex justify-content-between align-items-center py-2">
                                     <span class="text-muted">{{ __('property-single.status') }}</span>
                                     <span>
                                         @if($__pdStatus === 'Draft')<span class="badge bg-secondary">{{ __('property.status_draft') }}</span>
@@ -1240,12 +1224,6 @@
                                     </button>
                                 </div>
                                 <div id="propertyJsMap" style="width:100%;height:195px;"></div>
-                            </div>
-                            <div class="card-body">
-                                <p class="mb-0 text-body d-flex align-items-center">
-                                    <x-icon name="location_on" class="me-1"/>
-                                    {{ $property['fullAddress'] ?? $property['city'] ?? '' }}
-                                </p>
                             </div>
                             @endif
                         </div>

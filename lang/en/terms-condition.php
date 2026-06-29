@@ -1,31 +1,40 @@
 <?php
 return [
     'section_intro' => 'Introduction',
-    'intro_body' => 'Welcome to Dreams Estate. By accessing or using our platform—whether via web, mobile, or any other interface—you acknowledge that you have read, understood, and agree to be bound by these terms and conditions ("Terms"), our Privacy Policy, and any other policies or guidelines that we publish.',
+    'intro_body' => 'Welcome. This website is an online catalogue that showcases real-estate listings offered by a single broker. By accessing or using this website, you acknowledge that you have read, understood, and agree to be bound by these Terms & Conditions ("Terms") and our Privacy Policy. If you do not agree with them, please do not use the website.',
+
     'section_acceptance' => 'Acceptance of Terms',
-    'acceptance_body' => 'By accessing or using the estate property located at [Estate Address], you agree to comply with and be bound by these Terms and Conditions. If you do not agree to these terms, you may not use the estate.',
-    'section_booking' => 'Booking and Payment',
-    'booking_1' => 'Reservations must be confirmed with a signed agreement and a non-refundable deposit of [percentage]% of the total cost.',
-    'booking_2' => 'The balance must be paid in full by [number] days before the event or stay.',
-    'booking_3' => 'Payment methods accepted: [e.g., bank transfer, credit card, PayPal].',
-    'section_use' => 'Use of Property',
-    'use_1' => 'The estate is to be used for [type of use, e.g., private events, short-term stays, residential lease] only.',
-    'use_2' => 'Maximum occupancy is [number of guests/residents] unless otherwise agreed in writing.',
-    'use_3' => 'No commercial activity may take place on the property without prior written approval.',
-    'section_conduct' => 'Rules and Conduct',
-    'conduct_1' => 'No smoking inside the buildings.',
-    'conduct_2' => 'No pets allowed unless prior permission is granted.',
-    'conduct_3' => 'The client is responsible for the conduct of all guests and any damage caused.',
-    'section_damages' => 'Damages and Liability',
-    'damages_1' => 'Any damages to the property or its contents will be charged to the client.',
-    'damages_2' => 'The estate owner is not liable for injury, loss, or damage to personal property during your stay or event.',
-    'section_cancellation' => 'Cancellations and Refunds',
-    'cancellation_1' => 'Cancellations made 02 days before the reservation date will receive a [percentage]% refund, excluding the deposit.',
-    'cancellation_2' => 'No refunds will be issued for cancellations within [number] days of the reservation date.',
-    'section_force' => 'Force Majeure',
-    'force_body' => 'The estate shall not be liable for any failure to perform due to causes beyond its reasonable control, including natural disasters, government restrictions, or pandemics.',
-    'section_insurance' => 'Insurance',
-    'insurance_body' => 'It is recommended that clients obtain event or rental insurance to cover unexpected incidents.',
-    'section_law' => 'Governing Law',
-    'law_body' => 'These terms and conditions shall be governed by and interpreted according to the laws of London.',
+    'acceptance_body' => 'By browsing the listings, using the search and map, or contacting us through the website, you agree to comply with these Terms. We may update them from time to time, and your continued use of the website means you accept the current version.',
+
+    'section_booking' => 'Listings and Property Information',
+    'booking_1' => 'All listings are provided for informational purposes only and do not constitute a binding offer, valuation, or contract.',
+    'booking_2' => 'Property details, prices, availability, and images are published via the TouchEstate platform and may change or be removed at any time without notice.',
+    'booking_3' => 'No booking, reservation, or payment takes place on this website — any transaction is arranged directly with the broker.',
+
+    'section_use' => 'Use of the Website',
+    'use_1' => 'You may use this website only for lawful purposes — to view properties and get in touch with the broker.',
+    'use_2' => 'You agree not to copy, scrape, or republish listing data, images, or other content without prior written permission.',
+    'use_3' => 'You must not attempt to disrupt, overload, or gain unauthorised access to the website or its systems.',
+
+    'section_conduct' => 'User Conduct',
+    'conduct_1' => 'Any information you submit through contact or enquiry forms must be accurate and your own.',
+    'conduct_2' => 'You agree not to send spam, unlawful, offensive, or misleading messages through the website.',
+    'conduct_3' => 'You are responsible for any activity carried out under your use of the website.',
+
+    'section_damages' => 'Intellectual Property',
+    'damages_1' => 'The website design, texts, logos, and layout are protected and may not be reused without permission.',
+    'damages_2' => 'Listing content and images remain the property of their respective owners and are shown here for informational purposes only.',
+
+    'section_cancellation' => 'Third-Party Content and Links',
+    'cancellation_1' => 'The website relies on third-party services (such as TouchEstate for listings and map providers); their content and availability are outside our control.',
+    'cancellation_2' => 'Links to external websites are provided for convenience, and we are not responsible for their content or practices.',
+
+    'section_force' => 'Disclaimer',
+    'force_body' => 'The website and its content are provided "as is" and "as available", without warranties of any kind. While we aim to keep information accurate and up to date, we do not guarantee that listings, prices, or other details are complete, current, or error-free.',
+
+    'section_insurance' => 'Limitation of Liability',
+    'insurance_body' => 'To the extent permitted by law, we are not liable for any loss or damage arising from your use of the website or reliance on any information published on it. Always confirm property details directly with the broker before making any decision.',
+
+    'section_law' => 'Changes and Contact',
+    'law_body' => 'We may revise these Terms at any time by updating this page. For any questions about these Terms, please reach out through our contact page.',
 ];
