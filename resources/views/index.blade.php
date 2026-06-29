@@ -586,15 +586,15 @@
                                 <h2>{{ __('index.work_how_title') }}</h2>
                             </div>
                             <div class="work-steps">
-                                <h6 class="fw-semibold fs-16 mb-1 text-secondary">01. {{ __('index.work_step1') }}</h6>
+                                <h6 class="fw-semibold fs-16 mb-1 text-primary">01. {{ __('index.work_step1') }}</h6>
                                 <p class="mb-0 fs-14">{{ __('index.work_step1_desc') }}</p>
                             </div>
                             <div class="work-steps">
-                                <h6 class="fw-semibold fs-16 mb-1 text-teal">02. {{ __('index.work_step2') }}</h6>
+                                <h6 class="fw-semibold fs-16 mb-1 text-primary">02. {{ __('index.work_step2') }}</h6>
                                 <p class="mb-0 fs-14">{{ __('index.work_step2_desc') }}</p>
                             </div>
                             <div class="work-steps mb-0">
-                                <h6 class="fw-semibold fs-16 mb-1 text-purple">03. {{ __('index.work_step3') }}</h6>
+                                <h6 class="fw-semibold fs-16 mb-1 text-primary">03. {{ __('index.work_step3') }}</h6>
                                 <p class="mb-0 fs-14">{{ __('index.work_step3_desc') }}</p>
                             </div>
                         </div> <!-- end card body -->

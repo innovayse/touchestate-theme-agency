@@ -1606,9 +1606,9 @@ footer.footer::before {
   top: 0;
   left: 0;
   content: "";
-  background: url("../img/icons/footer-line.svg");
+  background: var(--primary);
   width: 100%;
-  height: 5px;
+  height: 4px;
 }
 footer.footer .footer-about {
   padding: 20px 0;
@@ -1779,6 +1779,9 @@ footer.footer-two .subscribe-wrap .btn {
 footer.footer-two .footer-bottom {
   background: var(--white);
   border-top: 1px solid var(--border-color);
+}
+footer .footer-bg {
+  display: none;
 }
 footer .footer-bg .bg-1 {
   position: absolute;
@@ -2366,7 +2369,7 @@ footer .join-sec p {
   color: #E74C3C;
 }
 [data-theme=dark] .map-control-btn.map-control-btn--metro {
-  color: #03bd9d;
+  color: #A6644F;
 }
 [data-theme=dark] .custom-select__options {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
@@ -4022,14 +4025,10 @@ select.form-control-sm:not([size]):not([multiple]) {
   margin-bottom: 8px;
 }
 .breadcrumb-bar .breadcrumb-bg-01 {
-  position: absolute;
-  bottom: -4px;
-  left: 20px;
+  display: none;
 }
 .breadcrumb-bar .breadcrumb-bg-02 {
-  position: absolute;
-  top: -4px;
-  right: 200px;
+  display: none;
 }
 .breadcrumb-bar .breadcrumb-bg-03 {
   position: absolute;
@@ -4040,7 +4039,7 @@ select.form-control-sm:not([size]):not([multiple]) {
   width: 40px;
   height: 40px;
   border-radius: 5px;
-  background: rgba(3, 189, 157, 0.3490196078);
+  background: rgba(166, 100, 79, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -8645,7 +8644,7 @@ span.select2-container.select2-container--default.select2-container--open {
   color: #E74C3C;
 }
 .map-control-btn.map-control-btn--metro {
-  color: #03bd9d;
+  color: #A6644F;
 }
 
 .review-progress .progress-lvl {

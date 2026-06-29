@@ -11,14 +11,10 @@
     margin-bottom: 8px;
   }
   .breadcrumb-bg-01 {
-    position: absolute;
-    bottom: -4px;
-    left: 20px;
+    display: none; // off-palette decorative shape
   }
   .breadcrumb-bg-02 {
-    position: absolute;
-    top: -4px;
-    right: 200px;
+    display: none; // off-palette decorative shape
   }
   .breadcrumb-bg-03 {
     position: absolute;
@@ -30,7 +26,7 @@
       width: 40px;
       height: 40px;
       border-radius: 5px;
-      background: #03bd9d59;
+      background: rgba(166,100,79,0.18);
       display: flex;
       align-items: center;
       justify-content: center;
