@@ -1,5 +1,6 @@
 /****** Utils ******/
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800;900&display=swap");
 header {
   -webkit-transition: all 0.5s;
   -moz-transition: all 0.5s;
@@ -255,7 +256,7 @@ body {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 16px;
   color: var(--body-color);
-  background: var(--white);
+  background: var(--cream);
   scroll-behavior: smooth;
   overflow-x: hidden;
 }
@@ -276,6 +277,14 @@ h5,
 h6 {
   color: var(--heading-color);
   font-weight: 700;
+}
+
+h1,
+h2,
+.section-title,
+.display-title {
+  font-family: "Playfair Display", serif;
+  letter-spacing: -0.01em;
 }
 
 h1 {

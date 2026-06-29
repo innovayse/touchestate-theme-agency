@@ -6,7 +6,7 @@ body {
 	font-family: $font-family-primary;
 	font-size: $font-size-base;
 	color: var(--body-color);
-	background: var(--white);
+	background: var(--cream);
 	scroll-behavior: smooth;
 	overflow-x: hidden;
 }
@@ -27,6 +27,14 @@ h5,
 h6 {
 	color: var(--heading-color);
 	font-weight: $font-weight-bold;
+}
+
+h1,
+h2,
+.section-title,
+.display-title {
+	font-family: $font-family-display;
+	letter-spacing: -0.01em;
 }
 
 h1 {
