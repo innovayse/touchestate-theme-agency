@@ -4034,6 +4034,10 @@ select.form-control-sm:not([size]):not([multiple]) {
   position: absolute;
   bottom: 0;
   right: 0;
+  opacity: 0.12;
+}
+.breadcrumb-bar > img[class*=breadcrumb-bg-0]:not(.breadcrumb-bg-03) {
+  display: none !important;
 }
 .breadcrumb-bar .breadcrumb-icons a {
   width: 40px;

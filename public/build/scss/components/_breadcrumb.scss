@@ -20,6 +20,11 @@
     position: absolute;
     bottom: 0;
     right: 0;
+    opacity: 0.12;
+  }
+  // Belt-and-suspenders: kill any leftover legacy decorative shapes
+  > img[class*="breadcrumb-bg-0"]:not(.breadcrumb-bg-03) {
+    display: none !important;
   }
   .breadcrumb-icons {
     a {
