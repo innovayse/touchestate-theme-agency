@@ -1,0 +1,73 @@
+@use '../utils/' as *;
+
+// Global custom-select (JS-built dropdown that replaces native <select.filter-select>).
+// Base styles live here so the widget works anywhere — home search, map, filter sidebar.
+.custom-select {
+    position: relative;
+
+    select.filter-select {
+        display: none;
+    }
+
+    &__trigger {
+        background-color: var(--white);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        color: var(--gray-900);
+        padding: 11px 14px;
+        font-size: 14px;
+        cursor: pointer;
+        padding-right: 34px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23A6644F' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        transition: border-color 0.2s;
+        user-select: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__options {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        background: var(--white);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: max-height 0.25s ease, opacity 0.15s ease;
+        z-index: 100;
+        box-shadow: 0 12px 30px -12px rgba(94, 51, 39, 0.25);
+    }
+
+    &.open {
+        .custom-select__trigger {
+            border-color: var(--primary);
+        }
+        .custom-select__options {
+            max-height: 240px;
+            overflow-y: auto;
+            opacity: 1;
+        }
+    }
+
+    &__option {
+        padding: 9px 14px;
+        cursor: pointer;
+        font-size: 14px;
+        color: var(--gray-900);
+        transition: background 0.15s;
+
+        &:hover {
+            background: var(--primary-transparent);
+        }
+        &.selected {
+            color: var(--primary);
+            font-weight: 600;
+        }
+    }
+}
