@@ -1,7 +1,7 @@
 @use '../utils/' as *;
 
 .home-banner-two {
-    background: var(--dark);
+    background: linear-gradient(180deg, var(--surface) 0%, var(--cream) 55%, var(--beige) 100%);
     padding: 220px 0 150px;
     position: relative;
     z-index: 1;
@@ -40,9 +40,10 @@
             padding: 0 15px;
         }
         h1 {
-            color: var(--white);
-            font-size: 44px;
-            margin-bottom: 10px;
+            color: var(--dark);
+            font-size: 56px;
+            line-height: 1.05;
+            margin-bottom: 18px;
             @include respond-below(xl) {
                 font-size: 38px;
             }
@@ -57,9 +58,13 @@
             }
         }
         p {
-            color: var(--white);
+            color: var(--body-color);
             margin-bottom: 40px;
         }
+    }
+    /* light hero: stats + trusted text use dark ink instead of white */
+    .banner-users .text-white {
+        color: var(--dark) !important;
     }
     .banner-img-right {
         position: absolute;
@@ -130,8 +135,28 @@
 }
 
 .home-search-2 {
-    box-shadow: $box-shadow;
-    padding: 20px 0;
+    position: relative;
+    z-index: 3;
+    margin-top: -55px;
+    margin-bottom: 20px;
+    form {
+        background: var(--surface);
+        border: 1px solid var(--beige);
+        border-radius: $border-radius-2xl;
+        box-shadow: 0 24px 60px -28px rgba(94, 51, 39, 0.30);
+        padding: 26px 28px;
+    }
+    .form-label {
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+    button[type="submit"] {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+    }
     .select-field {
         width: 20%;
         @include respond-below(md) {
