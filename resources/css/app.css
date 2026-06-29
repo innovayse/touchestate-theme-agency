@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+/* Scan Blade templates for class usage */
+@source "../views/**/*.blade.php";
+
+/* ── GOLDHOUSE design tokens ─────────────────────────────────────────── */
+@theme {
+    --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-display: "Playfair Display", ui-serif, Georgia, serif;
+
+    /* Terracotta brand ramp */
+    --color-brand-50:  #f8efe9;
+    --color-brand-100: #f4e7e1;
+    --color-brand-200: #ead2c7;
+    --color-brand-300: #debbac;
+    --color-brand-400: #d1a392;
+    --color-brand-500: #c28b77;
+    --color-brand-600: #a6644f;
+    --color-brand-700: #925441;
+    --color-brand-800: #7a4334;
+    --color-brand-900: #5e3327;
+
+    /* Warm surfaces */
+    --color-cream: #f3ebe0;
+    --color-sand: #efe4d6;
+    --color-panel: #fbf6ef;
+    --color-ink: #2b2a26;
+}
+
+[x-cloak] { display: none !important; }
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+    body {
+        font-family: var(--font-sans);
+        background-color: var(--color-cream);
+        color: #5d5650;
+        overflow-x: hidden;
+    }
+    h1, h2, h3, .font-display {
+        font-family: var(--font-display);
+    }
+}
+
+@layer components {
+    .btn-brand {
+        @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-700;
+    }
+    .btn-outline {
+        @apply inline-flex items-center justify-center gap-2 rounded-full border border-brand-600 px-6 py-3 text-sm font-semibold text-brand-700 transition hover:bg-brand-600 hover:text-white;
+    }
+    .container-x {
+        @apply mx-auto w-full max-w-7xl px-5 sm:px-8;
+    }
+}

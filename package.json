@@ -2,19 +2,18 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "sass resources/scss/main.scss:resources/css/style.css && vite build",
-        "dev": "vite",
-        "sass": "sass resources/scss/main.scss:resources/css/style.css",
-        "sass:watch": "sass resources/scss/main.scss:resources/css/style.css --watch",
-        "sass:no-map": "sass resources/scss/main.scss:resources/css/style.css --style=compressed --no-source-map"
+        "build": "vite build",
+        "dev": "vite"
     },
     "devDependencies": {
+        "@tailwindcss/vite": "^4.3.1",
         "laravel-vite-plugin": "^2.0.1",
-        "sass": "^1.101.0",
+        "tailwindcss": "^4.3.1",
         "vite": "^7.3.1",
         "vite-plugin-static-copy": "^3.1.5"
     },
     "dependencies": {
-        "run": "^1.5.0"
+        "@alpinejs/collapse": "^3.15.12",
+        "alpinejs": "^3.15.12"
     }
 }

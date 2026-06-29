@@ -1,932 +1,261 @@
-<?php $page = 'index'; ?>
-@section('title')
-    Home
-@endsection
+@extends('layout.app')
+@section('title', __('header.home'))
 
-@extends('layout.mainlayout')
+@php $locale = app()->getLocale(); @endphp
+
 @section('content')
-    <!-- Home Banner Section Start -->
-    <section class="home-banner-two">
 
-        <div>
-            <div class="banner-img-right" data-aos="fade-down" data-aos-duration="1000">
-                <img src="{{URL::asset('build/img/section-bg/banner-bg-02.png')}}" alt="">
-            </div>
-            <div>
-                <img src="{{URL::asset('build/img/bg/banner-shape.svg')}}" class="banner-shape" alt="">
-            </div>
-        </div>
+{{-- ───────────────────────── Hero ───────────────────────── --}}
+<section class="relative bg-gradient-to-b from-panel via-cream to-sand pt-28 pb-40">
+    <div class="container-x grid items-center gap-10 lg:grid-cols-2">
+        <div class="relative z-10">
+            <span class="font-display text-5xl/none font-extrabold text-brand-600">*</span>
+            <h1 class="mt-4 font-display text-5xl font-extrabold leading-[1.05] text-ink sm:text-6xl">
+                {{ __('index.hero_title') }}
+                <span class="text-brand-600">{{ __('index.hero_title_highlight') }}</span>
+                {{ __('index.hero_title_end') }}
+            </h1>
+            <p class="mt-5 max-w-md text-base leading-relaxed text-neutral-600">{{ __('index.hero_description') }}</p>
 
-        <div class="container">
-
-            <!-- start row -->
-            <div class="row">
-
-                <div class="col-lg-5">
-                    <div class="banner-title aos" data-aos="fade-up">
-                        <h1>{{ __('index.hero_title') }} <span>{{ __('index.hero_title_highlight') }}</span> {{ __('index.hero_title_end') }}</h1>
-                        <p>{{ __('index.hero_description') }}</p>
-                    </div>
-                    <div class="banner-users mb-3">
-                        <div class="d-flex align-items-center flex-wrap gap-4 mb-1">
-                            <div>
-                                <h6 class="mb-0 text-white fw-semibold fs-20">{{ $stats['successfulDeals'] }}+</h6>
-                                <p class="mb-0 text-white fs-13">{{ __('index.counter_deals') }}</p>
-                            </div>
-                            <div>
-                                <h6 class="mb-0 text-white fw-semibold fs-20">{{ $stats['activeProperties'] }}+</h6>
-                                <p class="mb-0 text-white fs-13">{{ __('index.counter_active') }}</p>
-                            </div>
-                        </div>
-                        <p class="mb-0 text-white fs-13">{{ __('index.hero_trusted') }}</p>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <a href="/{{ app()->getLocale() }}/property" class="btn btn-primary btn-lg d-inline-flex align-items-center me-3"><i class="material-icons-outlined me-2">shopping_basket</i>{{ __('index.hero_buy_property') }}</a>
-                    </div>
-                </div> <!-- end col -->
-
-            </div>
-            <!-- end row -->
-
-        </div>
-    </section>
-    <!-- Home Banner Section End -->
-     
-    <!-- Search Start -->
-    <div class="home-search-2">
-        <div class="container">
-            <form action="/{{ app()->getLocale() }}/property" method="GET">
-                <!-- start search grid -->
-                <div class="row g-3 align-items-end">
-                    <div class="col-12 col-md-6 col-lg-4 col-xl">
-                        <label class="form-label">{{ __('index.search_buy_sell') }}</label>
-                        <select name="transactionType" class="filter-select">
-                            <option value="">{{ __('index.search_select') }}</option>
-                            <option value="Sale">{{ __('map.sale') }}</option>
-                            <option value="Rent">{{ __('map.rent_monthly') }}</option>
-                            <option value="RentDaily">{{ __('map.rent_daily') }}</option>
-                        </select>
-                    </div>
-                    <div class="col-12 col-md-6 col-lg-4 col-xl">
-                        <label class="form-label">{{ __('index.search_type') }}</label>
-                        <select name="propertyType" class="filter-select">
-                            <option value="">{{ __('index.search_select') }}</option>
-                            @foreach($availableTypes as $pt)
-                            @php $__ptKey = 'property.' . strtolower($pt); @endphp
-                            <option value="{{ $pt }}">{{ __($__ptKey) !== $__ptKey ? __($__ptKey) : $pt }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-12 col-md-6 col-lg-4 col-xl">
-                        <label class="form-label">{{ __('index.search_location') }}</label>
-                        <div class="filter-input-icon" style="position:relative">
-                            <input type="text" id="cityInputIndex" placeholder="{{ __('map.enter_city') }}" class="form-control" autocomplete="off">
-                            <input type="hidden" name="city" id="cityHiddenIndex">
-                            <button type="button" id="cityClearBtnIndex" class="city-clear-btn"><x-icon name="close" size="18"/></button>
-                            <span id="citySpinnerIndex" class="city-loading-spinner"></span>
-                            <ul id="citySuggestionsIndex" class="city-suggestions"></ul>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6 col-lg-4 col-xl">
-                        <label class="form-label">{{ __('index.search_min_price') }}</label>
-                        <div class="filter-stepper">
-                            <input type="number" name="minPrice" id="minPriceIndex" min="0" placeholder="{{ __('index.search_currency_symbol') }}">
-                            <div class="stepper-btns">
-                                <button type="button" onclick="this.closest('.filter-stepper').querySelector('input').stepUp()">+</button>
-                                <button type="button" onclick="this.closest('.filter-stepper').querySelector('input').stepDown()">−</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6 col-lg-4 col-xl">
-                        <label class="form-label">{{ __('index.search_max_price') }}</label>
-                        <div class="filter-stepper">
-                            <input type="number" name="maxPrice" id="maxPriceIndex" min="0" placeholder="{{ __('index.search_currency_symbol') }}">
-                            <div class="stepper-btns">
-                                <button type="button" onclick="this.closest('.filter-stepper').querySelector('input').stepUp()">+</button>
-                                <button type="button" onclick="this.closest('.filter-stepper').querySelector('input').stepDown()">−</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6 col-lg-4 col-xl-auto">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <x-icon name="search" size="20"/>
-                        </button>
-                    </div>
+            <div class="mt-8 flex flex-wrap items-center gap-8">
+                <div>
+                    <div class="font-display text-3xl font-bold text-ink">{{ $stats['activeProperties'] ?? 0 }}+</div>
+                    <div class="text-sm text-neutral-500">{{ __('index.counter_active') }}</div>
                 </div>
-                <!-- end search grid -->
-            </form>
+                <div>
+                    <div class="font-display text-3xl font-bold text-ink">{{ $stats['successfulDeals'] ?? 0 }}+</div>
+                    <div class="text-sm text-neutral-500">{{ __('index.counter_deals') }}</div>
+                </div>
+            </div>
+
+            <a href="{{ url('/'.$locale.'/property') }}" class="btn-brand mt-8">{{ __('index.hero_buy_property') }}</a>
+        </div>
+
+        <div class="relative lg:h-[460px]">
+            <div class="absolute -right-10 top-6 hidden h-72 w-72 rounded-full bg-brand-200/50 blur-3xl lg:block"></div>
+            <img src="{{ asset('build/img/section-bg/banner-bg-02.png') }}" alt="" class="relative z-10 mx-auto w-full max-w-xl drop-shadow-2xl">
         </div>
     </div>
-    <!-- Search End -->
 
-    {{-- About Us section temporarily hidden — about-us page disabled (links would 404)
-    <!-- About Us Section Start -->
-    <section class="about-us-section-2">
-        <div class="container">
-
-            <!-- start row -->
-            <div class="row align-items-center gy-4">
-
-                <div class="col-lg-6">
-
-                    <!-- Section Title Start -->
-                    <div class="title-head" data-aos="fade-up" data-aos-duration="500">
-                        <a href="{{ url('about-us') }}" class="badge bg-secondary mb-2" style="text-decoration:none;cursor:pointer">{{ __('index.about_badge') }}</a>
-                        <h2 class="mb-2">{{ __('index.about_title') }}</h2>
-                        <p>{{ __('index.about_description') }}</p>
-                        <div class="d-flex align-items-center">
-                            <a href="/{{ app()->getLocale() }}/property" class="btn btn-dark btn-lg me-3">{{ __('index.about_find_property') }}</a>
-                            <a href="{{url('contact-us')}}" class="btn btn-primary btn-lg">{{ __('index.about_contact') }}</a>
-                        </div>
-                    </div>
-                    <!-- Section Title End -->
-
-                </div> <!-- end col -->
-
-                <div class="col-lg-6">
-                    <div class="position-relative" data-aos="fade-up" data-aos-duration="1000">
-                        <div><img src="{{URL::asset('build/img/section-bg/section-bg-01.png')}}" class="img-fluid" alt=""></div>
-                        <div class="position-absolute end-0 top-0">
-                            <img src="{{URL::asset('build/img/bg/line-01.svg')}}" alt="">
-                        </div>
-                        <div class="position-absolute start-0 bottom-0">
-                            <img src="{{URL::asset('build/img/bg/line-02.svg')}}" alt="">
-                        </div>
-                    </div>
-                </div> <!-- end col -->
-
+    {{-- Find Properties panel --}}
+    <div class="container-x relative z-20 -mb-56 mt-10">
+        <form action="{{ url('/'.$locale.'/property') }}" method="GET"
+              class="rounded-3xl border border-sand bg-panel/95 p-6 shadow-[0_24px_60px_-28px_rgba(94,51,39,0.35)] backdrop-blur sm:p-7">
+            <h2 class="mb-5 font-display text-xl font-bold text-ink">{{ __('index.search_location') }}</h2>
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <label class="block">
+                    <span class="mb-1.5 block text-xs font-semibold text-brand-600">{{ __('index.search_buy_sell') }}</span>
+                    <select name="transactionType" class="w-full rounded-xl border border-sand bg-white px-4 py-3 text-sm text-ink focus:border-brand-500 focus:outline-none">
+                        <option value="">{{ __('index.search_select') }}</option>
+                        <option value="Sale">{{ __('property.for_sale') }}</option>
+                        <option value="Rent">{{ __('property.rent_monthly') }}</option>
+                        <option value="RentDaily">{{ __('property.rent_daily') }}</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="mb-1.5 block text-xs font-semibold text-brand-600">{{ __('index.search_type') }}</span>
+                    <select name="propertyType" class="w-full rounded-xl border border-sand bg-white px-4 py-3 text-sm text-ink focus:border-brand-500 focus:outline-none">
+                        <option value="">{{ __('index.search_select') }}</option>
+                        @foreach($availableTypes as $pt)
+                            @php $k = 'property.'.strtolower($pt); $lbl = __($k); if($lbl===$k){$lbl=$pt;} @endphp
+                            <option value="{{ $pt }}">{{ $lbl }}</option>
+                        @endforeach
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="mb-1.5 block text-xs font-semibold text-brand-600">{{ __('index.search_location') }}</span>
+                    <input type="text" name="search" placeholder="{{ __('index.search_location') }}" class="w-full rounded-xl border border-sand bg-white px-4 py-3 text-sm text-ink focus:border-brand-500 focus:outline-none">
+                </label>
+                <div class="flex items-end">
+                    <button type="submit" class="btn-brand w-full py-3">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+                        {{ __('header.search') }}
+                    </button>
+                </div>
             </div>
-            <!-- end row -->
+        </form>
+    </div>
+</section>
 
+{{-- ───────────────────── Trusted advisors / stats ───────────────────── --}}
+<section class="pt-72 pb-20">
+    <div class="container-x grid gap-12 lg:grid-cols-2 lg:items-center">
+        <div>
+            <span class="text-sm font-semibold uppercase tracking-wider text-brand-600">{{ __('index.about_badge') }}</span>
+            <h2 class="mt-3 font-display text-4xl font-bold leading-tight text-ink">{{ __('index.about_title') }}</h2>
+            <p class="mt-4 max-w-lg text-neutral-600">{{ __('index.about_description') }}</p>
+
+            <div class="mt-8 grid grid-cols-2 gap-4 sm:max-w-md">
+                <div class="rounded-2xl border border-sand bg-panel p-5">
+                    <div class="font-display text-3xl font-bold text-brand-700">{{ $stats['activeProperties'] ?? 0 }}+</div>
+                    <div class="text-sm text-neutral-500">{{ __('index.counter_active') }}</div>
+                </div>
+                <div class="rounded-2xl bg-brand-600 p-5 text-white">
+                    <div class="font-display text-3xl font-bold">{{ $stats['successfulDeals'] ?? 0 }}+</div>
+                    <div class="text-sm text-white/80">{{ __('index.counter_deals') }}</div>
+                </div>
+            </div>
+            <div class="mt-6 flex gap-4">
+                <a href="{{ url('/'.$locale.'/property') }}" class="btn-brand">{{ __('index.about_find_property') }}</a>
+                <a href="{{ url('/'.$locale.'/contact-us') }}" class="btn-outline">{{ __('index.about_contact') }}</a>
+            </div>
         </div>
-    </section>
-    <!-- About Us Section End -->
-    --}}
 
-    <!-- Property Type Section Start -->
-    <section class="property-type-section">
-        <div class="pt-blob pt-blob-1" aria-hidden="true"></div>
-        <div class="pt-blob pt-blob-2" aria-hidden="true"></div>
-        <div class="pt-blob pt-blob-3" aria-hidden="true"></div>
-        <div class="container">
-
-            <!-- Section Title Start -->
-            <div class="section-title-2" data-aos="fade-up" data-aos-duration="1000">
-                <div class="d-flex align-items-center justify-content-center">
-                    <span class="title-square bg-primary"></span><span class="title-square bg-secondary"></span>
-                    <h2>{{ __('index.property_type_title') }} <span> {{ __('index.property_type_highlight') }}</span> {{ __('index.property_type_end') }} </h2>
-                    <span class="title-square bg-primary"></span><span class="title-square bg-secondary"></span>
-                </div>
-                <p>{{ __('index.property_type_description') }}</p>
+        <div class="relative">
+            <img src="{{ asset('build/img/section-bg/section-bg-03.jpg') }}" alt="" class="h-[420px] w-full rounded-3xl object-cover">
+            <div class="absolute -bottom-6 -left-6 hidden rounded-2xl bg-brand-600 px-6 py-5 text-white shadow-xl sm:block">
+                <div class="font-display text-3xl font-bold">{{ $stats['satisfactionRate'] ?? 98 }}%</div>
+                <div class="text-sm text-white/80">{{ __('index.about_badge') }}</div>
             </div>
-            <!-- Section Title End -->
+        </div>
+    </div>
+</section>
 
-            @php
-                $propertyTypeConfig = [
-                    'House'     => ['label' => __('index.property_type_houses'),     'fallback' => 'build/img/property-type/property-type-01.jpg'],
-                    'Office'    => ['label' => __('index.property_type_offices'),    'fallback' => 'build/img/property-type/property-type-02.jpg'],
-                    'Villa'     => ['label' => __('index.property_type_villas'),     'fallback' => 'build/img/property-type/property-type-03.jpg'],
-                    'Apartment' => ['label' => __('index.property_type_apartments'), 'fallback' => 'build/img/property-type/property-type-04.jpg'],
-                ];
-                $activeTypes = array_filter($propertyTypeConfig, fn($_, $type) => ($typeCounts[$type] ?? 0) > 0, ARRAY_FILTER_USE_BOTH);
-                $colClass = count($activeTypes) > 0 ? 'col-lg-' . min(12, intval(12 / count($activeTypes))) . ' col-sm-6' : 'col-lg-3 col-sm-6';
-            @endphp
+{{-- ───────────────────────── Services ───────────────────────── --}}
+<section class="bg-sand/60 py-20">
+    <div class="container-x text-center">
+        <h2 class="font-display text-4xl font-bold text-ink">{{ __('index.benefits_title') }} <span class="text-brand-600">{{ __('index.benefits_highlight') }}</span> {{ __('index.benefits_end') }}</h2>
+        <p class="mx-auto mt-3 max-w-2xl text-neutral-600">{{ __('index.benefits_description') }}</p>
+    </div>
 
-            <div class="d-flex flex-wrap justify-content-center gap-4">
-                @foreach($activeTypes as $type => $config)
-                @php $delay = 1000 + (array_search($type, array_keys($activeTypes)) * 500); @endphp
-                <div data-aos="fade-up" data-aos-duration="{{ $delay }}">
-                    <x-property-type-card
-                        :type="$type"
-                        :label="$config['label']"
-                        :count="$typeCounts[$type] ?? 0"
-                        :images="$typeImages[$type] ?? []"
-                        :fallback="$config['fallback']"
-                    />
+    <div class="container-x mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        @php
+            $benefits = [
+                ['benefits_verified','benefits_verified_desc'],
+                ['benefits_reach','benefits_reach_desc'],
+                ['benefits_communication','benefits_communication_desc'],
+                ['benefits_expert','benefits_expert_desc'],
+                ['benefits_tailored','benefits_tailored_desc'],
+                ['benefits_seamless','benefits_seamless_desc'],
+            ];
+        @endphp
+        @foreach($benefits as $b)
+            <div class="rounded-2xl bg-brand-600 p-7 text-white">
+                <div class="grid h-12 w-12 place-items-center rounded-xl bg-white text-brand-600">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg>
                 </div>
+                <h3 class="mt-5 font-display text-lg font-semibold">{{ __('index.'.$b[0]) }}</h3>
+                <p class="mt-2 text-sm text-white/80">{{ __('index.'.$b[1]) }}</p>
+            </div>
+        @endforeach
+    </div>
+</section>
+
+{{-- ───────────────────── Popular listings (tabs) ───────────────────── --}}
+<section class="py-20" x-data="{ tab: '{{ count($saleProperties) ? 'sale' : 'rent' }}' }">
+    <div class="container-x text-center">
+        <h2 class="font-display text-4xl font-bold text-ink">{{ __('index.popular_title') }} <span class="text-brand-600">{{ __('index.popular_highlight') }}</span> {{ __('index.popular_end') }}</h2>
+        <p class="mx-auto mt-3 max-w-2xl text-neutral-600">{{ __('index.popular_description') }}</p>
+
+        <div class="mt-7 inline-flex rounded-full border border-sand bg-panel p-1">
+            <button @click="tab='sale'" :class="tab==='sale' ? 'bg-brand-600 text-white' : 'text-ink'" class="rounded-full px-6 py-2 text-sm font-semibold transition">{{ __('index.popular_for_sale') }}</button>
+            <button @click="tab='rent'" :class="tab==='rent' ? 'bg-brand-600 text-white' : 'text-ink'" class="rounded-full px-6 py-2 text-sm font-semibold transition">{{ __('index.popular_for_rent') }}</button>
+        </div>
+    </div>
+
+    @if(count($saleProperties) || count($rentProperties))
+        <div class="container-x mt-12">
+            <div x-show="tab==='sale'" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                @forelse($saleProperties as $prop)
+                    <x-property-card :prop="$prop" />
+                @empty
+                    <p class="col-span-full text-center text-neutral-500">{{ __('index.coming_soon') }}</p>
+                @endforelse
+            </div>
+            <div x-show="tab==='rent'" x-cloak class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                @forelse($rentProperties as $prop)
+                    <x-property-card :prop="$prop" />
+                @empty
+                    <p class="col-span-full text-center text-neutral-500">{{ __('index.coming_soon') }}</p>
+                @endforelse
+            </div>
+        </div>
+    @else
+        <div class="container-x mt-12 rounded-3xl border border-dashed border-sand bg-panel py-20 text-center">
+            <p class="font-display text-xl text-neutral-500">{{ __('index.coming_soon') }}</p>
+            <p class="mt-1 text-sm text-neutral-400">{{ __('index.coming_soon_sub') }}</p>
+        </div>
+    @endif
+
+    <div class="mt-10 text-center">
+        <a href="{{ url('/'.$locale.'/property') }}" class="btn-outline">{{ __('index.explore_all_listings') }}</a>
+    </div>
+</section>
+
+{{-- ───────────────────── Property types ───────────────────── --}}
+@if(array_sum($typeCounts) > 0)
+<section class="bg-sand/60 py-20">
+    <div class="container-x text-center">
+        <h2 class="font-display text-4xl font-bold text-ink">{{ __('index.property_type_title') }} <span class="text-brand-600">{{ __('index.property_type_highlight') }}</span> {{ __('index.property_type_end') }}</h2>
+        <p class="mx-auto mt-3 max-w-2xl text-neutral-600">{{ __('index.property_type_description') }}</p>
+    </div>
+    <div class="container-x mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        @foreach($typeCounts as $type => $cnt)
+            @continue($cnt === 0)
+            @php $k='property.'.strtolower($type); $lbl=__($k); if($lbl===$k){$lbl=$type;} $img=$typeImages[$type][0] ?? null; @endphp
+            <a href="{{ url('/'.$locale.'/property?propertyType='.$type) }}" class="group relative overflow-hidden rounded-2xl border border-sand bg-white">
+                <div class="h-44 overflow-hidden bg-sand">
+                    @if($img)<img src="{{ $img }}" alt="" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">@endif
+                </div>
+                <div class="p-5">
+                    <h3 class="font-display text-lg font-semibold text-ink">{{ $lbl }}</h3>
+                    <p class="text-sm text-neutral-500">{{ $cnt }} {{ __('index.property_type_available') }}</p>
+                </div>
+            </a>
+        @endforeach
+    </div>
+</section>
+@endif
+
+{{-- ───────────────────── How it works ───────────────────── --}}
+<section class="py-20">
+    <div class="container-x grid gap-12 lg:grid-cols-2 lg:items-center">
+        <div class="relative flex min-h-[440px] flex-col justify-between overflow-hidden rounded-3xl bg-brand-600 p-10 text-white">
+            <span class="font-display text-7xl font-bold text-white/30">“</span>
+            <div>
+                <p class="font-display text-2xl font-semibold leading-snug">{{ __('index.work_title') }}</p>
+                <p class="mt-4 text-sm text-white/80">{{ __('index.work_description') }}</p>
+                <a href="{{ url('/'.$locale.'/property') }}" class="mt-6 inline-flex rounded-full bg-white px-6 py-3 text-sm font-semibold text-brand-700 transition hover:bg-brand-50">{{ __('index.work_find_property') }}</a>
+            </div>
+        </div>
+        <div>
+            <span class="text-sm font-semibold uppercase tracking-wider text-brand-600">{{ __('index.work_how_badge') }}</span>
+            <h2 class="mt-3 font-display text-4xl font-bold leading-tight text-ink">{{ __('index.work_how_title') }}</h2>
+
+            <div class="mt-8 space-y-5">
+                @foreach(['1','2','3'] as $i)
+                    <div class="rounded-2xl border border-sand bg-panel p-5">
+                        <h3 class="font-display text-lg font-semibold text-brand-700">0{{ $i }}. {{ __('index.work_step'.$i) }}</h3>
+                        <p class="mt-1 text-sm text-neutral-600">{{ __('index.work_step'.$i.'_desc') }}</p>
+                    </div>
                 @endforeach
             </div>
-
-            <div class="text-center pt-3">
-                <a href="/{{ app()->getLocale() }}/property" class="btn btn-dark d-inline-flex align-items-center">{{ __('index.property_type_view_more') }}<i class="material-icons-outlined ms-1">north_east</i></a>
-            </div>
-
         </div>
-    </section>
-    <!-- Property Type Section End -->
+    </div>
+</section>
 
-    <!-- Support Section Start -->
-    <section class="support-section">
-        <div class="horizontal-slide d-flex" data-direction="right" data-speed="slow">
-            <div class="slide-list d-flex">
-                <div class="support-item">
-                    <h5>{{ __('index.support_personalized') }}</h5>
-                </div>
-                <div class="support-item">
-                    <h5>{{ __('index.support_planning') }}</h5>
-                </div>
-                <div class="support-item">
-                    <h5>{{ __('index.support_guidance') }}</h5>
-                </div>
-                <div class="support-item">
-                    <h5>{{ __('index.support_local') }}</h5>
-                </div>
-                <div class="support-item">
-                    <h5>{{ __('index.support_customer') }}</h5>
-                </div>
-                <div class="support-item">
-                    <h5>{{ __('index.support_sustainability') }}</h5>
-                </div>
-                <div class="support-item">
-                    <h5>{{ __('index.support_regions') }}</h5>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- Support Section End -->
-
-    <!-- Popular Listing Section Start -->
-    <section class="popular-listing-section">
-        <div class="container">
-
-            <!-- Section Title Start -->
-            <div class="section-title-2" data-aos="fade-up" data-aos-duration="500">
-                <div class="d-flex align-items-center justify-content-center">
-                    <span class="title-square bg-primary"></span><span class="title-square bg-secondary"></span>
-                    <h2>{{ __('index.popular_title') }} <span> {{ __('index.popular_highlight') }}</span> {{ __('index.popular_end') }}</h2>
-                    <span class="title-square bg-primary"></span><span class="title-square bg-secondary"></span>
-                </div>
-                <p>{{ __('index.popular_description') }}</p>
-            </div>
-            <!-- Section Title End -->
-
-            <ul class="nav nav-pills listing-nav-2" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link active" data-bs-toggle="tab" href="#listing-1" role="tab" aria-controls="listing-1" aria-selected="true">
-                        {{ __('index.popular_for_rent') }}
-                    </a>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link" data-bs-toggle="tab" href="#listing-2" role="tab" aria-controls="listing-2" aria-selected="false" tabindex="-1">
-                        {{ __('index.popular_for_sale') }}
-                    </a>
-                </li>
-            </ul>
-
-            <div class="tab-content">
-                <div class="tab-pane fade active show" id="listing-1" role="tabpanel">
-
-                    <!-- Skeleton Grid -->
-                    <div class="row listing-skeleton">
-                        @for($i = 0; $i < 6; $i++)
-                        <div class="col-xl-4 col-md-6 d-flex">
-                            <div class="property-card flex-fill skeleton-card">
-                                <div class="property-listing-item p-0 mb-0 shadow-none">
-                                    <div class="buy-grid-img mb-0 rounded-0" style="overflow:hidden">
-                                        <span class="skeleton-block" style="width:100%;height:210px;border-radius:0"></span>
-                                    </div>
-                                    <div class="buy-grid-content">
-                                        <div class="d-flex align-items-center justify-content-between mb-3">
-                                            <span class="skeleton-block" style="width:80px;height:22px;border-radius:20px"></span>
-                                            <span class="skeleton-block" style="width:55px;height:14px"></span>
-                                        </div>
-                                        <div class="mb-3">
-                                            <span class="skeleton-block mb-2" style="width:75%;height:20px"></span>
-                                            <span class="skeleton-block" style="width:90%;height:14px"></span>
-                                        </div>
-                                        <span class="skeleton-block mb-3" style="width:100%;height:54px;border-radius:8px"></span>
-                                        <div class="d-flex justify-content-between">
-                                            <span class="skeleton-block" style="width:42%;height:13px"></span>
-                                            <span class="skeleton-block" style="width:35%;height:13px"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        @endfor
-                    </div>
-
-                    <!-- Real Grid -->
-                    <div class="row listing-real" style="display:none;opacity:0;transition:opacity 0.35s ease">
-
-                        @foreach($rentProperties as $property)
-                        <x-property-card :prop="$property" />
-                        @endforeach
-
-                        <div class="col-md-12">
-                            <div class="text-center pt-3">
-                                <a href="/{{ app()->getLocale() }}/property" class="btn btn-dark d-inline-flex align-items-center">{{ __('index.explore_all_listings') }}<i class="material-icons-outlined ms-1">north_east</i></a>
-                            </div>
-                        </div> <!-- end col -->
-
-                    </div>
-
-                </div>
-
-                <div class="tab-pane fade" id="listing-2" role="tabpanel">
-
-                    <!-- Skeleton Grid -->
-                    <div class="row listing-skeleton">
-                        @for($i = 0; $i < 6; $i++)
-                        <div class="col-xl-4 col-md-6 d-flex">
-                            <div class="property-card flex-fill skeleton-card">
-                                <div class="property-listing-item p-0 mb-0 shadow-none">
-                                    <div class="buy-grid-img mb-0 rounded-0" style="overflow:hidden">
-                                        <span class="skeleton-block" style="width:100%;height:210px;border-radius:0"></span>
-                                    </div>
-                                    <div class="buy-grid-content">
-                                        <div class="d-flex align-items-center justify-content-between mb-3">
-                                            <span class="skeleton-block" style="width:80px;height:22px;border-radius:20px"></span>
-                                            <span class="skeleton-block" style="width:55px;height:14px"></span>
-                                        </div>
-                                        <div class="mb-3">
-                                            <span class="skeleton-block mb-2" style="width:75%;height:20px"></span>
-                                            <span class="skeleton-block" style="width:90%;height:14px"></span>
-                                        </div>
-                                        <span class="skeleton-block mb-3" style="width:100%;height:54px;border-radius:8px"></span>
-                                        <div class="d-flex justify-content-between">
-                                            <span class="skeleton-block" style="width:42%;height:13px"></span>
-                                            <span class="skeleton-block" style="width:35%;height:13px"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        @endfor
-                    </div>
-
-                    <!-- Real Grid -->
-                    <div class="row listing-real" style="display:none;opacity:0;transition:opacity 0.35s ease">
-
-                        @foreach($saleProperties as $property)
-                        <x-property-card :prop="$property" />
-                        @endforeach
-
-                        <div class="col-md-12">
-                            <div class="text-center pt-3">
-                                <a href="/{{ app()->getLocale() }}/property" class="btn btn-dark d-inline-flex align-items-center">{{ __('index.explore_all_listings') }}<i class="material-icons-outlined ms-1">north_east</i></a>
-                            </div>
-                        </div> <!-- end col -->
-
-                    </div>
-
-                </div>
-
-            </div>
-        </div>
-    </section>
-    <!-- Popular Listing Section End -->
-
-    <!-- Exclusive Benifits Section Start -->
-    <section class="exclusive-benifit-section">
-        <div class="container">
-
-            <!-- Section Title Start -->
-            <div class="section-title-2" data-aos="fade-up" data-aos-duration="500">
-                <div class="d-flex align-items-center justify-content-center">
-                    <span class="title-square bg-primary"></span><span class="title-square bg-secondary"></span>
-                    <h2>{{ __('index.benefits_title') }} <span> {{ __('index.benefits_highlight') }}</span> {{ __('index.benefits_end') }}</h2>
-                    <span class="title-square bg-primary"></span><span class="title-square bg-secondary"></span>
-                </div>
-                <p>{{ __('index.benefits_description') }}</p>
-            </div>
-            <!-- Section Title End -->
-
-            <!-- start row -->
-            <div class="row">
-
-                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-duration="1000">
-                    <div class="benifit-item">
-                        <span class="benifit-icon">
-                            <i class="material-icons-outlined">check_circle</i>
-                        </span>
-                        <div>
-                            <h5 class="mb-2">{{ __('index.benefits_verified') }}</h5>
-                            <p class="mb-0">{{ __('index.benefits_verified_desc') }}</p>
-                        </div>
-                    </div>
-                </div> <!-- end col -->
-
-                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-duration="1500">
-                    <div class="benifit-item">
-                        <span class="benifit-icon">
-                            <i class="material-icons-outlined">check_circle</i>
-                        </span>
-                        <div>
-                            <h5 class="mb-2">{{ __('index.benefits_reach') }}</h5>
-                            <p class="mb-0">{{ __('index.benefits_reach_desc') }}</p>
-                        </div>
-                    </div>
-                </div> <!-- end col -->
-
-                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-duration="2000">
-                    <div class="benifit-item">
-                        <span class="benifit-icon">
-                            <i class="material-icons-outlined">check_circle</i>
-                        </span>
-                        <div>
-                            <h5 class="mb-2">{{ __('index.benefits_communication') }}</h5>
-                            <p class="mb-0">{{ __('index.benefits_communication_desc') }}</p>
-                        </div>
-                    </div>
-                </div> <!-- end col -->
-
-                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-duration="2500">
-                    <div class="benifit-item">
-                        <span class="benifit-icon">
-                            <i class="material-icons-outlined">check_circle</i>
-                        </span>
-                        <div>
-                            <h5 class="mb-2">{{ __('index.benefits_expert') }}</h5>
-                            <p class="mb-0">{{ __('index.benefits_expert_desc') }}</p>
-                        </div>
-                    </div>
-                </div> <!-- end col -->
-
-                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-duration="3000">
-                    <div class="benifit-item">
-                        <span class="benifit-icon">
-                            <i class="material-icons-outlined">check_circle</i>
-                        </span>
-                        <div>
-                            <h5 class="mb-2">{{ __('index.benefits_tailored') }}</h5>
-                            <p class="mb-0">{{ __('index.benefits_tailored_desc') }}</p>
-                        </div>
-                    </div>
-                </div> <!-- end col -->
-
-                <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-duration="3000">
-                    <div class="benifit-item">
-                        <span class="benifit-icon">
-                            <i class="material-icons-outlined">check_circle</i>
-                        </span>
-                        <div>
-                            <h5 class="mb-2">{{ __('index.benefits_seamless') }}</h5>
-                            <p class="mb-0">{{ __('index.benefits_seamless_desc') }}</p>
-                        </div>
-                    </div>
-                </div> <!-- end col -->
-
-            </div>
-            <!-- end row -->
-
+{{-- ───────────────────────── FAQ ───────────────────────── --}}
+<section class="bg-sand/60 py-20">
+    <div class="container-x">
+        <div class="text-center">
+            <h2 class="font-display text-4xl font-bold text-ink">{{ __('index.faq_title') }} <span class="text-brand-600">{{ __('index.faq_highlight') }}</span></h2>
+            <p class="mx-auto mt-3 max-w-2xl text-neutral-600">{{ __('index.faq_description') }}</p>
         </div>
 
-        @if(count($topViewedImages) > 0)
-        <div class="sec-bottom-imgs">
-            @foreach($topViewedImages as $i => $img)
-            <div class="bottom-img-{{ $i + 1 }}">
-                <a href="/{{ app()->getLocale() }}/property/{{ $img['slug'] }}">
-                    <img src="{{ $img['imageUrl'] }}" alt="">
-                </a>
-            </div>
+        <div class="mx-auto mt-10 max-w-3xl space-y-3" x-data="{ open: 1 }">
+            @foreach(['1','2','3','4','5'] as $i)
+                <div class="overflow-hidden rounded-2xl border border-sand bg-white">
+                    <button @click="open = open === {{ $i }} ? null : {{ $i }}" class="flex w-full items-center justify-between gap-4 px-6 py-5 text-left">
+                        <span class="font-medium text-ink">{{ __('index.faq_q'.$i) }}</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0 text-brand-600 transition" :class="open==={{ $i }} ? 'rotate-45' : ''"><path d="M12 5v14M5 12h14"/></svg>
+                    </button>
+                    <div x-show="open === {{ $i }}" x-collapse x-cloak class="px-6 pb-5 text-sm leading-relaxed text-neutral-600">
+                        {{ __('index.faq_a'.$i) }}
+                    </div>
+                </div>
             @endforeach
         </div>
-        @endif
-    </section>
-    <!-- Exclusive Benifits Section End -->
-
-    <!-- Feature Location Section Start -->
-    <section class="feature-location-section">
-        <div class="container">
-
-            <!-- Section Title Start -->
-            <div class="section-title-2" data-aos="fade-up" data-aos-duration="500">
-                <div class="d-flex align-items-center justify-content-center">
-                    <span class="title-square bg-primary"></span><span class="title-square bg-secondary"></span>
-                    <h2>{{ __('index.feature_title') }} <span> {{ __('index.feature_highlight') }}</span> {{ __('index.feature_end') }}</h2>
-                    <span class="title-square bg-primary"></span><span class="title-square bg-secondary"></span>
-                </div>
-                <p>{{ __('index.feature_description') }}</p>
-            </div>
-            <!-- Section Title End -->
-
-            <!-- start row -->
-            <div class="row g-4">
-
-                @php $shown = 0; @endphp
-                @foreach($cityCounts as $city => $count)
-                    @if($shown >= 8) @break @endif
-                    @php $imgs = $cityImages[$city] ?? []; @endphp
-                    @if(count($imgs) > 0)
-                    <div class="col-lg-3 col-sm-6" data-aos="fade-up" data-aos-duration="{{ 1000 + $shown * 300 }}">
-                        <div class="location-item-two">
-                            <div class="location-img" style="position:relative;overflow:hidden;cursor:pointer;border-radius:10px"
-                                 onclick="window.location.href='/{{ app()->getLocale() }}/property?city={{ urlencode($city) }}'">
-                                @if(count($imgs) === 1)
-                                    <img src="{{ $imgs[0] }}" class="img-fluid w-100" style="object-fit:cover;height:220px" alt="{{ $city }}">
-                                @else
-                                    <div class="city-slideshow" data-images="{{ json_encode($imgs) }}" style="height:220px;position:relative;">
-                                        @foreach($imgs as $idx => $imgUrl)
-                                        <img src="{{ $imgUrl }}"
-                                             class="city-slide w-100"
-                                             style="object-fit:cover;height:220px;position:absolute;top:0;left:0;opacity:{{ $idx === 0 ? '1' : '0' }};transition:opacity 0.8s ease, transform 0.5s ease;"
-                                             alt="{{ $city }}">
-                                        @endforeach
-                                    </div>
-                                @endif
-                                <div class="position-absolute top-0 end-0 p-3 z-1"><span class="badge bg-light text-dark">{{ $count }} {{ __('index.properties') }}</span></div>
-                                <h5 class="position-absolute start-0 bottom-0 text-white z-1 p-3 mb-0">{{ $city }}</h5>
-                            </div>
-                        </div>
-                    </div>
-                    @php $shown++; @endphp
-                    @endif
-                @endforeach
-
-                @if($shown < 8)
-                <div class="col-lg-3 col-sm-6" data-aos="fade-up" data-aos-duration="{{ 1000 + $shown * 300 }}">
-                    <div class="location-item-two">
-                        <div class="location-img" style="height:220px;border-radius:10px;overflow:hidden;position:relative;background:var(--gray-100);border:2px dashed var(--gray-300);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;">
-                            <i class="material-icons-outlined" style="font-size:36px;color:var(--gray-400)">location_city</i>
-                            <span style="font-weight:600;color:var(--gray-500);font-size:15px">{{ __('index.coming_soon') }}</span>
-                            <span style="font-size:12px;color:var(--gray-400)">{{ __('index.coming_soon_sub') }}</span>
-                        </div>
-                    </div>
-                </div>
-                @endif
-
-            </div>
-            <!-- end row -->
-
-            <div class="text-center pt-3">
-                <a href="/{{ app()->getLocale() }}/map" class="btn btn-dark d-inline-flex align-items-center">{{ __('index.more_locations') }}<i class="material-icons-outlined ms-1">north_east</i></a>
-            </div>
-
-        </div>
-    </section>
-    <!-- Feature Location Section End -->
-
-    <!-- Work Section Start -->
-    <section class="work-section">
-        <div class="container">
-
-            <!-- start row -->
-            <div class="row align-items-center justify-content-lg-end"	>
-
-                <div class="col-lg-6">
-                    <!-- Section Title Start -->
-                    <div class="section-title-2" data-aos="fade-up" data-aos-duration="500">
-                        <div class="d-flex align-items-center mb-3">
-                            <span class="title-square bg-primary"></span><span class="title-square bg-secondary"></span>
-                            <span class="text-white d-inline-block ms-2">{{ __('index.work_badge') }}</span>
-                        </div>
-                        <h2>{{ __('index.work_title') }}</h2>
-                        <p>{{ __('index.work_description') }}</p>
-                        <a href="/{{ app()->getLocale() }}/property" class="btn btn-primary">{{ __('index.work_find_property') }}</a>
-                    </div>
-                    <!-- Section Title End -->
-                </div>
-
-                <div class="col-lg-6">
-                    <div class="card work-item border-0 mb-0">
-                        <div class="card-body">
-                            <div class="mb-4">
-                                <span class="badge bg-secondary mb-2">{{ __('index.work_how_badge') }}</span>
-                                <h2>{{ __('index.work_how_title') }}</h2>
-                            </div>
-                            <div class="work-steps">
-                                <h6 class="fw-semibold fs-16 mb-1 text-primary">01. {{ __('index.work_step1') }}</h6>
-                                <p class="mb-0 fs-14">{{ __('index.work_step1_desc') }}</p>
-                            </div>
-                            <div class="work-steps">
-                                <h6 class="fw-semibold fs-16 mb-1 text-primary">02. {{ __('index.work_step2') }}</h6>
-                                <p class="mb-0 fs-14">{{ __('index.work_step2_desc') }}</p>
-                            </div>
-                            <div class="work-steps mb-0">
-                                <h6 class="fw-semibold fs-16 mb-1 text-primary">03. {{ __('index.work_step3') }}</h6>
-                                <p class="mb-0 fs-14">{{ __('index.work_step3_desc') }}</p>
-                            </div>
-                        </div> <!-- end card body -->
-                    </div> <!-- end card -->
-                </div> <!-- end col -->
-
-            </div>
-            <!-- end row -->
-
-        </div>
-    </section>
-    <!-- Work Section End -->
-
-
-    <!-- FAQ Section Start -->
-    <section class="faq-section-two">
-        <div class="container">
-
-            <!-- Section Title Start -->
-            <div class="section-title-2">
-                <div class="d-flex align-items-center justify-content-center">
-                    <span class="title-square bg-primary"></span><span class="title-square bg-secondary"></span>
-                    <h2>{{ __('index.faq_title') }} <span> {{ __('index.faq_highlight') }}</span></h2>
-                    <span class="title-square bg-primary"></span><span class="title-square bg-secondary"></span>
-                </div>
-                <p>{{ __('index.faq_description') }}</p>
-            </div>
-            <!-- Section Title End -->
-
-            <!-- start row -->
-            <div class="row align-items-center gy-4">
-
-                <div class="col-lg-6" data-aos="fade-up">
-                    <div class="property-sec-img mt-0">
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <div class="mb-3"><img src="{{ URL::asset('img/house1.webp') }}" class="img-fluid rounded" alt="" style="width:100%;height:200px;object-fit:cover"></div>
-                                <div><img src="{{ URL::asset('img/house2.webp') }}" class="img-fluid rounded" alt="" style="width:100%;height:200px;object-fit:cover"></div>
-                            </div>
-                            <div class="col-6">
-                                <div class="mb-3"><img src="{{ URL::asset('img/house3.webp') }}" class="img-fluid rounded" alt="" style="width:100%;height:200px;object-fit:cover"></div>
-                                <div><img src="{{ URL::asset('img/house.webp') }}" class="img-fluid rounded" alt="" style="width:100%;height:200px;object-fit:cover"></div>
-                            </div>
-                        </div>
-                        <div class="rotate-div">
-                        <div class="img-center-text">
-                            <h3 class="mb-1 text-white">10+</h3>
-                            <p class="mb-0 fs-14 text-white text-center">{!! __('index.faq_experience') !!}</p>
-                        </div>
-                        </div>
-                    </div>
-                </div> <!-- end col -->
-
-                <div class="col-lg-6" data-aos="fade-up" data-aos-duration="1500">
-                    <div class="accordion accordions-items-seperate faq-accordion" id="faq-accordion">
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-1" aria-expanded="true">
-                                    {{ __('index.faq_q1') }}
-                                </button>
-                            </div>
-                            <div id="accordion-1" class="accordion-collapse collapse show" data-bs-parent="#faq-accordion">
-                                <div class="accordion-body">
-                                    <p class="mb-0">{{ __('index.faq_a1') }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-2" aria-expanded="false">
-                                    {{ __('index.faq_q2') }}
-                                </button>
-                            </div>
-                            <div id="accordion-2" class="accordion-collapse collapse" data-bs-parent="#faq-accordion">
-                                <div class="accordion-body">
-                                    <p class="mb-0">{{ __('index.faq_a2') }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-3" aria-expanded="false">
-                                    {{ __('index.faq_q3') }}
-                                </button>
-                            </div>
-                            <div id="accordion-3" class="accordion-collapse collapse" data-bs-parent="#faq-accordion">
-                                <div class="accordion-body">
-                                    <p class="mb-0">{{ __('index.faq_a3') }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-4" aria-expanded="false">
-                                    {{ __('index.faq_q4') }}
-                                </button>
-                            </div>
-                            <div id="accordion-4" class="accordion-collapse collapse" data-bs-parent="#faq-accordion">
-                                <div class="accordion-body">
-                                    <p class="mb-0">{{ __('index.faq_a4') }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="accordion-item">
-                            <div class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accordion-5" aria-expanded="false">
-                                    {{ __('index.faq_q5') }}
-                                </button>
-                            </div>
-                            <div id="accordion-5" class="accordion-collapse collapse" data-bs-parent="#faq-accordion">
-                                <div class="accordion-body">
-                                    <p class="mb-0">{{ __('index.faq_a5') }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div> <!-- end col -->
-
-            </div>
-            <!-- end row -->
-        </div>
-    </section>
-    <!-- FAQ Section End -->
-
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    // ── Reveal listing grids, hide skeletons ──────────────────────────────
-    document.querySelectorAll('.listing-skeleton').forEach(function (sk) {
-        sk.style.display = 'none';
-    });
-    document.querySelectorAll('.listing-real').forEach(function (grid) {
-        grid.style.display = '';
-        requestAnimationFrame(function () { grid.style.opacity = '1'; });
-    });
-
-    document.querySelectorAll('.city-slideshow').forEach(function (slideshow) {
-        var slides = slideshow.querySelectorAll('.city-slide');
-        if (slides.length < 2) return;
-        var current = 0;
-        setInterval(function () {
-            slides[current].style.opacity = '0';
-            current = (current + 1) % slides.length;
-            slides[current].style.opacity = '1';
-        }, 3000);
-    });
-
-    document.querySelectorAll('.type-slideshow').forEach(function (slideshow) {
-        var slides = slideshow.querySelectorAll('img');
-        if (slides.length < 2) return;
-        var current = 0;
-        setInterval(function () {
-            slides[current].style.opacity = '0';
-            current = (current + 1) % slides.length;
-            slides[current].style.opacity = '1';
-        }, 3000);
-    });
-});
-
-// ── City autocomplete (index) ────────────────
-(function () {
-    var input    = document.getElementById('cityInputIndex');
-    var hidden   = document.getElementById('cityHiddenIndex');
-    var list     = document.getElementById('citySuggestionsIndex');
-    var clearBtn = document.getElementById('cityClearBtnIndex');
-    var spinner  = document.getElementById('citySpinnerIndex');
-    if (!input || !list) return;
-
-    document.body.appendChild(list);
-
-    var timer = null;
-    var lang  = '{{ app()->getLocale() }}';
-    var shown = {};
-
-    function parseYandex(body) {
-        var m = (body || '').trim().match(/suggest\.apply\(([\s\S]+)\)/);
-        if (!m) return [];
-        try { var data = JSON.parse(m[1]); } catch (e) { return []; }
-        return (data.results || []).map(function (item) {
-            var title = (item.title || {}).text || '';
-            var where = ((item.log_id || {}).where) || {};
-            if (!title || title !== (where.title || '')) return null;
-            var parts = (where.name || '').split(',').map(function (p) { return p.trim(); }).filter(Boolean);
-            var desc = parts.filter(function (p) { return p !== title; }).join(', ');
-            return { name: title, desc: desc };
-        }).filter(Boolean);
-    }
-
-    function makeLi(name, desc, enName) {
-        var li = document.createElement('li');
-        li.innerHTML = '<i class="material-icons-outlined city-item-icon">location_on</i>'
-            + '<span class="city-item-text">'
-            +   '<span class="city-item-name">' + name + '</span>'
-            +   (desc ? '<span class="city-item-desc">' + desc + '</span>' : '')
-            + '</span>';
-        li.addEventListener('mousedown', function (e) {
-            e.preventDefault();
-            input.value = name;
-            if (hidden) hidden.value = enName || name;
-            if (clearBtn) clearBtn.style.display = 'flex';
-            list.style.display = 'none';
-            list.innerHTML = '';
-            shown = {};
-        });
-        return li;
-    }
-
-    function positionList() {
-        var rect = input.getBoundingClientRect();
-        list.style.top   = (rect.bottom + window.scrollY) + 'px';
-        list.style.left  = (rect.left   + window.scrollX) + 'px';
-        list.style.width = rect.width + 'px';
-    }
-
-    function showSuggestions(items) {
-        list.innerHTML = '';
-        shown = {};
-        if (!items.length) { list.style.display = 'none'; return; }
-        positionList();
-        items.forEach(function (it) {
-            if (shown[it.name]) return;
-            shown[it.name] = true;
-            list.appendChild(makeLi(it.name, it.desc, it.enName));
-        });
-        list.style.display = 'block';
-    }
-
-    function updateClearBtn() {
-        if (clearBtn) clearBtn.style.display = input.value ? 'flex' : 'none';
-    }
-
-    input.addEventListener('input', function () {
-        updateClearBtn();
-        clearTimeout(timer);
-        var q = input.value.trim();
-        if (q.length < 2) { list.style.display = 'none'; list.innerHTML = ''; shown = {}; return; }
-
-        timer = setTimeout(function () {
-            var yLang = lang === 'en' ? 'en_US' : lang === 'hy' ? 'hy_AM' : 'ru_RU';
-            var base  = 'https://suggest-maps.yandex.ru/suggest-geo?apikey={{ config('services.yandex.maps_key') }}&text=' + encodeURIComponent(q) + '&results=7&highlight=0&v=9';
-            var pLocal = fetch(base + '&lang=' + yLang).then(function (r) { return r.text(); }).catch(function () { return ''; });
-            var pEn    = lang === 'en' ? Promise.resolve(null) : fetch(base + '&lang=en_US').then(function (r) { return r.text(); }).catch(function () { return ''; });
-            Promise.all([pLocal, pEn]).then(function (texts) {
-                var local = parseYandex(texts[0]);
-                var en    = texts[1] !== null ? parseYandex(texts[1]) : local;
-                var combined = local.map(function (it, i) {
-                    return { name: it.name, desc: it.desc, enName: (en[i] || {}).name || it.name };
-                });
-                showSuggestions(combined);
-            }).catch(function () { list.style.display = 'none'; });
-        }, 150);
-    });
-
-    if (clearBtn) {
-        clearBtn.addEventListener('click', function () {
-            input.value = '';
-            if (hidden) hidden.value = '';
-            clearBtn.style.display = 'none';
-            list.style.display = 'none';
-            list.innerHTML = '';
-            shown = {};
-            input.focus();
-        });
-    }
-
-    input.addEventListener('blur', function () {
-        setTimeout(function () { list.style.display = 'none'; }, 200);
-    });
-
-    updateClearBtn();
-}());
-
-// ── City: гарантированный резолв English имени перед submit ──────────
-(function () {
-    var form    = document.querySelector('.home-search-2 form');
-    var display = document.getElementById('cityInputIndex');
-    var hidden  = document.getElementById('cityHiddenIndex');
-    var lang    = '{{ app()->getLocale() }}';
-    if (!form || !display || !hidden) return;
-
-    form.addEventListener('submit', function (e) {
-        var q = display.value.trim();
-        if (!q) { hidden.value = ''; return; }
-        if (lang === 'en') { hidden.value = q; return; }
-        // Если hidden уже содержит другое (резолвленное) значение — доверяем ему
-        if (hidden.value && hidden.value !== q) return;
-        // Иначе резолвим перед отправкой
-        e.preventDefault();
-        fetch('https://suggest-maps.yandex.ru/suggest-geo?apikey={{ config('services.yandex.maps_key') }}&text=' + encodeURIComponent(q) + '&lang=en_US&results=1&highlight=0&v=9')
-            .then(function (r) { return r.text(); })
-            .then(function (body) {
-                var m = body.trim().match(/suggest\.apply\(([\s\S]+)\)/);
-                var data = m ? JSON.parse(m[1]) : {};
-                var first = (data.results || [])[0];
-                hidden.value = first ? ((first.title || {}).text || q) : q;
-            })
-            .catch(function () { hidden.value = q; })
-            .finally(function () { form.submit(); });
-    });
-}());
-
-// ── Price inputs: block negative, ±1000 buttons ──────────────────────
-(function () {
-    ['minPriceIndex', 'maxPriceIndex'].forEach(function (id) {
-        var el = document.getElementById(id);
-        if (!el) return;
-        el.addEventListener('keydown', function (e) {
-            if (e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault();
-        });
-    });
-    document.querySelectorAll('[data-price-step]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var target = document.querySelector('[name="' + btn.dataset.target + '"]');
-            if (!target) return;
-            var step = parseInt(btn.dataset.priceStep, 10);
-            target.value = Math.max(0, (parseInt(target.value, 10) || 0) + step);
-        });
-    });
-    // Strip negative values before submit
-    document.querySelector('.home-search-2 form') && document.querySelector('.home-search-2 form').addEventListener('submit', function () {
-        ['minPriceIndex', 'maxPriceIndex'].forEach(function (id) {
-            var el = document.getElementById(id);
-            if (el && parseInt(el.value, 10) < 0) el.value = '';
-        });
-    });
-}());
-
-// ── Custom select dropdowns for Buy/Rent + Type (modern dropdown like the filter) ──
-// DOMContentLoaded so script.js (loaded in the footer) has defined initCustomSelects.
-document.addEventListener('DOMContentLoaded', function () {
-    if (typeof initCustomSelects === 'function') initCustomSelects();
-});
-</script>
+    </div>
+</section>
 
 @endsection
