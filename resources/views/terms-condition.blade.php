@@ -25,13 +25,14 @@
         @endcomponent
 
         <!-- Start Content -->
-        <div class="content">
+        <div class="content legal-page">
 
             <div class="container">
 
-                <!-- start row -->
-                <div class="row">
-                    <div class="col-lg-12">
+                <!-- Legal content card -->
+                <div class="row justify-content-center">
+                    <div class="col-lg-10">
+                        <div class="legal-card">
                         <h6 class="mb-3">{{ __('terms-condition.section_intro') }}</h6>
                         <p class="mb-3">{{ __('terms-condition.intro_body') }}</p>
                         <h6 class="mb-3">{{ __('terms-condition.section_acceptance') }}</h6>
@@ -70,6 +71,7 @@
                         <p class="mb-3">{{ __('terms-condition.insurance_body') }}</p>
                         <h6 class="mb-3">{{ __('terms-condition.section_law') }}</h6>
                         <p class="mb-0">{{ __('terms-condition.law_body') }}</p>
+                        </div>
                     </div>
                 </div>
                 <!-- end row -->

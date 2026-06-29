@@ -14082,3 +14082,169 @@ html[data-theme="dark"] [class*="ymaps-"][class*="zoom__button"] {
   .faq-page .col-lg-3 { min-width: 304px; }
   .faq-page .col-lg-9 { flex: 1 1 0%; width: auto; max-width: 100%; }
 }
+
+/* ===== Legal pages (terms / privacy) — readable soft card ===== */
+.legal-page { padding-bottom: 8px; }
+.legal-page .legal-card {
+  background: var(--white);
+  border: 1px solid var(--gray-100);
+  border-radius: 18px;
+  padding: 40px 44px;
+  box-shadow: 0 8px 24px rgba(5, 19, 33, 0.04);
+}
+@media (max-width: 575.98px) {
+  .legal-page .legal-card { padding: 24px 20px; }
+}
+.legal-page .legal-card h6 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-top: 30px;
+  padding-left: 14px;
+  border-left: 3px solid var(--primary-900);
+}
+.legal-page .legal-card h6:first-child { margin-top: 0; }
+.legal-page .legal-card p { color: var(--gray-500); line-height: 1.8; }
+.legal-page .legal-card ul.list-styled { padding-left: 0; list-style: none; margin-top: 4px; }
+.legal-page .legal-card ul.list-styled li {
+  position: relative;
+  padding-left: 26px;
+  color: var(--gray-500);
+  line-height: 1.7;
+}
+.legal-page .legal-card ul.list-styled li::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 9px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--primary-900);
+}
+
+/* ===== Property single — soft-card pass (scoped to .ps-page) ===== */
+/* Accordion sections as soft cards */
+.ps-page .accordions-items-seperate .accordion-item {
+  border: 1px solid var(--gray-100);
+  border-radius: 14px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  background: var(--white);
+  transition: box-shadow .2s ease;
+}
+.ps-page .accordions-items-seperate .accordion-item:hover {
+  box-shadow: 0 8px 24px rgba(5, 19, 33, 0.05);
+}
+.ps-page .accordions-items-seperate .accordion-button {
+  font-weight: 700;
+  border-radius: 14px;
+  padding: 18px 20px;
+}
+.ps-page .accordions-items-seperate .accordion-button:not(.collapsed) {
+  color: var(--primary-900);
+  background: transparent;
+}
+.ps-page .accordions-items-seperate .accordion-body {
+  padding: 14px 20px 18px;
+  line-height: 1.8;
+  color: var(--gray-500);
+}
+
+/* Sidebar cards (direct children only — keeps nested .bg-light cards intact) */
+.ps-page .property-single-sidebar > .card {
+  border: 1px solid var(--gray-100);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(5, 19, 33, 0.04);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.ps-page .property-single-sidebar > .card > .card-header {
+  background: transparent;
+  border-bottom: 1px solid var(--gray-100);
+  padding: 18px 20px;
+}
+.ps-page .property-single-sidebar > .card > .card-body {
+  padding: 20px;
+}
+
+/* Property features tiles → line 1: icon + label, line 2: value (API) */
+.ps-page .feature-item { flex-wrap: wrap; }
+/* amenities/features tiles (icon + span): span fills remaining width, text wraps inside */
+.ps-page .feature-item > span { flex: 1 1 0; min-width: 0; }
+.ps-page .feature-item > div { display: contents; }
+.ps-page .feature-item > div > small { order: 1; }
+.ps-page .feature-item > div > strong { order: 2; flex-basis: 100%; }
+
+/* ===== Property single — global redesign ===== */
+
+/* 1. Feature tiles: card background */
+.ps-page .feature-item {
+  background: var(--gray-50, #f8fafc);
+  border: 1px solid var(--gray-100);
+  border-radius: 10px;
+  padding: 12px;
+  align-items: flex-start !important;
+  width: 100%;
+  box-sizing: border-box;
+  height: 100%;
+}
+html[data-theme="dark"] .ps-page .feature-item {
+  background: rgba(255,255,255,.04);
+  border-color: rgba(255,255,255,.08);
+}
+
+/* 2. Boolean features: pill badges */
+.ps-page .bool-pill {
+  background: rgba(3,189,157,.07);
+  border: 1px solid rgba(3,189,157,.18);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 13px;
+}
+html[data-theme="dark"] .ps-page .bool-pill {
+  background: rgba(3,189,157,.12);
+  border-color: rgba(3,189,157,.25);
+}
+
+/* 3. Accordion: left accent bar on open state */
+.ps-page .accordions-items-seperate .accordion-button:not(.collapsed) {
+  border-left: 3px solid var(--primary);
+  padding-left: 17px;
+  background: rgba(3,189,157,.03);
+}
+.ps-page .accordions-items-seperate .accordion-button.collapsed {
+  border-left: 3px solid transparent;
+  padding-left: 17px;
+}
+
+/* 4. Agent card */
+.ps-page .agent-card-body { padding: 24px 20px; }
+.ps-page .agent-ws-logo { max-height: 44px; max-width: 130px; object-fit: contain; }
+.ps-page .agent-ws-initial {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--primary); color: #fff;
+  font-size: 22px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; margin: 0 auto;
+}
+.ps-page .agent-avatar-circle {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--secondary, #6c757d); color: #fff;
+  font-size: 22px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; margin: 0 auto;
+}
+
+/* 5. Property details card: cleaner rows */
+.ps-page .prop-details-card .card-body > div {
+  padding: 10px 0;
+}
+.ps-page .prop-details-card .card-body > div:not(:last-child) {
+  border-bottom: 1px solid var(--gray-100);
+}
+.ps-page .prop-details-card .card-body .text-muted {
+  font-size: 13px;
+  font-weight: 500;
+}
+.ps-page .prop-details-card .card-body .fw-semibold {
+  font-size: 14px;
+}
