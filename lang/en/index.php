@@ -9,6 +9,7 @@ return [
     'hero_title_end' => 'with Confidence.',
     'hero_description' => 'Browse verified houses, apartments and commercial properties — with clear details, real photos and a direct line to the broker.',
     'hero_buy_property' => 'Buy Property',
+    'hero_map' => 'View on Map',
 
     // Search Form
     'search_buy_sell' => 'Buy / Rent',
@@ -31,8 +32,11 @@ return [
     // Counters
     'counter_deals' => 'Successful Deals',
     'counter_active' => 'Active Listings',
+    'stats_cities' => 'Cities Covered',
+    'stats_experience' => 'Years of Experience',
 
     // Property Type Section
+    'property_type_eyebrow' => 'BROWSE BY TYPE',
     'property_type_title' => 'Recommended',
     'property_type_highlight' => 'Property',
     'property_type_end' => 'Types',
@@ -68,6 +72,7 @@ return [
     'popular_starts_from' => 'Starts From',
 
     // Exclusive Benefits Section
+    'benefits_eyebrow' => 'WHY CHOOSE US',
     'benefits_title' => 'Discover the',
     'benefits_highlight' => 'Advantages & Exclusive',
     'benefits_end' => 'Benefits',
@@ -86,6 +91,7 @@ return [
     'benefits_seamless_desc' => 'Our team responds in Armenian, Russian and English.',
 
     // Feature Location Section
+    'feature_eyebrow' => 'EXPLORE BY CITY',
     'feature_title' => 'Discover',
     'feature_highlight' => 'Featured',
     'feature_end' => 'Location',
@@ -112,6 +118,7 @@ return [
     'review_description' => 'Hear from our happy customers',
 
     // FAQ Section
+    'faq_eyebrow' => 'FAQ',
     'faq_title' => 'Frequently Asked',
     'faq_highlight' => 'Questions',
     'faq_description' => 'Quick Answers to Common Questions',
@@ -134,6 +141,10 @@ return [
     'bath' => 'Bath',
     'sq_ft' => 'Sq Ft',
     'explore_all_listings' => 'Explore all Listings',
+    'featured_eyebrow' => 'FEATURED PROPERTIES',
+    'featured_title' => 'Spaces That',
+    'featured_highlight' => 'Define Excellence',
+    'featured_description' => 'Hand-picked listings with verified details, real photos and direct broker contact.',
 
     // Property Types
     'villa' => 'Villa',

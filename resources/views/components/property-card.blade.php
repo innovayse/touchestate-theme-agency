@@ -31,7 +31,7 @@
 
             {{-- Top badges --}}
             <div class="d-flex align-items-center justify-content-between position-absolute top-0 start-0 end-0 p-3">
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-none d-sm-flex align-items-center gap-2">
                     @if($txType === 'rentdaily')
                         <span class="badge badge-sm bg-danger d-flex align-items-center gap-1">
                             <x-icon name="bolt" size="13"/>{{ __('index.popular_rent_daily') }}
@@ -48,8 +48,6 @@
 
                     @if($status === 'Draft')
                         <span class="badge badge-sm bg-secondary">{{ __('property.status_draft') }}</span>
-                    @elseif($status === 'Active')
-                        <span class="badge badge-sm bg-success">{{ __('property.status_active') }}</span>
                     @elseif($status === 'Sold')
                         <span class="badge badge-sm bg-dark">{{ __('property.status_sold') }}</span>
                     @elseif($status === 'Rented')
@@ -67,7 +65,7 @@
                     </a>
                     <a href="javascript:void(0)" class="favourite"
                        style="background:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.15);">
-                        <x-icon name="favorite_border" size="17" style="color:#555"/>
+                        <x-icon name="favorite_border" size="17"/>
                     </a>
                 </div>
             </div>
@@ -82,17 +80,17 @@
         <div class="d-flex flex-column flex-fill p-3">
 
             {{-- Title + address + type --}}
-            <div class="d-flex align-items-start justify-content-between gap-2 mb-3">
-                <div style="min-width:0;flex:1;">
-                    <h6 class="mb-1" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4">
+            <div class="mb-3">
+                <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
+                    <h6 class="mb-0" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4;min-width:0;flex:1;">
                         <a href="/{{ $locale }}/property/{{ $prop['slug'] }}" class="text-dark text-decoration-none">{{ $prop['title'] }}</a>
                     </h6>
-                    <p class="fs-14 mb-0 text-muted d-flex align-items-center" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                        <x-icon name="location_on" size="14" class="me-1" style="flex-shrink:0"/>
-                        <span style="overflow:hidden;text-overflow:ellipsis;">{{ $prop['fullAddress'] ?? $prop['city'] ?? '' }}</span>
-                    </p>
+                    <span class="badge bg-secondary flex-shrink-0">{{ __($ptKey) !== $ptKey ? __($ptKey) : ($prop['propertyType'] ?? '') }}</span>
                 </div>
-                <span class="badge bg-secondary flex-shrink-0">{{ __($ptKey) !== $ptKey ? __($ptKey) : ($prop['propertyType'] ?? '') }}</span>
+                <p class="fs-14 mb-0 text-muted d-flex align-items-center" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                    <x-icon name="location_on" size="14" class="me-1" style="flex-shrink:0"/>
+                    <span style="overflow:hidden;text-overflow:ellipsis;">{{ $prop['fullAddress'] ?? $prop['city'] ?? '' }}</span>
+                </p>
             </div>
 
             {{-- Price row --}}

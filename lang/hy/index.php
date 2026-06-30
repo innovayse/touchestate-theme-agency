@@ -9,6 +9,7 @@ return [
     'hero_title_end' => 'վստահորեն։',
     'hero_description' => 'Թերթեք ստուգված տներ, բնակարաններ և կոմերցիոն անշարժ գույք՝ մանրամասն նկարագրություններով, իրական լուսանկարներով և ուղղակի կապով բրոկերի հետ։',
     'hero_buy_property' => 'Գնել Անշարժ Գույք',
+    'hero_map' => 'Տեսնել քարտեզ',
 
     // Search Form
     'search_buy_sell' => 'Գնել / Վարձակալել',
@@ -31,8 +32,11 @@ return [
     // Counters
     'counter_deals' => 'Հաջող գործարքներ',
     'counter_active' => 'Ակտիվ հայտարարություններ',
+    'stats_cities' => 'Քաղաքներ',
+    'stats_experience' => 'Տարի փորձ',
 
     // Property Type Section
+    'property_type_eyebrow' => 'ՏԵՍԱԿ',
     'property_type_title' => 'Առաջարկվող',
     'property_type_highlight' => 'Անշարժ Գույքի',
     'property_type_end' => 'Տեսակներ',
@@ -68,6 +72,7 @@ return [
     'popular_starts_from' => 'Սկսած',
 
     // Exclusive Benefits Section
+    'benefits_eyebrow' => 'ԻՆՉՈՒ ԸՆՏՐԵԼ ՄԵԶ',
     'benefits_title' => 'Բացահայտեք',
     'benefits_highlight' => 'Առավելությունները և Բացառիկ',
     'benefits_end' => 'Օգուտները',
@@ -86,6 +91,7 @@ return [
     'benefits_seamless_desc' => 'Թիմը պատասխանում է հայերեն, ռուսերեն և անգլերեն։',
 
     // Feature Location Section
+    'feature_eyebrow' => 'ՔԱՂԱՔՆԵՐ',
     'feature_title' => 'Բացահայտեք',
     'feature_highlight' => 'Ընտրված',
     'feature_end' => 'Տեղանքները',
@@ -112,6 +118,7 @@ return [
     'review_description' => 'Լսեք մեր գոհ հաճախորդներին',
 
     // FAQ Section
+    'faq_eyebrow' => 'ՀԱՐՑ ՈՒ ՊԱՏԱՍԽԱՆ',
     'faq_title' => 'Հաճախ տրվող',
     'faq_highlight' => 'Հարցեր',
     'faq_description' => 'Արագ պատասխաններ ընդհանուր հարցերին',
@@ -134,6 +141,10 @@ return [
     'bath' => 'Լոգարան',
     'sq_ft' => 'քառ. ֆտ',
     'explore_all_listings' => 'Տեսնել բոլոր հայտարարությունները',
+    'featured_eyebrow' => 'ԸՆՏՐՎԱԾ ՀԱՅՏԱՐԱՐՈՒԹՅՈՒՆՆԵՐ',
+    'featured_title' => 'Հայտարարություններ,',
+    'featured_highlight' => 'որոնք աչքի են ընկնում',
+    'featured_description' => 'Ընտրված հայտարարություններ իրական լուսանկարներով և ուղղակի կապով բրոկերի հետ:',
 
     // Property Types
     'villa' => 'Վիլլա',
