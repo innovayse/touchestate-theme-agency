@@ -12,12 +12,19 @@ class PropertyFilterSecurityTest extends TestCase
 {
     private function mockClient(array $capturedParams = []): void
     {
-        $mock = $this->createMock(TouchEstateClient::class);
-        $propertiesMock = new class($capturedParams) {
+        $mock           = $this->createMock(TouchEstateClient::class);
+        $propertiesMock = new class ($capturedParams) {
             public array $lastParams = [];
-            public function __construct(array &$ref) { $this->ref = &$ref; }
-            public function list(array $params): array {
+
+            public function __construct(array &$ref)
+            {
+                $this->ref = &$ref;
+            }
+
+            public function list(array $params): array
+            {
                 $this->ref = $params;
+
                 return ['items' => [], 'totalCount' => 0, 'hasNextPage' => false];
             }
         };
