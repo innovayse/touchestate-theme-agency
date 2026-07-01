@@ -4,20 +4,24 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\View\View;
 use TouchEstate\Sdk\TouchEstateClient;
 
 class FavoritesController extends Controller
 {
-    public function __construct(private TouchEstateClient $client) {}
+    public function __construct(private TouchEstateClient $client)
+    {
+    }
 
-    public function index()
+    public function index(): View
     {
         return view('favorites');
     }
 
-    public function load(Request $request)
+    public function load(Request $request): JsonResponse
     {
         $slugs = $request->input('slugs', []);
 
@@ -37,7 +41,7 @@ class FavoritesController extends Controller
             }
             try {
                 $prop = Cache::remember('te_prop:' . $slug, 3600, function () use ($slug) {
-                    $p = $this->client->properties()->retrieve($slug);
+                    $p         = $this->client->properties()->retrieve($slug);
                     $p['slug'] = $slug;
                     $addrParts = array_filter([
                         $p['street']         ?? null,
@@ -49,6 +53,7 @@ class FavoritesController extends Controller
                     if ($addrParts) {
                         $p['fullAddress'] = implode(', ', $addrParts);
                     }
+
                     return $p;
                 });
 
