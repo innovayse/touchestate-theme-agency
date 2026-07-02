@@ -47,8 +47,8 @@ return [
     'sq_ft' => 'քմ',
     'listed_on' => 'Տեղադրված է',
     'category' => 'Կատեգորիա',
-    'load_more' => 'Բեռնել ավելին',
-    'show_less' => 'Ցույց տալ պակաս',
+    'load_more' => 'Ավելին',
+    'show_less' => 'Պակել',
 
     // Categories
     'suite' => 'Լյուքս',

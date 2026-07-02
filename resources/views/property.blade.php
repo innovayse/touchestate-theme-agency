@@ -67,12 +67,12 @@
                 </div>
 
                 <!-- Load More / Show Less -->
-                <div class="text-center mb-4 d-flex align-items-center justify-content-center gap-3" id="grid-controls">
-                    <button type="button" class="btn btn-dark d-inline-flex align-items-center gap-1" id="btnShowLess" style="display:none">
+                <div class="text-center mb-4 align-items-center justify-content-center gap-3" id="grid-controls">
+                    <button type="button" class="btn btn-dark d-inline-flex align-items-center gap-1" id="btnShowLess" style="display:none; border-radius:10px">
                         <i class="material-icons-outlined" style="font-size:18px">expand_less</i>
                         {{ __('property.show_less') }}
                     </button>
-                    <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-1" id="btnLoadMore" style="display:none">
+                    <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-1" id="btnLoadMore" style="display:none; border-radius:10px">
                         {{ __('property.load_more') }}
                         <i class="material-icons-outlined" style="font-size:18px">expand_more</i>
                     </button>
