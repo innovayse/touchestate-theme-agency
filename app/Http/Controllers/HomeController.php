@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use TouchEstate\Sdk\TouchEstateClient;
 use Illuminate\Support\Facades\Cache;
+use TouchEstate\Sdk\TouchEstateClient;
 
 class HomeController extends Controller
 {
-    public function __construct(private TouchEstateClient $client) {}
+    public function __construct(private TouchEstateClient $client)
+    {
+    }
 
-    public function index()
+    public function index(): \Illuminate\View\View
     {
         $allItems   = [];
         $stats      = ['propertiesListed' => 0, 'happyClients' => 0, 'citiesCovered' => 0, 'satisfactionRate' => 98];
@@ -26,13 +28,15 @@ class HomeController extends Controller
                     'status'    => 'Active',
                 ])['items'] ?? [];
             });
-        } catch (\Throwable) {}
+        } catch (\Throwable) {
+        }
 
         try {
             $stats = Cache::remember('te_stats', 3600, function () {
                 return $this->client->properties()->stats();
             });
-        } catch (\Throwable) {}
+        } catch (\Throwable) {
+        }
 
         // Hero marketing figures — fixed (API only counts what's been entered so far). Editable in config/site.php / .env.
         $stats['successfulDeals']  = (int) config('site.stats.deals', 1000);
@@ -40,12 +44,14 @@ class HomeController extends Controller
 
         // Rent / Sale tabs — top 6 each
         $rentProperties = array_values(array_slice(
-            array_filter($allItems, fn($p) => strtolower($p['transactionType'] ?? '') === 'rent'),
-            0, 6
+            array_filter($allItems, fn ($p) => strtolower($p['transactionType'] ?? '') === 'rent'),
+            0,
+            6
         ));
         $saleProperties = array_values(array_slice(
-            array_filter($allItems, fn($p) => strtolower($p['transactionType'] ?? '') === 'sale'),
-            0, 6
+            array_filter($allItems, fn ($p) => strtolower($p['transactionType'] ?? '') === 'sale'),
+            0,
+            6
         ));
 
         // Type counts + images (up to 3 per type)
@@ -66,7 +72,9 @@ class HomeController extends Controller
         $cityImages = [];
         foreach ($allItems as $p) {
             $city = $p['city'] ?? '';
-            if (!$city) continue;
+            if (!$city) {
+                continue;
+            }
             $cityCounts[$city] = ($cityCounts[$city] ?? 0) + 1;
             if (!empty($p['primaryImageUrl']) && count($cityImages[$city] ?? []) < 4) {
                 $cityImages[$city][] = $p['primaryImageUrl'];
@@ -79,7 +87,9 @@ class HomeController extends Controller
         foreach ($allItems as $p) {
             if (!empty($p['primaryImageUrl'])) {
                 $topViewedImages[] = ['slug' => $p['slug'], 'imageUrl' => $p['primaryImageUrl']];
-                if (count($topViewedImages) >= 6) break;
+                if (count($topViewedImages) >= 6) {
+                    break;
+                }
             }
         }
 
@@ -91,8 +101,14 @@ class HomeController extends Controller
         sort($availableTypes);
 
         return view('index', compact(
-            'rentProperties', 'saleProperties', 'stats',
-            'typeCounts', 'cityCounts', 'topViewedImages', 'cityImages', 'typeImages',
+            'rentProperties',
+            'saleProperties',
+            'stats',
+            'typeCounts',
+            'cityCounts',
+            'topViewedImages',
+            'cityImages',
+            'typeImages',
             'availableTypes',
         ));
     }

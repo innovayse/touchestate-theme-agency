@@ -11,7 +11,9 @@ use TouchEstate\Sdk\TouchEstateClient;
 
 class PropertyController extends Controller
 {
-    public function __construct(private TouchEstateClient $client) {}
+    public function __construct(private TouchEstateClient $client)
+    {
+    }
 
     private function validateFilters(): void
     {
@@ -84,6 +86,7 @@ class PropertyController extends Controller
         ]);
     }
 
+    /** @return array<string, mixed> */
     private function buildFilters(): array
     {
         $pageSize = min((int) request('pageSize', 21), 100);
@@ -189,7 +192,7 @@ class PropertyController extends Controller
         return $params;
     }
 
-    public function index()
+    public function index(): \Illuminate\View\View
     {
         $this->validateFilters();
 
@@ -207,7 +210,7 @@ class PropertyController extends Controller
         return view('property', compact('properties'));
     }
 
-    public function map()
+    public function map(): \Illuminate\View\View
     {
         try {
             $result = $this->client->properties()->list([
@@ -215,7 +218,7 @@ class PropertyController extends Controller
                 'pageSize'   => 100,
                 'status'     => 'Active',
             ]);
-            $items = $this->enrichWithCoordinates($result['items'] ?? []);
+            $items      = $this->enrichWithCoordinates($result['items'] ?? []);
             $properties = array_merge($result, ['items' => $items]);
         } catch (\Exception $e) {
             $properties = ['items' => [], 'totalCount' => 0, 'hasNextPage' => false];
@@ -226,6 +229,9 @@ class PropertyController extends Controller
 
     /**
      * Fetch latitude/longitude for each property via parallel curl_multi requests, with caching.
+     *
+     * @param  array<int, array<string, mixed>> $items
+     * @return array<int, array<string, mixed>>
      */
     private function enrichWithCoordinates(array $items): array
     {
@@ -238,10 +244,10 @@ class PropertyController extends Controller
             }
 
             $cacheKey = 'prop_coords:' . $slug;
-            $coords = Cache::get($cacheKey);
+            $coords   = Cache::get($cacheKey);
 
             if ($coords !== null) {
-                $item['latitude'] = $coords['lat'];
+                $item['latitude']  = $coords['lat'];
                 $item['longitude'] = $coords['lng'];
             } else {
                 $uncached[$slug] = $i;
@@ -255,13 +261,13 @@ class PropertyController extends Controller
 
         // Step 2: Build signed curl handles for all uncached slugs
         $signer    = new SignatureV4Signer();
-        $baseUrl   = rtrim(config('touchestate.base_url', env('TOUCHESTATE_BASE_URL', '')), '/');
-        $publicKey = config('touchestate.public_key', env('TOUCHESTATE_PUBLIC_KEY', ''));
-        $secretKey = config('touchestate.secret_key', env('TOUCHESTATE_SECRET_KEY', ''));
+        $baseUrl   = rtrim((string) config('touchestate.base_url', ''), '/');
+        $publicKey = (string) config('touchestate.public_key', '');
+        $secretKey = (string) config('touchestate.secret_key', '');
 
         $urlParts    = parse_url($baseUrl);
-        $host        = $urlParts['host'] ?? 'localhost';
-        $port        = $urlParts['port'] ?? null;
+        $host        = $urlParts['host']   ?? 'localhost';
+        $port        = $urlParts['port']   ?? null;
         $scheme      = $urlParts['scheme'] ?? 'https';
         $defaultPort = ($scheme === 'https') ? 443 : 80;
         $hostHeader  = ($port !== null && $port !== $defaultPort)
@@ -286,15 +292,24 @@ class PropertyController extends Controller
             $signedHeaders = implode(';', $signedHeaderNames);
 
             $signature = $signer->calculateSignature(
-                'GET', $path, '', $headers, $signedHeaders,
-                $bodyHash, $timestamp, $secretKey
+                'GET',
+                $path,
+                '',
+                $headers,
+                $signedHeaders,
+                $bodyHash,
+                $timestamp,
+                $secretKey
             );
 
             $dateStamp       = substr($timestamp, 0, 8);
             $credentialScope = $signer->getCredentialScope($dateStamp);
             $authorization   = sprintf(
                 'TE-HMAC-SHA256 Credential=%s/%s, SignedHeaders=%s, Signature=%s',
-                $publicKey, $credentialScope, $signedHeaders, $signature
+                $publicKey,
+                $credentialScope,
+                $signedHeaders,
+                $signature
             );
 
             $ch = curl_init($uri);
@@ -314,8 +329,8 @@ class PropertyController extends Controller
 
         // Step 3: Execute in parallel with curl_multi (max 25 concurrent)
         $maxConcurrent = 25;
-        $slugs   = array_keys($handles);
-        $results = []; // slug → json string or null
+        $slugs         = array_keys($handles);
+        $results       = []; // slug → json string or null
 
         for ($offset = 0; $offset < count($slugs); $offset += $maxConcurrent) {
             $batch = array_slice($slugs, $offset, $maxConcurrent);
@@ -334,9 +349,9 @@ class PropertyController extends Controller
             } while ($running > 0);
 
             foreach ($batch as $slug) {
-                $ch   = $handles[$slug];
-                $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                $body = ($code >= 200 && $code < 300) ? curl_multi_getcontent($ch) : null;
+                $ch             = $handles[$slug];
+                $code           = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $body           = ($code >= 200 && $code < 300) ? curl_multi_getcontent($ch) : null;
                 $results[$slug] = $body;
                 curl_multi_remove_handle($mh, $ch);
                 curl_close($ch);
@@ -353,7 +368,7 @@ class PropertyController extends Controller
                 try {
                     $detail = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
                     $coords = [
-                        'lat' => $detail['latitude'] ?? null,
+                        'lat' => $detail['latitude']  ?? null,
                         'lng' => $detail['longitude'] ?? null,
                     ];
                 } catch (\JsonException $e) {
@@ -363,7 +378,7 @@ class PropertyController extends Controller
 
             Cache::put('prop_coords:' . $slug, $coords, now()->addHour());
 
-            $idx = $uncached[$slug];
+            $idx                      = $uncached[$slug];
             $items[$idx]['latitude']  = $coords['lat'];
             $items[$idx]['longitude'] = $coords['lng'];
         }
@@ -371,7 +386,7 @@ class PropertyController extends Controller
         return $items;
     }
 
-    public function show(string $slug)
+    public function show(string $slug): \Illuminate\View\View
     {
         set_time_limit(60);
 
@@ -379,20 +394,21 @@ class PropertyController extends Controller
         // array; on API failure the exception propagates out of remember() → not cached → 404.
         try {
             $property = Cache::remember('te_prop:' . $slug, 3600, function () use ($slug) {
-                $property = $this->client->properties()->retrieve($slug);
+                $property         = $this->client->properties()->retrieve($slug);
                 $property['slug'] = $slug;
 
                 // Build fullAddress from components (retrieve() doesn't return it)
                 $addrParts = array_filter([
-                    $property['street'] ?? null,
+                    $property['street']         ?? null,
                     $property['buildingNumber'] ?? null,
-                    $property['district'] ?? null,
-                    $property['city'] ?? null,
-                    $property['country'] ?? null,
+                    $property['district']       ?? null,
+                    $property['city']           ?? null,
+                    $property['country']        ?? null,
                 ]);
                 if ($addrParts) {
                     $property['fullAddress'] = implode(', ', $addrParts);
                 }
+
                 return $property;
             });
         } catch (\Exception $e) {
@@ -409,22 +425,23 @@ class PropertyController extends Controller
      * Returned as rendered HTML fragments; the page JS injects them into their skeletons.
      * All API calls cached 1h (no admin panel — data changes rarely).
      */
-    public function extras(string $slug)
+    public function extras(string $slug): \Illuminate\Http\JsonResponse
     {
         try {
             $property = Cache::remember('te_prop:' . $slug, 3600, function () use ($slug) {
-                $property = $this->client->properties()->retrieve($slug);
+                $property         = $this->client->properties()->retrieve($slug);
                 $property['slug'] = $slug;
-                $addrParts = array_filter([
-                    $property['street'] ?? null,
+                $addrParts        = array_filter([
+                    $property['street']         ?? null,
                     $property['buildingNumber'] ?? null,
-                    $property['district'] ?? null,
-                    $property['city'] ?? null,
-                    $property['country'] ?? null,
+                    $property['district']       ?? null,
+                    $property['city']           ?? null,
+                    $property['country']        ?? null,
                 ]);
                 if ($addrParts) {
                     $property['fullAddress'] = implode(', ', $addrParts);
                 }
+
                 return $property;
             });
         } catch (\Exception $e) {
@@ -437,13 +454,21 @@ class PropertyController extends Controller
             $items = Cache::remember('te_active_50', 3600, function () {
                 return $this->client->properties()->list(['pageSize' => 50, 'status' => 'Active'])['items'] ?? [];
             });
+            /** @var array<int, array<string, mixed>> $items */
             $similar = collect($items)
                 ->reject(fn ($p) => ($p['slug'] ?? null) === $slug)
                 ->sortByDesc(function ($p) use ($property) {
                     $score = 0;
-                    if (($p['transactionType'] ?? null) === ($property['transactionType'] ?? null)) $score += 2;
-                    if (($p['propertyType'] ?? null)    === ($property['propertyType'] ?? null))    $score += 2;
-                    if (($p['city'] ?? null)            === ($property['city'] ?? null))            $score += 1;
+                    if (($p['transactionType'] ?? null) === ($property['transactionType'] ?? null)) {
+                        $score += 2;
+                    }
+                    if (($p['propertyType'] ?? null)    === ($property['propertyType'] ?? null)) {
+                        $score += 2;
+                    }
+                    if (($p['city'] ?? null)            === ($property['city'] ?? null)) {
+                        $score += 1;
+                    }
+
                     return $score;
                 })
                 ->take(6)
@@ -471,7 +496,7 @@ class PropertyController extends Controller
         ]);
     }
 
-    public function enquire(string $slug)
+    public function enquire(string $slug): \Illuminate\Http\JsonResponse
     {
         $data = request()->validate([
             'name'    => 'required|string|max:100',
@@ -494,16 +519,18 @@ class PropertyController extends Controller
                 'message'    => $data['message'] ?? '',
                 'propertyId' => $property['id'],
             ]);
+
             return response()->json(['ok' => true]);
         } catch (\Exception $e) {
             return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
         }
     }
 
-    public function recordView(string $slug)
+    public function recordView(string $slug): \Illuminate\Http\JsonResponse
     {
         try {
-            $result = $this->client->properties()->recordView($slug, request()->ip());
+            $result = $this->client->properties()->recordView($slug);
+
             return response()->json([
                 'ok'        => true,
                 'viewCount' => $result['viewCount'] ?? null,
