@@ -24,6 +24,8 @@
     $enquireUrl  = url('/api/property/'.$slug.'/enquire');
     $viewUrl     = url('/api/property/'.$slug.'/view');
 
+    $lat         = null;
+    $lng         = null;
     $yandexKey   = config('services.yandex.maps_key', env('YANDEX_MAPS_API_KEY', ''));
 
     $geoAddressParts = array_filter([
