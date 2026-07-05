@@ -24,11 +24,8 @@
     $enquireUrl  = url('/api/property/'.$slug.'/enquire');
     $viewUrl     = url('/api/property/'.$slug.'/view');
 
-    $lat         = $property['latitude'] ?? null;
-    $lng         = $property['longitude'] ?? null;
     $yandexKey   = config('services.yandex.maps_key', env('YANDEX_MAPS_API_KEY', ''));
 
-    // Build geocode address string from available fields (used when lat/lng absent)
     $geoAddressParts = array_filter([
         $property['street']         ?? null,
         $property['buildingNumber'] ?? null,
@@ -37,7 +34,7 @@
         $property['country']        ?? null,
     ]);
     $geoAddress = implode(', ', $geoAddressParts);
-    $hasMap = $yandexKey && ($lat && $lng || $geoAddress);
+    $hasMap = $yandexKey && $geoAddress;
 
     // Spec rows
     $specs = [];
@@ -841,10 +838,8 @@ fetch('{{ $extrasUrl }}')
     $balloonHtml = '<div style="line-height:1.7;padding:2px 4px;max-width:210px">' . implode('<br>', $bLines) . '</div>';
 @endphp
 (function loadMap() {
-    const LAT        = {{ $lat ? (float)$lat : 'null' }};
-    const LNG        = {{ $lng ? (float)$lng : 'null' }};
-    const GEO_ADDR   = @json($geoAddress);
-    const BALLOON    = @json($balloonHtml);
+    const GEO_ADDR = @json($geoAddress);
+    const BALLOON  = @json($balloonHtml);
 
     const script = document.createElement('script');
     script.src = 'https://api-maps.yandex.ru/2.1/?apikey={{ $yandexKey }}&lang={{ app()->getLocale() === "en" ? "en_US" : "ru_RU" }}';
@@ -868,19 +863,13 @@ fetch('{{ $extrasUrl }}')
                 balloonOffset: [0, -60],
             };
 
-            function showMap(coords) {
+            ymaps.geocode(GEO_ADDR, { results: 1 }).then(function(res) {
+                const obj = res.geoObjects.get(0);
+                if (!obj) return;
+                const coords = obj.geometry.getCoordinates();
                 const map = new ymaps.Map('prop-map', { center: coords, zoom: 15, controls: ['zoomControl'] });
                 map.geoObjects.add(new ymaps.Placemark(coords, { balloonContent: BALLOON }, pinOpts));
-            }
-
-            if (LAT && LNG) {
-                showMap([LAT, LNG]);
-            } else {
-                ymaps.geocode(GEO_ADDR, { results: 1 }).then(function(res) {
-                    const obj = res.geoObjects.get(0);
-                    if (obj) showMap(obj.geometry.getCoordinates());
-                });
-            }
+            });
         });
     };
     document.head.appendChild(script);
