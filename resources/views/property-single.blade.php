@@ -28,6 +28,17 @@
     $lng         = $property['longitude'] ?? null;
     $yandexKey   = config('services.yandex.maps_key', env('YANDEX_MAPS_API_KEY', ''));
 
+    // Build geocode address string from available fields (used when lat/lng absent)
+    $geoAddressParts = array_filter([
+        $property['street']         ?? null,
+        $property['buildingNumber'] ?? null,
+        $property['district']       ?? null,
+        $property['city']           ?? null,
+        $property['country']        ?? null,
+    ]);
+    $geoAddress = implode(', ', $geoAddressParts);
+    $hasMap = $yandexKey && ($lat && $lng || $geoAddress);
+
     // Spec rows
     $specs = [];
     if (!empty($property['propertyType'])) {
@@ -722,7 +733,7 @@
                         </div>
 
                         {{-- Map --}}
-                        @if($lat && $lng && $yandexKey)
+                        @if($hasMap)
                         <div id="prop-map" class="h-64"></div>
                         @endif
                     </div>
@@ -805,25 +816,18 @@ fetch('{{ $extrasUrl }}')
     })
     .catch(() => {});
 </script>
-@if($lat && $lng && $yandexKey)
+@if($hasMap)
 <script>
 @php
-    // strip_tags() used instead of e(): removes any injected markup and
-    // avoids double-encoding when the API returns pre-escaped HTML entities
-    // (e.g. &amp;, &quot;). $price is already number_format() output — no escaping needed.
     $bT = function(string $v): string { return strip_tags($v); };
-
     $bLines = [];
-
     if (!empty($property['title'])) {
         $bLines[] = '<b style="font-size:13px;color:#1a1209">' . $bT($property['title']) . '</b>';
     }
-
-    // One compact address line: street + building, district, city, country
     $addrParts = array_filter([
         isset($property['street'], $property['buildingNumber'])
             ? $bT($property['street']) . ' ' . $bT($property['buildingNumber'])
-            : ($property['street'] ?? null ? $bT($property['street']) : null),
+            : (!empty($property['street']) ? $bT($property['street']) : null),
         !empty($property['district']) ? $bT($property['district']) : null,
         !empty($property['city'])     ? $bT($property['city'])     : null,
         !empty($property['country'])  ? $bT($property['country'])  : null,
@@ -831,32 +835,21 @@ fetch('{{ $extrasUrl }}')
     if ($addrParts) {
         $bLines[] = '<span style="color:#666;font-size:12px">' . implode(', ', $addrParts) . '</span>';
     }
-
     if ($price) {
-        $bLines[] = '<b style="color:#a6644f;font-size:13px">'
-            . $price . ' ' . $bT($currency)
-            . '</b>';
+        $bLines[] = '<b style="color:#a6644f;font-size:13px">' . $price . ' ' . $bT($currency) . '</b>';
     }
-
-    $balloonHtml = '<div style="line-height:1.7;padding:2px 4px;max-width:210px">'
-        . implode('<br>', $bLines)
-        . '</div>';
+    $balloonHtml = '<div style="line-height:1.7;padding:2px 4px;max-width:210px">' . implode('<br>', $bLines) . '</div>';
 @endphp
-// Yandex map
 (function loadMap() {
+    const LAT        = {{ $lat ? (float)$lat : 'null' }};
+    const LNG        = {{ $lng ? (float)$lng : 'null' }};
+    const GEO_ADDR   = @json($geoAddress);
+    const BALLOON    = @json($balloonHtml);
+
     const script = document.createElement('script');
     script.src = 'https://api-maps.yandex.ru/2.1/?apikey={{ $yandexKey }}&lang={{ app()->getLocale() === "en" ? "en_US" : "ru_RU" }}';
     script.onload = function() {
         ymaps.ready(function() {
-            const map = new ymaps.Map('prop-map', {
-                center: [{{ $lat }}, {{ $lng }}],
-                zoom: 15,
-                controls: ['zoomControl'],
-            });
-
-            // Each line is a separate '+' concatenation — no newlines, no template literals.
-            // Yandex Maps drops custom icons silently when the template string
-            // contains unexpected whitespace text nodes.
             const HousePin = ymaps.templateLayoutFactory.createClass(
                 '<div style="display:flex;flex-direction:column;align-items:center;cursor:pointer;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.28))">' +
                 '<div style="width:44px;height:44px;border-radius:50%;background:#a6644f;display:flex;align-items:center;justify-content:center">' +
@@ -868,21 +861,26 @@ fetch('{{ $extrasUrl }}')
                 '<div style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:11px solid #a6644f;margin-top:-1px"></div>' +
                 '</div>'
             );
-
-            map.geoObjects.add(new ymaps.Placemark([{{ $lat }}, {{ $lng }}], {
-                balloonContent: @json($balloonHtml),
-            }, {
+            const pinOpts = {
                 iconLayout: HousePin,
-                // Pin geometry: 44px circle + 11px tail = 55px total height, 44px wide.
-                // iconOffset moves top-left corner of the icon relative to the coordinate.
-                // [-22, -55] → circle is centred horizontally, tail tip sits on the coordinate.
                 iconOffset: [-22, -55],
-                // iconShape defines the clickable hit area. Extended 4px on each side
-                // and +5px below for comfortable touch targets on mobile.
                 iconShape: { type: 'Rectangle', coordinates: [[-26, -60], [26, 5]] },
-                // Push balloon up so it clears the pin and doesn't overlap the map centre.
                 balloonOffset: [0, -60],
-            }));
+            };
+
+            function showMap(coords) {
+                const map = new ymaps.Map('prop-map', { center: coords, zoom: 15, controls: ['zoomControl'] });
+                map.geoObjects.add(new ymaps.Placemark(coords, { balloonContent: BALLOON }, pinOpts));
+            }
+
+            if (LAT && LNG) {
+                showMap([LAT, LNG]);
+            } else {
+                ymaps.geocode(GEO_ADDR, { results: 1 }).then(function(res) {
+                    const obj = res.geoObjects.get(0);
+                    if (obj) showMap(obj.geometry.getCoordinates());
+                });
+            }
         });
     };
     document.head.appendChild(script);
