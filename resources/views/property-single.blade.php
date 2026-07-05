@@ -63,10 +63,53 @@
     if (!empty($property['city']))            { $specs[__('property.city')]           = $property['city']; }
     if (!empty($property['district']))        { $specs[__('property.district')]       = $property['district']; }
 
+    // Extra specs from API
+    if (!empty($property['pricePerSqm']))     { $specs[__('property-single.price_per_sqm')] = number_format((float)$property['pricePerSqm']) . ' ' . ($property['currency'] ?? ''); }
+    if (!empty($property['ceilingHeight']))   { $specs[__('property-single.ceiling_height')] = $property['ceilingHeight'] . ' ' . __('property-single.meters_short'); }
+    if (!empty($property['deposit']))         { $specs[__('property-single.deposit')] = number_format((float)$property['deposit']) . ' ' . ($property['currency'] ?? ''); }
+    if (!empty($property['landArea']))        { $specs[__('property-single.land_area')] = $property['landArea'] . ' ' . __('index.sq_ft'); }
+    if (!empty($property['parkingSpaces']))   { $specs[__('property-single.parking_spaces')] = $property['parkingSpaces']; }
+    if (!empty($property['zoningType']))      { $specs[__('property-single.zoning')] = $property['zoningType']; }
+    if (!empty($property['balconyType'])) {
+        $k = 'property-single.balcony_' . strtolower($property['balconyType']); $lbl = __($k);
+        $specs[__('property-single.balcony')] = ($lbl === $k ? $property['balconyType'] : $lbl);
+    }
+    if (!empty($property['terraceType'])) {
+        $k = 'property-single.terrace_' . strtolower($property['terraceType']); $lbl = __($k);
+        $specs[__('property-single.terrace')] = ($lbl === $k ? $property['terraceType'] : $lbl);
+    }
+    if (!empty($property['heatingType'])) {
+        $ht = array_filter(is_array($property['heatingType']) ? $property['heatingType'] : [$property['heatingType']]);
+        $specs[__('property-single.heating')] = implode(', ', array_map(function($h) {
+            $k = 'property-single.heating_' . strtolower($h); $l = __($k); return $l === $k ? $h : $l;
+        }, $ht));
+    }
+    if (!empty($property['parkingType'])) {
+        $pt = array_filter(is_array($property['parkingType']) ? $property['parkingType'] : [$property['parkingType']]);
+        $specs[__('property-single.parking')] = implode(', ', array_map(function($t) {
+            $k = 'property-single.parking_' . strtolower($t); $l = __($k); return $l === $k ? $t : $l;
+        }, $pt));
+    }
+    if (!empty($property['windowView'])) {
+        $wv = array_filter(is_array($property['windowView']) ? $property['windowView'] : [$property['windowView']]);
+        $specs[__('property-single.window_view')] = implode(', ', array_map(function($v) {
+            $k = 'property-single.view_' . strtolower($v); $l = __($k); return $l === $k ? $v : $l;
+        }, $wv));
+    }
+    if (!empty($property['utilitiesPolicy'])) {
+        $k = 'property-single.utilities_' . strtolower($property['utilitiesPolicy']); $lbl = __($k);
+        $specs[__('property-single.utilities_policy')] = ($lbl === $k ? $property['utilitiesPolicy'] : $lbl);
+    }
+
     $features       = array_filter((array) ($property['features']   ?? []));
     $appliances     = array_filter((array) ($property['appliances'] ?? []));
     $utilities      = array_filter((array) ($property['utilities']  ?? []));
     $amenitiesExtra = array_filter((array) ($property['amenities']  ?? []));
+
+    // Rental conditions
+    $conditions = [];
+    if (!empty($property['petsPolicy']))     $conditions['pets_policy']     = $property['petsPolicy'];
+    if (!empty($property['childrenPolicy'])) $conditions['children_policy'] = $property['childrenPolicy'];
 
     $badges = [];
     if (!empty($property['isNegotiable']))      $badges[] = __('property-single.is_negotiable');
@@ -437,6 +480,31 @@
                                     </div>
                                 </div>
                             @endif
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Rental Conditions --}}
+                @if($conditions)
+                    <div class="mt-8">
+                        <h2 class="font-display text-xl font-semibold text-ink mt-6 mb-4">{{ __('property-single.conditions') }}</h2>
+                        <div class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                            @foreach($conditions as $type => $value)
+                                @php
+                                    $vk = 'property-single.policy_' . strtolower($value);
+                                    $vl = __($vk);
+                                    $vl = ($vl === $vk) ? $value : $vl;
+                                    $isYes = strtolower($value) === 'yes';
+                                    $isNo  = strtolower($value) === 'no';
+                                @endphp
+                                <div class="flex items-center justify-between rounded-xl border border-sand bg-panel px-4 py-3">
+                                    <span class="text-sm text-neutral-500">{{ __('property-single.'.$type) }}</span>
+                                    <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold
+                                        {{ $isYes ? 'bg-green-100 text-green-700' : ($isNo ? 'bg-red-100 text-red-700' : 'bg-sand text-neutral-600') }}">
+                                        {{ $vl }}
+                                    </span>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
                 @endif
