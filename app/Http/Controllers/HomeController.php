@@ -18,9 +18,9 @@ class HomeController extends Controller
         $allItems   = [];
         $stats      = ['propertiesListed' => 0, 'happyClients' => 0, 'citiesCovered' => 0, 'satisfactionRate' => 98];
 
-        // Cached 1h (no admin panel — listings change rarely). Fixed query, no params.
+        // Cached 30 min (no admin panel — listings change rarely). Fixed query, no params.
         try {
-            $allItems = Cache::remember('te_home_100', 3600, function () {
+            $allItems = Cache::remember('te_home_100', 1800, function () {
                 return $this->client->properties()->list([
                     'pageSize'  => 100,
                     'sortBy'    => 'viewCount',
@@ -32,7 +32,7 @@ class HomeController extends Controller
         }
 
         try {
-            $stats = Cache::remember('te_stats', 3600, function () {
+            $stats = Cache::remember('te_stats', 1800, function () {
                 return $this->client->properties()->stats();
             });
         } catch (\Throwable) {

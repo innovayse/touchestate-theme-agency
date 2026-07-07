@@ -92,6 +92,13 @@
 }
 
 /* Location card: "Nearby" category tabs */
+/* Nearby tabs: single row, horizontal scroll when they don't fit (scrollbar hidden) */
+.poi-tabs-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.poi-tabs-row::-webkit-scrollbar { display: none; }
 .poi-tab {
     border: 1px solid var(--gray-200, #e2e8f0);
     background: transparent;
@@ -1168,21 +1175,21 @@
                             <div class="card-body">
                                 {{-- Country / City / Street (shown even without coordinates) --}}
                                 @if($property['country'] ?? null)
-                                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                <div class="d-flex justify-content-between align-items-center gap-4 py-2 border-bottom">
                                     <span class="text-muted">{{ __('property-single.country') }}</span>
-                                    <span class="fw-semibold">{{ $property['country'] }}</span>
+                                    <span class="fw-semibold fs-14">{{ $property['country'] }}</span>
                                 </div>
                                 @endif
                                 @if($property['city'] ?? null)
-                                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                <div class="d-flex justify-content-between align-items-center gap-4 py-2 border-bottom">
                                     <span class="text-muted">{{ __('property-single.city') }}</span>
-                                    <span class="fw-semibold">{{ $property['city'] }}</span>
+                                    <span class="fw-semibold fs-14">{{ $property['city'] }}</span>
                                 </div>
                                 @endif
                                 @if($property['street'] ?? null)
-                                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                <div class="d-flex justify-content-between align-items-center gap-4 py-2 border-bottom">
                                     <span class="text-muted">{{ __('property-single.street') }}</span>
-                                    <span class="fw-semibold text-end">{{ $property['street'] }}{{ !empty($property['buildingNumber']) ? ', ' . $property['buildingNumber'] : '' }}</span>
+                                    <span class="fw-semibold text-end fs-14">{{ $property['street'] }}{{ !empty($property['buildingNumber']) ? ', ' . $property['buildingNumber'] : '' }}</span>
                                 </div>
                                 @endif
 
@@ -1202,10 +1209,10 @@
                                 {{-- Nearby: category tabs that toggle POI markers on the map below --}}
                                 <div id="poiTabs" style="display:none; margin-top:16px; border-top:1px solid var(--gray-100); padding-top:12px;">
                                     <h6 class="mb-2 fs-14 text-muted">{{ __('property-single.nearby') }}</h6>
-                                    <div class="d-flex flex-wrap gap-2">
-                                        <button type="button" class="btn btn-sm poi-tab" data-cat="transport">{{ __('property-single.cat_transport') }}</button>
-                                        <button type="button" class="btn btn-sm poi-tab" data-cat="education">{{ __('property-single.cat_education') }}</button>
-                                        <button type="button" class="btn btn-sm poi-tab" data-cat="food">{{ __('property-single.cat_food') }}</button>
+                                    <div class="d-flex gap-2 poi-tabs-row">
+                                        <button type="button" class="btn btn-sm poi-tab flex-shrink-0" data-cat="transport">{{ __('property-single.cat_transport') }}</button>
+                                        <button type="button" class="btn btn-sm poi-tab flex-shrink-0" data-cat="education">{{ __('property-single.cat_education') }}</button>
+                                        <button type="button" class="btn btn-sm poi-tab flex-shrink-0" data-cat="food">{{ __('property-single.cat_food') }}</button>
                                     </div>
                                 </div>
                                 @endif
@@ -1460,7 +1467,7 @@
         if (loadingEl) loadingEl.style.display = 'block';
 
         // One Overpass query for all categories (transport / education / supermarkets)
-        var q = '[out:json][timeout:12];(' +
+        var q = '[out:json][timeout:30];(' +
             'node["station"="subway"](around:2000,' + lat + ',' + lng + ');' +
             'node["railway"="station"](around:2000,' + lat + ',' + lng + ');' +
             'nwr["amenity"="school"](around:1500,' + lat + ',' + lng + ');' +
@@ -1468,9 +1475,9 @@
             'nwr["shop"="supermarket"](around:1500,' + lat + ',' + lng + ');' +
         ');out center tags 60;';
         function runOverpass(server) {
-            // Abort after 12s so a stuck server fails over to the mirror quickly instead of hanging
+            // Abort after 30s so a stuck server fails over to the mirror instead of hanging
             var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-            var to = ctrl ? setTimeout(function () { ctrl.abort(); }, 12000) : null;
+            var to = ctrl ? setTimeout(function () { ctrl.abort(); }, 30000) : null;
             return fetch(server, {
                 method: 'POST',
                 body: 'data=' + encodeURIComponent(q),
@@ -1518,7 +1525,7 @@
                     rows += '<div class="d-flex align-items-center mb-2">' +
                         '<svg class="me-2" width="18" height="18" fill="currentColor" style="color:' + meta.color + '" aria-hidden="true"><use href="{{ asset('img/icons.svg') }}#icon-' + meta.icon + '"/></svg>' +
                         '<span class="fs-14 text-body">' + it.p.name + '</span>' +
-                        '<span class="fs-14 text-body ms-auto">' + fmtDist(it.p.km) + '</span>' +
+                        '<span class="fs-14 text-body ms-auto ps-2 text-nowrap flex-shrink-0">' + fmtDist(it.p.km) + '</span>' +
                     '</div>';
                 });
                 if (rows && nearList) { nearList.innerHTML = rows; if (addBlock) addBlock.style.display = 'block'; }

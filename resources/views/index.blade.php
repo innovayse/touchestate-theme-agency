@@ -374,10 +374,12 @@
             <div class="services-grid">
                 @foreach($services as $i => $svc)
                 <div class="svc-card" data-aos="fade-up" data-aos-duration="{{ 400 + $i * 100 }}">
-                    <div class="svc-icon">
-                        <x-icon name="{{ $svc['icon'] }}" size="26"/>
+                    <div class="svc-header">
+                        <div class="svc-icon">
+                            <x-icon name="{{ $svc['icon'] }}" size="26"/>
+                        </div>
+                        <h5 class="svc-title">{{ $svc['title'] }}</h5>
                     </div>
-                    <h5 class="svc-title">{{ $svc['title'] }}</h5>
                     <p class="svc-desc">{{ $svc['desc'] }}</p>
                 </div>
                 @endforeach
@@ -482,18 +484,15 @@
 
                 <div class="hiw-step" data-aos="fade-up" data-aos-duration="{{ 400 + $i * 150 }}">
                     <div class="hiw-step-num">{{ $step['num'] }}</div>
-                    <div class="hiw-step-icon">
-                        <x-icon name="{{ $step['icon'] }}" size="28"/>
+                    <div class="hiw-step-header">
+                        <div class="hiw-step-icon">
+                            <x-icon name="{{ $step['icon'] }}" size="28"/>
+                        </div>
+                        <h5 class="hiw-step-title">{{ $step['title'] }}</h5>
                     </div>
-                    <h5 class="hiw-step-title">{{ $step['title'] }}</h5>
                     <p class="hiw-step-desc">{{ $step['desc'] }}</p>
                 </div>
 
-                @if(!$loop->last)
-                <div class="hiw-connector" aria-hidden="true">
-                    <x-icon name="north_east" size="22"/>
-                </div>
-                @endif
 
                 @endforeach
             </div>
