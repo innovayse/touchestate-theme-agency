@@ -9,7 +9,9 @@ use TouchEstate\Sdk\TouchEstateClient;
 
 class CompareController extends Controller
 {
-    public function __construct(private TouchEstateClient $client) {}
+    public function __construct(private TouchEstateClient $client)
+    {
+    }
 
     public function index()
     {
@@ -33,7 +35,7 @@ class CompareController extends Controller
                 continue;
             }
             try {
-                $prop = $this->client->properties()->retrieve($slug);
+                $prop         = $this->client->properties()->retrieve($slug);
                 $prop['slug'] = $slug;
 
                 $prop['primaryImageUrl'] = null;
@@ -56,7 +58,7 @@ class CompareController extends Controller
                 ]);
                 $prop['fullAddress'] = $addrParts ? implode(', ', $addrParts) : null;
 
-                $properties[] = $prop;
+                $properties[]  = $prop;
                 $validSlugs[]  = $slug;
             } catch (\Exception) {
                 // property deleted or not found — skip silently
@@ -90,11 +92,11 @@ class CompareController extends Controller
         ];
         $constructionScore = [
             'Monolithic' => 10, 'Stone' => 9, 'Brick' => 8,
-            'Strip' => 5, 'Panel' => 4, 'Wood' => 3,
+            'Strip'      => 5, 'Panel' => 4, 'Wood' => 3,
         ];
 
         // Normalize daily rent to monthly so prices are comparable
-        $comparablePrice = fn($p) => ($p['price'] ?? null)
+        $comparablePrice = fn ($p) => ($p['price'] ?? null)
             ? (strtolower($p['transactionType'] ?? '') === 'rentdaily'
                 ? (float) $p['price'] * 30
                 : (float) $p['price'])
@@ -102,10 +104,11 @@ class CompareController extends Controller
 
         // Only compare prices when all properties are in the same broad category
         $txTypes = array_unique(array_map(
-            fn($p) => strtolower($p['transactionType'] ?? ''), $properties
+            fn ($p) => strtolower($p['transactionType'] ?? ''),
+            $properties
         ));
-        $allSale  = array_filter($txTypes, fn($t) => $t === 'sale');
-        $allRent  = array_filter($txTypes, fn($t) => in_array($t, ['rent', 'rentdaily']));
+        $allSale        = array_filter($txTypes, fn ($t) => $t === 'sale');
+        $allRent        = array_filter($txTypes, fn ($t) => in_array($t, ['rent', 'rentdaily']));
         $sameTxCategory = count($txTypes) === 1
             || (count($allSale) === 0 && count($allRent) === count($txTypes))
             || (count($allRent) === 0 && count($allSale) === count($txTypes));
@@ -114,37 +117,50 @@ class CompareController extends Controller
             'price'           => $sameTxCategory
                                     ? $this->bestSlugs($properties, $comparablePrice, 'min')
                                     : [],
-            'areaTotal'       => $this->bestSlugs($properties, fn($p) => ($p['areaTotal']   ?? null) ?: null, 'max'),
-            'rooms'           => $this->bestSlugs($properties, fn($p) => ($p['rooms']        ?? null) ?: null, 'max'),
-            'bedrooms'        => $this->bestSlugs($properties, fn($p) => ($p['bedrooms']     ?? null) ?: null, 'max'),
-            'bathrooms'       => $this->bestSlugs($properties, fn($p) => ($p['bathrooms']    ?? null) ?: null, 'max'),
-            'yearBuilt'       => $this->bestSlugs($properties, fn($p) => ($p['yearBuilt']    ?? null) ?: null, 'max'),
+            'areaTotal'       => $this->bestSlugs($properties, fn ($p) => ($p['areaTotal']   ?? null) ?: null, 'max'),
+            'rooms'           => $this->bestSlugs($properties, fn ($p) => ($p['rooms']        ?? null) ?: null, 'max'),
+            'bedrooms'        => $this->bestSlugs($properties, fn ($p) => ($p['bedrooms']     ?? null) ?: null, 'max'),
+            'bathrooms'       => $this->bestSlugs($properties, fn ($p) => ($p['bathrooms']    ?? null) ?: null, 'max'),
+            'yearBuilt'       => $this->bestSlugs($properties, fn ($p) => ($p['yearBuilt']    ?? null) ?: null, 'max'),
             'floor'           => $this->bestSlugs($properties, function ($p) {
                 $f  = $p['floor']       ?? null;
                 $ft = $p['floorsTotal'] ?? null;
-                if (!$f || !$ft) return null;
+                if (!$f || !$ft) {
+                    return null;
+                }
+
                 return min($f - 1, $ft - $f); // golden middle
             }, 'max'),
-            'renovationType'  => $this->bestSlugs($properties,
-                fn($p) => $renovationScore[$p['renovationType'] ?? ''] ?? null, 'max'),
-            'constructionType'=> $this->bestSlugs($properties,
-                fn($p) => $constructionScore[$p['constructionType'] ?? ''] ?? null, 'max'),
+            'renovationType'  => $this->bestSlugs(
+                $properties,
+                fn ($p) => $renovationScore[$p['renovationType'] ?? ''] ?? null,
+                'max'
+            ),
+            'constructionType'=> $this->bestSlugs(
+                $properties,
+                fn ($p) => $constructionScore[$p['constructionType'] ?? ''] ?? null,
+                'max'
+            ),
         ];
     }
 
     private function bestSlugs(array $properties, callable $getValue, string $mode = 'max'): array
     {
-        $withVal = array_filter($properties, fn($p) => $getValue($p) !== null);
-        if (count($withVal) < 2) return [];
+        $withVal = array_filter($properties, fn ($p) => $getValue($p) !== null);
+        if (count($withVal) < 2) {
+            return [];
+        }
 
         $nums = array_map($getValue, array_values($withVal));
-        if (count(array_unique($nums)) === 1) return [];
+        if (count(array_unique($nums)) === 1) {
+            return [];
+        }
 
         $best = $mode === 'max' ? max($nums) : min($nums);
 
         return array_values(array_map(
-            fn($p) => $p['slug'],
-            array_filter($withVal, fn($p) => $getValue($p) === $best)
+            fn ($p) => $p['slug'],
+            array_filter($withVal, fn ($p) => $getValue($p) === $best)
         ));
     }
 }

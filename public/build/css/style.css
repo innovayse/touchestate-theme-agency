@@ -10880,7 +10880,7 @@ span.select2-container.select2-container--default.select2-container--open {
   position: sticky;
   top: 63px;
   height: calc(100vh - 65px);
-  border-radius: 5px;
+  border-radius: 14px;
   overflow: hidden;
 }
 
@@ -15367,4 +15367,10 @@ html[data-theme="dark"] .ps-page .bool-pill {
     border-radius: 10px !important;
     flex-shrink: 0;
   }
+}
+
+.map-listing { border-radius: 14px; overflow: hidden; }
+
+@media (max-width: 767px) {
+    #grid-controls { flex-direction: column; align-items: stretch; }
 }

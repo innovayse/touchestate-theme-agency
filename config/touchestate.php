@@ -35,7 +35,7 @@ return [
     |
     */
 
-    'timeout' => env('TOUCHESTATE_TIMEOUT', 30),
+    'timeout'         => env('TOUCHESTATE_TIMEOUT', 30),
     'connect_timeout' => env('TOUCHESTATE_CONNECT_TIMEOUT', 10),
 
     /*
