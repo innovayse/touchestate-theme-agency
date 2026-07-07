@@ -6,6 +6,7 @@ return [
     'empty_text'   => 'Add properties to compare them side by side.',
     'browse'       => 'Browse Properties',
     'clear_all'    => 'Clear All',
+    'properties_selected' => 'properties selected',
     'remove'       => 'Remove',
     'max_reached'  => 'Maximum :max properties',
     'open_property' => 'Open Property',
@@ -46,4 +47,8 @@ return [
     'construction_monolithic' => 'Monolithic',
     'construction_panel'      => 'Panel',
     'construction_stone'      => 'Stone',
+    'group_pricing' => 'Pricing',
+    'group_type' => 'Property Type',
+    'group_specs' => 'Specifications',
+    'group_location' => 'Location',
 ];

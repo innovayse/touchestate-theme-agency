@@ -9,6 +9,7 @@ return [
     'hero_title_end' => 'с уверенностью.',
     'hero_description' => 'Смотрите проверенные дома, квартиры и коммерческую недвижимость — с подробными описаниями, реальными фото и прямой связью с брокером.',
     'hero_buy_property' => 'Купить Недвижимость',
+    'hero_map' => 'Смотреть карту',
 
     // Search Form
     'search_buy_sell' => 'Купить / Арендовать',
@@ -31,8 +32,11 @@ return [
     // Counters
     'counter_deals' => 'Успешных сделок',
     'counter_active' => 'Актуальных объектов',
+    'stats_cities' => 'Городов',
+    'stats_experience' => 'Лет опыта',
 
     // Property Type Section
+    'property_type_eyebrow' => 'ТИП ОБЪЕКТА',
     'property_type_title' => 'Рекомендуемые',
     'property_type_highlight' => 'Типы',
     'property_type_end' => 'Недвижимости',
@@ -68,6 +72,7 @@ return [
     'popular_starts_from' => 'Начиная от',
 
     // Exclusive Benefits Section
+    'benefits_eyebrow' => 'ПОЧЕМУ МЫ',
     'benefits_title' => 'Откройте для себя',
     'benefits_highlight' => 'Преимущества и Эксклюзивные',
     'benefits_end' => 'Выгоды',
@@ -86,6 +91,7 @@ return [
     'benefits_seamless_desc' => 'Команда отвечает на армянском, русском и английском.',
 
     // Feature Location Section
+    'feature_eyebrow' => 'ГОРОДА',
     'feature_title' => 'Откройте для себя',
     'feature_highlight' => 'Избранные',
     'feature_end' => 'Локации',
@@ -112,6 +118,7 @@ return [
     'review_description' => 'Послушайте наших довольных клиентов',
 
     // FAQ Section
+    'faq_eyebrow' => 'FAQ',
     'faq_title' => 'Часто задаваемые',
     'faq_highlight' => 'Вопросы',
     'faq_description' => 'Быстрые ответы на распространенные вопросы',
@@ -134,6 +141,10 @@ return [
     'bath' => 'Ванных',
     'sq_ft' => 'кв. м',
     'explore_all_listings' => 'Смотреть все объявления',
+    'featured_eyebrow' => 'АКТУАЛЬНЫЕ ОБЪЕКТЫ',
+    'featured_title' => 'Объекты,',
+    'featured_highlight' => 'которые выделяются',
+    'featured_description' => 'Отобранные объявления с реальными фото, чёткими деталями и прямым контактом с брокером.',
 
     // Property Types
     'villa' => 'Вилла',
