@@ -21,7 +21,7 @@ class FavoritesController extends Controller
         return view('favorites');
     }
 
-    public function load(Request $request): JsonResponse
+    public function load(Request $request): \Illuminate\Http\JsonResponse
     {
         $slugs = $request->input('slugs', []);
 

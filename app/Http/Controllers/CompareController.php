@@ -13,12 +13,12 @@ class CompareController extends Controller
     {
     }
 
-    public function index()
+    public function index(): \Illuminate\View\View
     {
         return view('compare');
     }
 
-    public function load(Request $request)
+    public function load(Request $request): \Illuminate\Http\JsonResponse
     {
         $slugs = array_values(array_unique(array_filter((array) $request->input('slugs', []))));
         $slugs = array_slice($slugs, 0, 4);
@@ -80,6 +80,10 @@ class CompareController extends Controller
     // Highlights
     // ─────────────────────────────────────────────────────────────
 
+    /**
+     * @param  array<int, array<string, mixed>>  $properties
+     * @return array<string, array<int, string>>
+     */
     private function computeHighlights(array $properties): array
     {
         if (count($properties) < 2) {
@@ -144,6 +148,10 @@ class CompareController extends Controller
         ];
     }
 
+    /**
+     * @param  array<int, array<string, mixed>> $properties
+     * @return array<int, string>
+     */
     private function bestSlugs(array $properties, callable $getValue, string $mode = 'max'): array
     {
         $withVal = array_filter($properties, fn ($p) => $getValue($p) !== null);

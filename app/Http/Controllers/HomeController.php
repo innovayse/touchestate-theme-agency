@@ -13,7 +13,7 @@ class HomeController extends Controller
     {
     }
 
-    public function index()
+    public function index(): \Illuminate\View\View
     {
         $allItems   = [];
         $stats      = ['propertiesListed' => 0, 'happyClients' => 0, 'citiesCovered' => 0, 'satisfactionRate' => 98];

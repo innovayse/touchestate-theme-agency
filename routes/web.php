@@ -35,7 +35,7 @@ Route::get('/api/suggest', function (\Illuminate\Http\Request $request) {
         // Yandex returns JSONP: suggest.apply({...})  — strip wrapper
         $body = trim($resp->body());
         $json = preg_replace('/^suggest\.apply\((.+)\)$/s', '$1', $body);
-        $data = json_decode($json, true);
+        $data = json_decode($json ?? '', true);
 
         $results = [];
         foreach (($data['results'] ?? []) as $item) {
@@ -253,7 +253,7 @@ $defaultRoutes = [
 ];
 
 foreach ($defaultRoutes as $route) {
-    Route::get('/' . $route, fn () => view($route));
+    Route::get('/' . $route, fn () => view($route)); // @phpstan-ignore argument.type
 }
 
 

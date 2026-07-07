@@ -86,6 +86,7 @@ class PropertyController extends Controller
         ]);
     }
 
+    /** @return array<string, mixed> */
     private function buildFilters(): array
     {
         $pageSize = min((int) request('pageSize', 21), 100);
@@ -191,7 +192,7 @@ class PropertyController extends Controller
         return $params;
     }
 
-    public function index()
+    public function index(): \Illuminate\View\View
     {
         $this->validateFilters();
 
@@ -209,7 +210,7 @@ class PropertyController extends Controller
         return view('property', compact('properties'));
     }
 
-    public function map()
+    public function map(): \Illuminate\View\View
     {
         try {
             $result = $this->client->properties()->list([
@@ -228,6 +229,9 @@ class PropertyController extends Controller
 
     /**
      * Fetch latitude/longitude for each property via parallel curl_multi requests, with caching.
+     *
+     * @param  array<int, array<string, mixed>> $items
+     * @return array<int, array<string, mixed>>
      */
     private function enrichWithCoordinates(array $items): array
     {
@@ -257,9 +261,9 @@ class PropertyController extends Controller
 
         // Step 2: Build signed curl handles for all uncached slugs
         $signer    = new SignatureV4Signer();
-        $baseUrl   = rtrim(config('touchestate.base_url', env('TOUCHESTATE_BASE_URL', '')), '/');
-        $publicKey = config('touchestate.public_key', env('TOUCHESTATE_PUBLIC_KEY', ''));
-        $secretKey = config('touchestate.secret_key', env('TOUCHESTATE_SECRET_KEY', ''));
+        $baseUrl   = rtrim((string) config('touchestate.base_url', ''), '/');
+        $publicKey = (string) config('touchestate.public_key', '');
+        $secretKey = (string) config('touchestate.secret_key', '');
 
         $urlParts    = parse_url($baseUrl);
         $host        = $urlParts['host']   ?? 'localhost';
@@ -382,7 +386,7 @@ class PropertyController extends Controller
         return $items;
     }
 
-    public function show(string $slug)
+    public function show(string $slug): \Illuminate\View\View
     {
         set_time_limit(60);
 
@@ -420,7 +424,7 @@ class PropertyController extends Controller
      * Returned as rendered HTML fragments; the page JS injects them into their skeletons.
      * All API calls cached 30 min (no admin panel — data changes rarely).
      */
-    public function extras(string $slug)
+    public function extras(string $slug): \Illuminate\Http\JsonResponse
     {
         try {
             $property = Cache::remember('te_prop:' . $slug, 1800, function () use ($slug) {
@@ -449,6 +453,7 @@ class PropertyController extends Controller
             $items = Cache::remember('te_active_50', 1800, function () {
                 return $this->client->properties()->list(['pageSize' => 50, 'status' => 'Active'])['items'] ?? [];
             });
+            /** @var array<int, array<string, mixed>> $items */
             $similar = collect($items)
                 ->reject(fn ($p) => ($p['slug'] ?? null) === $slug)
                 ->sortByDesc(function ($p) use ($property) {
@@ -490,7 +495,7 @@ class PropertyController extends Controller
         ]);
     }
 
-    public function enquire(string $slug)
+    public function enquire(string $slug): \Illuminate\Http\JsonResponse
     {
         $data = request()->validate([
             'name'    => 'required|string|max:100',
@@ -520,7 +525,7 @@ class PropertyController extends Controller
         }
     }
 
-    public function recordView(string $slug)
+    public function recordView(string $slug): \Illuminate\Http\JsonResponse
     {
         try {
             $result = $this->client->properties()->recordView($slug, request()->ip());

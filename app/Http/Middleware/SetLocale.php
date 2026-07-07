@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\App;
 
 class SetLocale
 {
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): mixed
     {
         // Get locale from URL parameter
         $locale = $request->route('locale');
