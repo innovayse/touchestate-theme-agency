@@ -92,7 +92,6 @@ Route::get('/api/central-district', function (\Illuminate\Http\Request $request)
         }
 
         // Expand types to catch administrative cities (e.g. federal cities, municipalities)
-        /** @var array<int, array<string, mixed>> $places */
         $place = collect($places)->first(fn ($p) => in_array($p['type'] ?? '', [
             'city', 'town', 'village', 'municipality', 'administrative',
         ])) ?? $places[0];
@@ -291,8 +290,8 @@ Route::group(
         Route::get('/privacy-policy', fn () => view('privacy-policy'))->name('privacy-policy');
         Route::get('/terms-condition', fn () => view('terms-condition'))->name('terms-condition');
         Route::get('/testimonial', fn () => view('testimonial'))->name('testimonial');
-        Route::get('/cart', fn () => view('cart'))->name('cart'); // @phpstan-ignore argument.type
-        Route::get('/checkout', fn () => view('checkout'))->name('checkout'); // @phpstan-ignore argument.type
+        Route::get('/cart', fn () => view('cart'))->name('cart');
+        Route::get('/checkout', fn () => view('checkout'))->name('checkout');
 
         // Error / utility pages
         Route::get('/maintenance', fn () => view('maintenance'))->name('maintenance');

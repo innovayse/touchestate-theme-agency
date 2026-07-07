@@ -196,11 +196,11 @@ class PropertyController extends Controller
     {
         $this->validateFilters();
 
-        // Cache each unique filter/page combination 1h (no admin panel). Repeat listings
+        // Cache each unique filter/page combination 30 min (no admin panel). Repeat listings
         // (and the AJAX filter/load-more fetches) become instant.
         $filters = $this->buildFilters();
         try {
-            $properties = Cache::remember('te_list:' . md5(serialize($filters)), 3600, function () use ($filters) {
+            $properties = Cache::remember('te_list:' . md5(serialize($filters)), 1800, function () use ($filters) {
                 return $this->client->properties()->list($filters);
             });
         } catch (\Exception $e) {
@@ -376,7 +376,7 @@ class PropertyController extends Controller
                 }
             }
 
-            Cache::put('prop_coords:' . $slug, $coords, now()->addHour());
+            Cache::put('prop_coords:' . $slug, $coords, now()->addMinutes(30));
 
             $idx                      = $uncached[$slug];
             $items[$idx]['latitude']  = $coords['lat'];
@@ -390,11 +390,10 @@ class PropertyController extends Controller
     {
         set_time_limit(60);
 
-        // Cached 1h (no admin panel — property data changes rarely). Cache the fully-built
+        // Cached 30 min (no admin panel — property data changes rarely). Cache the fully-built
         // array; on API failure the exception propagates out of remember() → not cached → 404.
         try {
-            $property = Cache::remember('te_prop:' . $slug, 3600, function () use ($slug) {
-                $property         = $this->client->properties()->retrieve($slug);
+            $property = Cache::remember('te_prop:' . $slug, 1800, function () use ($slug) {
                 $property['slug'] = $slug;
 
                 // Build fullAddress from components (retrieve() doesn't return it)
@@ -423,12 +422,12 @@ class PropertyController extends Controller
     /**
      * Async extras for the skeleton-first property page: similar listings + comments.
      * Returned as rendered HTML fragments; the page JS injects them into their skeletons.
-     * All API calls cached 1h (no admin panel — data changes rarely).
+     * All API calls cached 30 min (no admin panel — data changes rarely).
      */
     public function extras(string $slug): \Illuminate\Http\JsonResponse
     {
         try {
-            $property = Cache::remember('te_prop:' . $slug, 3600, function () use ($slug) {
+            $property = Cache::remember('te_prop:' . $slug, 1800, function () use ($slug) {
                 $property         = $this->client->properties()->retrieve($slug);
                 $property['slug'] = $slug;
                 $addrParts        = array_filter([
@@ -448,10 +447,10 @@ class PropertyController extends Controller
             $property = ['slug' => $slug];
         }
 
-        // Similar = our own Active listings (cached globally 1h — identical for every page),
+        // Similar = our own Active listings (cached globally 30 min — identical for every page),
         // scored/filtered per-property in PHP.
         try {
-            $items = Cache::remember('te_active_50', 3600, function () {
+            $items = Cache::remember('te_active_50', 1800, function () {
                 return $this->client->properties()->list(['pageSize' => 50, 'status' => 'Active'])['items'] ?? [];
             });
             /** @var array<int, array<string, mixed>> $items */
@@ -479,7 +478,7 @@ class PropertyController extends Controller
         }
 
         try {
-            $comments = Cache::remember('te_comments:' . $slug, 3600, function () use ($slug) {
+            $comments = Cache::remember('te_comments:' . $slug, 1800, function () use ($slug) {
                 return $this->client->properties()->comments($slug, [
                     'pageNumber' => 1,
                     'pageSize'   => 10,
@@ -529,7 +528,7 @@ class PropertyController extends Controller
     public function recordView(string $slug): \Illuminate\Http\JsonResponse
     {
         try {
-            $result = $this->client->properties()->recordView($slug);
+            $result = $this->client->properties()->recordView($slug, request()->ip());
 
             return response()->json([
                 'ok'        => true,

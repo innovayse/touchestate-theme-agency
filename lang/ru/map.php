@@ -204,6 +204,15 @@ return [
     'opentype_Open'           => 'Открытый',
     'opentype_Closed'         => 'Закрытый',
 
+    'permissions_title'       => 'Разрешения и условия',
+    'deal_conditions'         => 'Условия сделки',
+    'object_type'             => 'Тип объекта',
+    'range_from'              => 'от',
+    'range_to'                => 'до',
+    'select_all_short'        => 'Выбрать все',
+    'deselect_all_short'      => 'Снять все',
+    'filters_selected'        => 'фильтров выбрано',
+
     'long_term_rental'        => 'Долгосрочная аренда',
     'uninhabited'             => 'Никто не жил',
     'sun_direction'           => 'Солнечная сторона',
