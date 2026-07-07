@@ -210,6 +210,15 @@ return [
     'opentype_Open'           => 'Open',
     'opentype_Closed'         => 'Closed',
 
+    'permissions_title'       => 'Permissions & Conditions',
+    'deal_conditions'         => 'Deal Conditions',
+    'object_type'             => 'Object Type',
+    'range_from'              => 'from',
+    'range_to'                => 'to',
+    'select_all_short'        => 'Select all',
+    'deselect_all_short'      => 'Deselect all',
+    'filters_selected'        => 'filters selected',
+
     'long_term_rental'        => 'Long-term Rental',
     'uninhabited'             => 'Never Inhabited',
     'sun_direction'           => 'Sunny Side',

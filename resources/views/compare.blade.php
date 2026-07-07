@@ -17,23 +17,33 @@
         <div class="content">
             <div class="container">
 
-                <!-- Result counter -->
-                <div class="advanced-filter mb-4 d-flex align-items-center justify-content-between">
-                    <p class="filter-result mb-0">
-                        {{ __('compare.title') }}: <span class="result-value" id="compare-result-count">0</span>
-                    </p>
-                    <button class="compare-clear-all btn btn-sm btn-outline-danger" style="display:none">
-                        <i class="material-icons-outlined" style="font-size:15px;vertical-align:middle">delete_sweep</i>
-                        {{ __('compare.clear_all') }}
+                <!-- Compare Toolbar -->
+                <div class="compare-toolbar mb-4">
+                    <div class="compare-toolbar-left">
+                        <div class="compare-toolbar-icon">
+                            <i class="material-icons-outlined">balance</i>
+                        </div>
+                        <div>
+                            <div class="compare-toolbar-title">{{ __('compare.title') }}</div>
+                            <div class="compare-toolbar-sub">
+                                <span id="compare-result-count">0</span> {{ __('compare.properties_selected') }}
+                            </div>
+                        </div>
+                    </div>
+                    <button class="compare-clear-all btn btn-sm" style="display:none">
+                        <i class="material-icons-outlined" style="font-size:18px;vertical-align:middle">delete_sweep</i>
+                        <span class="d-none d-md-inline ms-1">{{ __('compare.clear_all') }}</span>
                     </button>
                 </div>
 
                 <!-- Empty state -->
-                <div id="compare-empty" class="text-center py-5" style="display:none">
-                    <i class="material-icons-outlined" style="font-size:72px;color:#ccc">balance</i>
-                    <h5 class="mt-3 text-muted">{{ __('compare.empty_title') }}</h5>
-                    <p class="text-muted">{{ __('compare.empty_text') }}</p>
-                    <a href="/{{ app()->getLocale() }}/property" class="btn btn-primary mt-2">
+                <div id="compare-empty" class="compare-empty-state" style="display:none">
+                    <div class="compare-empty-icon">
+                        <i class="material-icons-outlined">balance</i>
+                    </div>
+                    <h5>{{ __('compare.empty_title') }}</h5>
+                    <p>{{ __('compare.empty_text') }}</p>
+                    <a href="/{{ app()->getLocale() }}/property" class="btn btn-primary">
                         {{ __('compare.browse') }}
                     </a>
                 </div>
@@ -49,7 +59,7 @@
                             </div>
                             @for($i = 0; $i < 3; $i++)
                             <div class="compare-skeleton-card">
-                                <div class="csk-block" style="width:100%;height:160px;border-radius:10px"></div>
+                                <div class="csk-block" style="width:100%;height:180px;border-radius:10px"></div>
                                 <div class="csk-block mt-2" style="width:85%;height:14px;border-radius:4px"></div>
                                 <div class="csk-block mt-2" style="width:55%;height:14px;border-radius:4px"></div>
                                 <div class="csk-block mt-3" style="width:100%;height:34px;border-radius:8px"></div>
@@ -101,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (result)   { result.style.display      = 'none'; result.innerHTML = ''; }
         if (clearBtn)   clearBtn.style.display    = 'none';
         if (counter)    counter.textContent       = '0';
-        if (emptyState) emptyState.style.display  = 'block';
+        if (emptyState) emptyState.style.display  = 'flex';
     }
 
     var slugs = getSlugs();
@@ -147,7 +157,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
-        // Clear all — кнопка теперь в result counter, вешаем один раз
         if (clearBtn) {
             clearBtn.addEventListener('click', function () {
                 localStorage.removeItem(STORAGE_KEY);
@@ -159,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function () {
     })
     .catch(function () {
         if (skeleton) skeleton.style.display = 'none';
-        if (emptyState) emptyState.style.display = 'block';
+        if (emptyState) emptyState.style.display = 'flex';
     });
 });
 </script>

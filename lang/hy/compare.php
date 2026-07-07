@@ -6,6 +6,7 @@ return [
     'empty_text'   => 'Ավելացրեք օբյեկտներ՝ դրանք կողք կողքի համեմատելու համար։',
     'browse'       => 'Դիտել օբյեկտները',
     'clear_all'    => 'Մաքրել բոլորը',
+    'properties_selected' => 'օբյեկտ ընտրված',
     'remove'       => 'Հեռացնել',
     'max_reached'  => 'Առավելագույնը :max օբյեկտ',
     'open_property' => 'Բացել գույքը',
@@ -46,4 +47,8 @@ return [
     'construction_monolithic' => 'Մոնոլիտ',
     'construction_panel'      => 'Պանելային',
     'construction_stone'      => 'Քարե',
+    'group_pricing' => 'Գին',
+    'group_type' => 'Տեսակ',
+    'group_specs' => 'Բնութագրեր',
+    'group_location' => 'Գտնվելու վայր',
 ];

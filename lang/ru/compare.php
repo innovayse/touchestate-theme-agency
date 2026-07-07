@@ -6,6 +6,7 @@ return [
     'empty_text'   => 'Добавьте объекты, чтобы сравнить их рядом.',
     'browse'       => 'Смотреть объекты',
     'clear_all'    => 'Очистить всё',
+    'properties_selected' => 'объекта выбрано',
     'remove'       => 'Убрать',
     'max_reached'  => 'Максимум :max объектов',
     'open_property' => 'Открыть объект',
@@ -46,4 +47,8 @@ return [
     'construction_monolithic' => 'Монолитный',
     'construction_panel'      => 'Панельный',
     'construction_stone'      => 'Каменный',
+    'group_pricing' => 'Цена',
+    'group_type' => 'Тип объекта',
+    'group_specs' => 'Характеристики',
+    'group_location' => 'Расположение',
 ];

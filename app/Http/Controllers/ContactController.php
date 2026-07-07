@@ -10,7 +10,9 @@ use TouchEstate\Sdk\TouchEstateClient;
 
 class ContactController extends Controller
 {
-    public function __construct(private TouchEstateClient $client) {}
+    public function __construct(private TouchEstateClient $client)
+    {
+    }
 
     /**
      * List contacts with pagination and filtering

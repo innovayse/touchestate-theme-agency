@@ -1,12 +1,12 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Http;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\PropertyController;
-use App\Http\Controllers\FavoritesController;
 use App\Http\Controllers\CompareController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\FavoritesController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PropertyController;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Route;
 
 // ─────────────────────────────────────────────
 // Geocoding proxy routes (server-side to avoid CORS)
@@ -15,7 +15,9 @@ use App\Http\Controllers\ContactController;
 Route::get('/api/suggest', function (\Illuminate\Http\Request $request) {
     $q      = trim($request->query('q', ''));
     $locale = $request->query('lang', 'ru');
-    if (strlen($q) < 2) return response()->json(['results' => []]);
+    if (strlen($q) < 2) {
+        return response()->json(['results' => []]);
+    }
 
     $yLang = $locale === 'en' ? 'en_US' : 'ru_RU';
 
@@ -33,7 +35,7 @@ Route::get('/api/suggest', function (\Illuminate\Http\Request $request) {
         // Yandex returns JSONP: suggest.apply({...})  — strip wrapper
         $body = trim($resp->body());
         $json = preg_replace('/^suggest\.apply\((.+)\)$/s', '$1', $body);
-        $data = json_decode($json, true);
+        $data = json_decode($json ?? '', true);
 
         $results = [];
         foreach (($data['results'] ?? []) as $item) {
@@ -43,11 +45,13 @@ Route::get('/api/suggest', function (\Illuminate\Http\Request $request) {
             $whereName  = $where['name']                  ?? '';
 
             // Only actual localities: result title must match the "where" city
-            if (!$title || $title !== $whereTitle) continue;
+            if (!$title || $title !== $whereTitle) {
+                continue;
+            }
 
             // Description: everything in where.name except the city name itself
             $parts = array_filter(array_map('trim', explode(',', $whereName)));
-            $desc  = implode(', ', array_values(array_filter($parts, fn($p) => $p !== $title)));
+            $desc  = implode(', ', array_values(array_filter($parts, fn ($p) => $p !== $title)));
 
             $results[] = ['name' => $title, 'desc' => $desc];
         }
@@ -62,11 +66,13 @@ Route::get('/api/suggest', function (\Illuminate\Http\Request $request) {
 Route::get('/api/central-district', function (\Illuminate\Http\Request $request) {
     $city = trim($request->query('city', ''));
     $lang = $request->query('lang', 'ru');
-    if (!$city) return response()->json(['district' => '']);
+    if (!$city) {
+        return response()->json(['district' => '']);
+    }
 
     $acceptLang = match($lang) {
-        'en' => 'en',
-        'hy' => 'hy,ru',
+        'en'    => 'en',
+        'hy'    => 'hy,ru',
         default => 'ru,en',
     };
 
@@ -81,10 +87,12 @@ Route::get('/api/central-district', function (\Illuminate\Http\Request $request)
             'limit'  => 5,
         ])->json();
 
-        if (empty($places)) return response()->json(['district' => '']);
+        if (empty($places)) {
+            return response()->json(['district' => '']);
+        }
 
         // Expand types to catch administrative cities (e.g. federal cities, municipalities)
-        $place = collect($places)->first(fn($p) => in_array($p['type'] ?? '', [
+        $place = collect($places)->first(fn ($p) => in_array($p['type'] ?? '', [
             'city', 'town', 'village', 'municipality', 'administrative',
         ])) ?? $places[0];
 
@@ -94,11 +102,14 @@ Route::get('/api/central-district', function (\Illuminate\Http\Request $request)
         // Helper: extract best district name from a Nominatim address array
         $extractDistrict = function (array $addr) use ($city): string {
             $cityName = $addr['city'] ?? $addr['town'] ?? $addr['village'] ?? $addr['municipality'] ?? '';
-            $skip = [strtolower($cityName), strtolower($city), '', null];
+            $skip     = [strtolower($cityName), strtolower($city), '', null];
             foreach (['suburb','borough','city_district','county','quarter','neighbourhood'] as $key) {
                 $val = $addr[$key] ?? '';
-                if ($val && !in_array(strtolower($val), $skip, true)) return $val;
+                if ($val && !in_array(strtolower($val), $skip, true)) {
+                    return $val;
+                }
             }
+
             return '';
         };
 
@@ -114,7 +125,10 @@ Route::get('/api/central-district', function (\Illuminate\Http\Request $request)
             ])->json('address', []);
 
             $d = $extractDistrict($addr);
-            if ($d) { $district = $d; break; }
+            if ($d) {
+                $district = $d;
+                break;
+            }
         }
 
         // Step 3: centroid may fall on a park/river — shift ~400 m north and retry
@@ -153,7 +167,9 @@ Route::get('/api/nearby', function (\Illuminate\Http\Request $request) {
     $lon      = (float) $request->query('lon', 0);
     $category = $request->query('category', '');
     $locale   = $request->query('lang', 'ru');
-    if (!$lat || !$lon) return response()->json(['results' => []]);
+    if (!$lat || !$lon) {
+        return response()->json(['results' => []]);
+    }
 
     // category → localized search text
     $rubrics = [
@@ -163,11 +179,13 @@ Route::get('/api/nearby', function (\Illuminate\Http\Request $request) {
         'hotel'     => ['ru' => 'отель',  'en' => 'hotel',      'hy' => 'հյուրանոց'],
     ];
     $text = $rubrics[$category][$locale] ?? ($rubrics[$category]['en'] ?? $category);
-    if (!$text) return response()->json(['results' => []]);
+    if (!$text) {
+        return response()->json(['results' => []]);
+    }
 
     $yLang = match ($locale) {
-        'en' => 'en_US',
-        'hy' => 'hy_AM',
+        'en'    => 'en_US',
+        'hy'    => 'hy_AM',
         default => 'ru_RU',
     };
 
@@ -188,8 +206,10 @@ Route::get('/api/nearby', function (\Illuminate\Http\Request $request) {
         $results  = [];
         foreach ($features as $f) {
             $coords = $f['geometry']['coordinates'] ?? null; // [lon, lat]
-            $name   = $f['properties']['name'] ?? '';
-            if (!$coords || !$name) continue;
+            $name   = $f['properties']['name']      ?? '';
+            if (!$coords || !$name) {
+                continue;
+            }
             $results[] = ['name' => $name, 'lon' => (float) $coords[0], 'lat' => (float) $coords[1]];
         }
 
@@ -218,7 +238,7 @@ Route::get('/', [HomeController::class, 'index']);
 Route::get('/property', [PropertyController::class, 'index']);
 Route::get('/property/{slug}', [PropertyController::class, 'show']);
 Route::get('/property/{slug}/extras', [PropertyController::class, 'extras']); // skeleton-first: similar + comments
-Route::post('/api/property/{slug}/view',    [PropertyController::class, 'recordView']);
+Route::post('/api/property/{slug}/view', [PropertyController::class, 'recordView']);
 Route::post('/api/property/{slug}/enquire', [PropertyController::class, 'enquire']);
 
 // Map
@@ -233,7 +253,7 @@ $defaultRoutes = [
 ];
 
 foreach ($defaultRoutes as $route) {
-    Route::get('/' . $route, fn () => view($route));
+    Route::get('/' . $route, fn () => view($route)); // @phpstan-ignore argument.type
 }
 
 
@@ -248,7 +268,7 @@ Route::group(
         Route::get('/', [HomeController::class, 'index'])->name('index');
 
         // Property listing + single (API-driven)
-        Route::get('/property',        [PropertyController::class, 'index'])->name('property');
+        Route::get('/property', [PropertyController::class, 'index'])->name('property');
         Route::get('/property/{slug}', [PropertyController::class, 'show'])->name('property.single');
         Route::get('/property/{slug}/extras', [PropertyController::class, 'extras'])->name('property.extras'); // skeleton-first: similar + comments
 
@@ -265,17 +285,17 @@ Route::group(
 
         // Static pages
         // Route::get('/about-us',        fn () => view('about-us'))->name('about-us'); // temporarily disabled (page kept)
-        Route::get('/contact-us',      fn () => view('contact-us'))->name('contact-us');
-        Route::get('/faq',             fn () => view('faq'))->name('faq');
-        Route::get('/privacy-policy',  fn () => view('privacy-policy'))->name('privacy-policy');
+        Route::get('/contact-us', fn () => view('contact-us'))->name('contact-us');
+        Route::get('/faq', fn () => view('faq'))->name('faq');
+        Route::get('/privacy-policy', fn () => view('privacy-policy'))->name('privacy-policy');
         Route::get('/terms-condition', fn () => view('terms-condition'))->name('terms-condition');
-        Route::get('/testimonial',     fn () => view('testimonial'))->name('testimonial');
-        Route::get('/cart',            fn () => view('cart'))->name('cart');
-        Route::get('/checkout',        fn () => view('checkout'))->name('checkout');
+        Route::get('/testimonial', fn () => view('testimonial'))->name('testimonial');
+        Route::get('/cart', fn () => view('cart'))->name('cart');
+        Route::get('/checkout', fn () => view('checkout'))->name('checkout');
 
         // Error / utility pages
         Route::get('/maintenance', fn () => view('maintenance'))->name('maintenance');
-        Route::get('/error-404',   fn () => view('error-404'))->name('error-404');
-        Route::get('/error-500',   fn () => view('error-500'))->name('error-500');
+        Route::get('/error-404', fn () => view('error-404'))->name('error-404');
+        Route::get('/error-500', fn () => view('error-500'))->name('error-500');
     }
 );

@@ -4,36 +4,35 @@
     'count' => 0,
     'images' => [],
     'fallback',
+    'icon' => 'home',
 ])
 
 @php $locale = app()->getLocale(); @endphp
 
-<div class="property-type-item h-100">
-    <div class="property-img">
-        <a href="/{{ $locale }}/property?propertyType={{ $type }}">
-            @if(count($images) === 0)
-                <img src="{{ URL::asset($fallback) }}" class="property-type-thumb" alt="{{ $label }}"
-                     style="width:260px;height:260px;max-width:260px;min-width:260px;object-fit:cover;display:block;">
-            @elseif(count($images) === 1)
-                <img src="{{ $images[0] }}" class="property-type-thumb" alt="{{ $label }}"
-                     style="width:260px;height:260px;max-width:260px;min-width:260px;object-fit:cover;display:block;">
-            @else
-                <div class="type-slideshow" style="width:260px;height:260px;position:relative;overflow:hidden;border-radius:5px;">
-                    @foreach($images as $idx => $imgUrl)
-                        <img src="{{ $imgUrl }}" alt="{{ $label }}"
-                             style="width:260px;height:260px;object-fit:cover;position:absolute;top:0;left:0;opacity:{{ $idx === 0 ? '1' : '0' }};transition:opacity 0.8s ease;">
-                    @endforeach
-                </div>
-            @endif
-        </a>
-        <a href="/{{ $locale }}/property?propertyType={{ $type }}" class="overlay-arrow">
-            <i class="material-icons-outlined">north_east</i>
-        </a>
+<a href="/{{ $locale }}/property?propertyType={{ $type }}" class="pt-card" style="text-decoration:none;">
+    <div class="pt-card-img">
+        @if(count($images) === 0)
+            <img src="{{ URL::asset($fallback) }}" alt="{{ $label }}">
+        @elseif(count($images) === 1)
+            <img src="{{ $images[0] }}" alt="{{ $label }}">
+        @else
+            <div class="type-slideshow" style="position:relative;width:100%;height:100%;">
+                @foreach($images as $idx => $imgUrl)
+                    <img src="{{ $imgUrl }}" alt="{{ $label }}"
+                         style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:{{ $idx === 0 ? '1' : '0' }};transition:opacity 0.8s ease;">
+                @endforeach
+            </div>
+        @endif
+        <div class="pt-card-overlay"></div>
+        <div class="pt-card-badge">
+            <x-icon name="{{ $icon }}" size="20"/>
+        </div>
+        <div class="pt-card-arrow">
+            <x-icon name="north_east" size="18"/>
+        </div>
     </div>
-    <div class="text-center">
-        <h5 class="mb-1">
-            <a href="/{{ $locale }}/property?propertyType={{ $type }}">{{ $label }}</a>
-        </h5>
-        <p class="fs-14 mb-0">{{ $count }} {{ __('index.property_type_available') }}</p>
+    <div class="pt-card-body">
+        <h5 class="pt-card-label">{{ $label }}</h5>
+        <span class="pt-card-count">{{ $count }} {{ __('index.property_type_available') }}</span>
     </div>
-</div>
+</a>
