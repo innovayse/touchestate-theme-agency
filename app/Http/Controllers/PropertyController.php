@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Services\ExchangeRateService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 use TouchEstate\Sdk\Signer\SignatureV4Signer;
@@ -108,7 +109,9 @@ class PropertyController extends Controller
         }
 
         // Basic filters
-        foreach (['propertyType', 'transactionType', 'city', 'district', 'currency',
+        // NOTE: 'currency' + minPrice/maxPrice are intentionally NOT added here — the
+        // price range is currency-aware and handled in index() (multi-currency search).
+        foreach (['propertyType', 'transactionType', 'city', 'district',
                   'renovationType', 'constructionType', 'furnitureType', 'petsPolicy', 'childrenPolicy',
                   'balconyType', 'terraceType'] as $key) {
             if (request()->filled($key)) {
@@ -116,8 +119,8 @@ class PropertyController extends Controller
             }
         }
 
-        // Numeric range filters
-        foreach (['minPrice', 'maxPrice', 'minRooms', 'maxRooms', 'minBedrooms', 'maxBedrooms', 'minBathrooms', 'maxBathrooms', 'minFloor', 'maxFloor', 'minLandArea', 'maxLandArea', 'minYearBuilt', 'maxYearBuilt'] as $key) {
+        // Numeric range filters (price handled separately — see index())
+        foreach (['minRooms', 'maxRooms', 'minBedrooms', 'maxBedrooms', 'minBathrooms', 'maxBathrooms', 'minFloor', 'maxFloor', 'minLandArea', 'maxLandArea', 'minYearBuilt', 'maxYearBuilt'] as $key) {
             if (request()->filled($key)) {
                 $params[$key] = (int) request($key);
             }
@@ -192,22 +195,219 @@ class PropertyController extends Controller
         return $params;
     }
 
+    /** Listing page size — one server page = one "Load More" step. */
+    private const PER_PAGE = 21;
+
     public function index(): \Illuminate\View\View
     {
         $this->validateFilters();
 
-        // Cache each unique filter/page combination 30 min (no admin panel). Repeat listings
-        // (and the AJAX filter/load-more fetches) become instant.
-        $filters = $this->buildFilters();
+        $properties = $this->fetchPage();
+
+        return view('property', compact('properties'));
+    }
+
+    /**
+     * AJAX endpoint for "Load More": returns the rendered card partial for the
+     * requested page plus pagination meta, so the client can append and keep going.
+     */
+    public function loadMore(): \Illuminate\Http\JsonResponse
+    {
+        $this->validateFilters();
+
+        $properties = $this->fetchPage();
+        $html = view('partials.property-cards', [
+            'properties' => ['items' => $properties['items']],
+        ])->render();
+
+        return response()->json([
+            'html'        => $html,
+            'hasNextPage' => $properties['hasNextPage'],
+            'count'       => count($properties['items']),
+            'total'       => $properties['totalCount'],
+        ]);
+    }
+
+    /**
+     * Fetch one display page (see PER_PAGE) for the current request, honouring the
+     * `page` query param. Returns ['items', 'totalCount', 'hasNextPage'].
+     *
+     * Both modes build the FULL matched, deduplicated set once (cached) and slice the
+     * requested page in-memory. We deliberately do NOT rely on the API's own paging:
+     * the default ordering is not stable across independent page requests (equal
+     * createdAt values shift page boundaries), so item-by-item paging would drop and
+     * duplicate results. Slicing a stable in-memory list guarantees complete,
+     * non-overlapping pages.
+     *
+     *  - No price range → single query (all API pages), API sort order preserved.
+     *  - Price range    → multi-currency search, merged + globally re-sorted.
+     */
+    private function fetchPage(): array
+    {
+        $base   = $this->buildFilters();
+        $page   = max(1, (int) request('page', 1));
+        $hasMin = request()->filled('minPrice');
+        $hasMax = request()->filled('maxPrice');
+
+        if (!$hasMin && !$hasMax) {
+            // No price range → one query across ALL currencies (no currency restriction).
+            $all = $this->fetchAll($base);
+        } else {
+            // Price range is expressed in the visitor's SEARCH currency (filter dropdown,
+            // falling back to the header display currency). We convert that range into
+            // every supported currency and query each one, then merge — so an object
+            // priced in any currency is matched by its equivalent value.
+            $merged = $this->fetchMergedAll($base, $hasMin, $hasMax);
+
+            if ($merged !== null) {
+                $all = $this->sortMerged($merged);
+            } else {
+                // Rates unavailable (e.g. CBA down) → degrade to a single query in the
+                // search currency with the raw values, so search still works.
+                $supported      = config('currency.supported', []);
+                $searchCurrency = request('currency') ?: display_currency();
+                if (!in_array($searchCurrency, $supported, true)) {
+                    $searchCurrency = config('currency.default');
+                }
+                $params = $base;
+                $params['currency'] = $searchCurrency;
+                if ($hasMin) { $params['minPrice'] = (int) request('minPrice'); }
+                if ($hasMax) { $params['maxPrice'] = (int) request('maxPrice'); }
+                $all = $this->fetchAll($params);
+            }
+        }
+
+        $total  = count($all);
+        $offset = ($page - 1) * self::PER_PAGE;
+
+        return [
+            'items'       => array_slice($all, $offset, self::PER_PAGE),
+            'totalCount'  => $total,
+            'hasNextPage' => ($offset + self::PER_PAGE) < $total,
+        ];
+    }
+
+    /**
+     * Fetch the FULL result set for a single query (all API pages, largest page size),
+     * deduplicated by id, preserving the API's own sort order. Each page is cached.
+     */
+    private function fetchAll(array $base): array
+    {
+        $params = $base;
+        $params['pageSize'] = 100; // largest allowed page → fewest boundary seams
+
+        $all  = [];
+        $seen = [];
+        for ($p = 1; $p <= 20; $p++) { // cap as a runaway safety net
+            $params['pageNumber'] = $p;
+            $result = $this->cachedList($params);
+            foreach ($result['items'] ?? [] as $item) {
+                $id = $item['id'] ?? null;
+                if ($id !== null) {
+                    if (isset($seen[$id])) { continue; }
+                    $seen[$id] = true;
+                }
+                $all[] = $item;
+            }
+            if (!($result['hasNextPage'] ?? false)) { break; }
+        }
+
+        return $all;
+    }
+
+    /**
+     * Multi-currency price search: fetch the FULL matched set across every supported
+     * currency (all API pages), merged into one flat array. Returns null if exchange
+     * rates are unavailable (caller falls back to a single-currency query).
+     */
+    private function fetchMergedAll(array $base, bool $hasMin, bool $hasMax): ?array
+    {
+        $supported      = config('currency.supported', []);
+        $searchCurrency = request('currency') ?: display_currency();
+        if (!in_array($searchCurrency, $supported, true)) {
+            $searchCurrency = config('currency.default');
+        }
+
+        $minInput = $hasMin ? (int) request('minPrice') : null;
+        $maxInput = $hasMax ? (int) request('maxPrice') : null;
+        $rates    = app(ExchangeRateService::class);
+
+        // Dedup by id: the API's `currency` param scopes only the price comparison,
+        // not the result set, so the same object can surface under several currencies.
+        $merged = [];
+        $seen   = [];
+        foreach ($supported as $currency) {
+            $params = $base;
+            $params['currency'] = $currency;
+            $params['pageSize'] = 100; // fetch in the largest allowed pages
+
+            if ($minInput !== null) {
+                $converted = $rates->convert($minInput, $searchCurrency, $currency);
+                if ($converted === null) { return null; }
+                $params['minPrice'] = (int) floor($converted);
+            }
+            if ($maxInput !== null) {
+                $converted = $rates->convert($maxInput, $searchCurrency, $currency);
+                if ($converted === null) { return null; }
+                $params['maxPrice'] = (int) ceil($converted);
+            }
+
+            // Walk every page for this currency (cap as a runaway safety net).
+            for ($p = 1; $p <= 20; $p++) {
+                $params['pageNumber'] = $p;
+                $result = $this->cachedList($params);
+                foreach ($result['items'] ?? [] as $item) {
+                    $id = $item['id'] ?? null;
+                    if ($id !== null) {
+                        if (isset($seen[$id])) { continue; }
+                        $seen[$id] = true;
+                    }
+                    $merged[] = $item;
+                }
+                if (!($result['hasNextPage'] ?? false)) { break; }
+            }
+        }
+
+        return $merged;
+    }
+
+    /**
+     * Fetch a property list for the given filters, cached 1h (no admin panel).
+     * On API failure returns an empty result instead of throwing.
+     */
+    private function cachedList(array $filters): array
+    {
         try {
-            $properties = Cache::remember('te_list:' . md5(serialize($filters)), 1800, function () use ($filters) {
+            return Cache::remember('te_list:' . md5(serialize($filters)), 1800, function () use ($filters) {
                 return $this->client->properties()->list($filters);
             });
         } catch (\Exception $e) {
-            $properties = ['items' => [], 'totalCount' => 0, 'hasNextPage' => false];
+            return ['items' => [], 'totalCount' => 0, 'hasNextPage' => false];
+        }
+    }
+
+    /**
+     * Re-sort a merged (multi-currency) result set. The API sorts within each currency
+     * query, so the concatenation must be globally re-sorted. Price sort compares values
+     * converted into the display currency; otherwise newest-first by createdAt.
+     */
+    private function sortMerged(array $items): array
+    {
+        $descending = request('sortOrder') !== 'asc'; // default: descending
+
+        if (request('sortBy') === 'price') {
+            $svc     = app(ExchangeRateService::class);
+            $display = display_currency();
+            usort($items, function ($a, $b) use ($svc, $display, $descending) {
+                $pa = $svc->convert((float) ($a['price'] ?? 0), $a['currency'] ?? $display, $display) ?? ($a['price'] ?? 0);
+                $pb = $svc->convert((float) ($b['price'] ?? 0), $b['currency'] ?? $display, $display) ?? ($b['price'] ?? 0);
+                return $descending ? $pb <=> $pa : $pa <=> $pb;
+            });
+        } else {
+            usort($items, fn ($a, $b) => strcmp($b['createdAt'] ?? '', $a['createdAt'] ?? ''));
         }
 
-        return view('property', compact('properties'));
+        return $items;
     }
 
     public function map(): \Illuminate\View\View

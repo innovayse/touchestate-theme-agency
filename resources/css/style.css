@@ -400,6 +400,8 @@ header {
   top: 0;
   width: 100%;
   z-index: 1050;
+  padding-top: 10px;
+  padding-bottom: 10px;
   -webkit-transition: all 0.9s;
   -ms-transition: all 0.9s;
   transition: all 0.9s;
@@ -1479,6 +1481,26 @@ header .header-items .topbar-profile .dropdown-menu .user-profile span {
   padding: 0;
   font-size: 16px;
   flex-shrink: 0;
+}
+
+/* Mobile language switcher — sits next to the burger in the top bar */
+header .navbar-header .navbar-header-actions {
+  gap: 8px;
+}
+
+header .navbar-header .navbar-header-actions #mobile_btn {
+  margin-left: 0;
+}
+
+header .navbar-header .topbar-lang-mobile .topbar-link {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background-color: transparent;
+  border: none;
 }
 
 .menu-dropdown .topbar-link i,
@@ -7769,7 +7791,7 @@ span.select2-container.select2-container--default.select2-container--open {
 }
 
 .featured-action-btn.compare-btn svg {
-  fill: #fff;
+  fill: #555;
 }
 
 /* Dark theme */
@@ -15374,3 +15396,56 @@ html[data-theme="dark"] .ps-page .bool-pill {
 @media (max-width: 767px) {
     #grid-controls { flex-direction: column; align-items: stretch; }
 }
+
+/* ============================================================
+   Currency switcher (header) + price translations (property-single)
+   ============================================================ */
+header .header-items .topbar-currency .topbar-link,
+.menu-dropdown .topbar-currency .topbar-link {
+  width: auto;
+  min-width: 40px;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.topbar-currency .currency-symbol-trigger {
+  line-height: 1;
+  font-size: 16px;
+}
+
+.topbar-currency .currency-symbol {
+  min-width: 16px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.topbar-currency .dropdown-menu {
+  min-width: 160px;
+}
+
+@media (max-width: 991.98px) {
+  header .header-items .topbar-currency {
+    display: none !important;
+  }
+}
+
+/* All currency translations under the headline price */
+.price-alt-currencies {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #8a8f98;
+}
+
+.price-alt-currencies .price-alt-currency {
+  white-space: nowrap;
+}
+
+.price-alt-currencies .price-alt-sep {
+  margin: 0 6px;
+  opacity: 0.55;
+}
+
+/* Currency switcher: active-item check is toggled client-side (JS adds .active) */
+.topbar-currency .dropdown-item .currency-check { display: none; }
+.topbar-currency .dropdown-item.active .currency-check { display: inline-flex; }

@@ -42,7 +42,7 @@
         </h6>
 
         <div class="compare-card-price">
-            {{ number_format($prop['price'] ?? 0, 0) }} {{ $prop['currency'] ?? '' }}
+            <x-price :amount="$prop['price'] ?? 0" :currency="$prop['currency'] ?? null" />
             @if($txType === 'rentdaily')
                 <span class="compare-card-price-period">/{{ __('property-single.per_day') }}</span>
             @elseif(str_starts_with($txType, 'rent'))

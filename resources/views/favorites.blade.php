@@ -86,6 +86,8 @@
         var emptyState   = document.getElementById('favorites-empty');
         var counter      = document.getElementById('result-loaded');
 
+        var loaded = 0; // cards currently shown
+
         function getFavs() {
             try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
             catch (e) { return []; }
@@ -99,66 +101,105 @@
             return;
         }
 
-        var csrfToken = document.querySelector('meta[name="csrf-token"]');
-        fetch('/{{ app()->getLocale() }}/favorites/load', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken ? csrfToken.content : ''
-            },
-            body: JSON.stringify({ slugs: favs })
-        })
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
+        // Un-favoriting on this page: fade the card out and hide it. Attached once (outside
+        // the load callbacks) so the transient-retry re-load can't stack duplicate handlers.
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest('.favourite');
+            if (!btn) return;
+            setTimeout(function () {
+                var card = btn.closest('[data-slug]');
+                if (!card || !grid) return;
+                if (getFavs().indexOf(card.dataset.slug) === -1) {
+                    card.style.transition = 'opacity 0.3s';
+                    card.style.opacity = '0';
+                    setTimeout(function () {
+                        card.classList.add('d-none');
+                        card.style.opacity = '';
+                        card.style.transition = '';
+                        var visible = Array.from(grid.querySelectorAll(':scope > [data-slug]'))
+                            .filter(function (c) { return !c.classList.contains('d-none'); }).length;
+                        loaded = visible;
+                        if (counter) counter.textContent = visible;
+                        if (visible === 0) {
+                            grid.style.display = 'none';
+                            if (emptyState) emptyState.style.display = 'block';
+                        }
+                    }, 300);
+                }
+            }, 50);
+        });
+
+        function requestFavs(slugList) {
+            var csrfToken = document.querySelector('meta[name="csrf-token"]');
+            return fetch('/{{ app()->getLocale() }}/favorites/load', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken ? csrfToken.content : ''
+                },
+                body: JSON.stringify({ slugs: slugList })
+            }).then(function (res) { return res.json(); });
+        }
+
+        function appendCards(html) {
+            if (!html || !grid) return;
+            var tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            while (tmp.firstElementChild) grid.appendChild(tmp.firstElementChild);
+        }
+
+        function showCards(count) {
+            loaded += count;
+            if (counter) counter.textContent = loaded;
+            if (grid && loaded > 0) {
+                grid.style.display = '';
+                if (emptyState) emptyState.style.display = 'none';
+                requestAnimationFrame(function () { grid.style.opacity = '1'; });
+            }
+            if (typeof window.applyFavIcons === 'function') window.applyFavIcons();
+            // Cards also carry a compare button — reflect its pressed state for slugs already
+            // in te_compare (these cards are inserted after DOMContentLoaded, so the initial
+            // applyCompareIcons() pass never saw them).
+            if (typeof window.applyCompareIcons === 'function') window.applyCompareIcons();
+        }
+
+        // Initial load
+        requestFavs(favs).then(function (data) {
             if (skeletonGrid) skeletonGrid.style.display = 'none';
 
-            // Always sync localStorage with what API actually found (removes deleted/404 slugs)
+            // Sync localStorage with what the API kept: deleted/404 slugs are dropped, but
+            // transient-failed ones stay (they come back in `pending`, not removed).
             if (data.slugs !== undefined) {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(data.slugs));
                 if (typeof window.updateHeaderFav === 'function') window.updateHeaderFav();
             }
 
-            if (data.count === 0) {
+            var pending = data.pending || [];
+
+            if (data.count === 0 && pending.length === 0) {
                 if (emptyState) emptyState.style.display = 'block';
                 return;
             }
 
-            if (counter) counter.textContent = data.count;
-            if (grid) {
-                grid.innerHTML = data.html;
-                grid.style.display = '';
-                requestAnimationFrame(function () { grid.style.opacity = '1'; });
-            }
+            appendCards(data.html);
+            showCards(data.count || 0);
 
-            if (typeof window.applyFavIcons === 'function') window.applyFavIcons();
-
-            // When un-favoriting on this page — fade out and hide the card
-            document.addEventListener('click', function (e) {
-                var btn = e.target.closest('.favourite');
-                if (!btn) return;
+            // Some slugs failed transiently (rate limit / 5xx / network) and were kept in
+            // favorites but NOT rendered. Re-request just those once, after a short pause, so
+            // the cards appear instead of silently going missing while still counted.
+            if (pending.length) {
                 setTimeout(function () {
-                    var card = btn.closest('[data-slug]');
-                    if (!card || !grid) return;
-                    if (getFavs().indexOf(card.dataset.slug) === -1) {
-                        card.style.transition = 'opacity 0.3s';
-                        card.style.opacity = '0';
-                        setTimeout(function () {
-                            card.classList.add('d-none');
-                            card.style.opacity = '';
-                            card.style.transition = '';
-                            var visible = Array.from(grid.querySelectorAll(':scope > [data-slug]'))
-                                .filter(function (c) { return !c.classList.contains('d-none'); }).length;
-                            if (counter) counter.textContent = visible;
-                            if (visible === 0) {
-                                grid.style.display = 'none';
-                                if (emptyState) emptyState.style.display = 'block';
-                            }
-                        }, 300);
-                    }
-                }, 50);
-            });
-        })
-        .catch(function () {
+                    requestFavs(pending).then(function (retry) {
+                        if (retry && retry.count) {
+                            appendCards(retry.html);
+                            showCards(retry.count);
+                        }
+                    }).catch(function () {}).then(function () {
+                        if (loaded === 0 && emptyState) emptyState.style.display = 'block';
+                    });
+                }, 800);
+            }
+        }).catch(function () {
             if (skeletonGrid) skeletonGrid.style.display = 'none';
             if (emptyState) emptyState.style.display = 'block';
         });

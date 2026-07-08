@@ -8,6 +8,10 @@
         $path = '';
     }
     $isAuthPage = false;
+    // Currency switcher
+    $supportedCurrencies = config('currency.supported', []);
+    $currencySymbols     = config('currency.symbols', []);
+    $currentCurrency     = display_currency();
 @endphp
 <!-- Header Start -->
 <header class="header fixed">
@@ -22,9 +26,28 @@
                     <span class="fw-semibold fs-16">{{ !empty($workspace['name']) ? $workspace['name'] : 'TouchEstate' }}</span>
                 </a>
                 @if(!$isAuthPage)
-                <a id="mobile_btn" href="javascript:void(0);">
-                    <x-icon name="menu"/>
-                </a>
+                <div class="navbar-header-actions d-flex align-items-center d-lg-none">
+                    <!-- Language switcher (mobile — next to burger) -->
+                    <div class="dropdown topbar-lang topbar-lang-mobile">
+                        <a href="#" class="topbar-link btn btn-light" data-bs-toggle="dropdown">
+                            <img src="{{URL::asset('build/img/flags/' . ($flags[$currentLocale] ?? 'us.svg'))}}" alt="Language" height="20" width="20" style="border-radius:50%;object-fit:cover">
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a href="/en{{ $path ? '/' . $path : '' }}" class="dropdown-item d-flex align-items-center{{ $currentLocale === 'en' ? ' active' : '' }}">
+                                <img src="{{URL::asset('build/img/flags/us.svg')}}" alt="" class="me-2" height="20" width="20" style="border-radius:50%;object-fit:cover"> <span class="align-middle flex-grow-1">English</span>@if($currentLocale === 'en')<x-icon name="check" class="ms-2" size="16"/>@endif
+                            </a>
+                            <a href="/ru{{ $path ? '/' . $path : '' }}" class="dropdown-item d-flex align-items-center{{ $currentLocale === 'ru' ? ' active' : '' }}">
+                                <img src="{{URL::asset('build/img/flags/ru.svg')}}" alt="" class="me-2" height="20" width="20" style="border-radius:50%;object-fit:cover"> <span class="align-middle flex-grow-1">Русский</span>@if($currentLocale === 'ru')<x-icon name="check" class="ms-2" size="16"/>@endif
+                            </a>
+                            <a href="/hy{{ $path ? '/' . $path : '' }}" class="dropdown-item d-flex align-items-center{{ $currentLocale === 'hy' ? ' active' : '' }}">
+                                <img src="{{URL::asset('build/img/flags/am.svg')}}" alt="" class="me-2" height="20" width="20" style="border-radius:50%;object-fit:cover"> <span class="align-middle flex-grow-1">Հայերեն</span>@if($currentLocale === 'hy')<x-icon name="check" class="ms-2" size="16"/>@endif
+                            </a>
+                        </div>
+                    </div>
+                    <a id="mobile_btn" href="javascript:void(0);">
+                        <x-icon name="menu"/>
+                    </a>
+                </div>
                 @endif
             </div>
             @if(!$isAuthPage)
@@ -58,20 +81,17 @@
                 </ul>
 
                 <div class="menu-dropdown">
-                    <div class="dropdown">
+                    <!-- Currency switcher -->
+                    <div class="dropdown topbar-currency">
                         <a href="#" class="topbar-link btn btn-light" data-bs-toggle="dropdown">
-                            <img src="{{URL::asset('build/img/flags/' . ($flags[$currentLocale] ?? 'us.svg'))}}" alt="Language" height="20" width="20" style="border-radius:50%;object-fit:cover">
+                            <span class="currency-symbol-trigger fw-semibold">{{ $currencySymbols[$currentCurrency] ?? $currentCurrency }}</span>
                         </a>
                         <div class="dropdown-menu">
-                            <a href="/en{{ $path ? '/' . $path : '' }}" class="dropdown-item d-flex align-items-center{{ $currentLocale === 'en' ? ' active' : '' }}">
-                                <img src="{{URL::asset('build/img/flags/us.svg')}}" alt="" class="me-2" height="20" width="20" style="border-radius:50%;object-fit:cover"> <span class="align-middle flex-grow-1">English</span>@if($currentLocale === 'en')<x-icon name="check" class="ms-2" size="16"/>@endif
+                            @foreach($supportedCurrencies as $cur)
+                            <a href="{{ url('/currency/' . $cur) }}" data-no-instant data-currency="{{ $cur }}" class="dropdown-item currency-switch d-flex align-items-center{{ $currentCurrency === $cur ? ' active' : '' }}">
+                                <span class="currency-symbol me-2">{{ $currencySymbols[$cur] ?? $cur }}</span> <span class="align-middle flex-grow-1">{{ $cur }}</span><x-icon name="check" class="ms-2 currency-check" size="16"/>
                             </a>
-                            <a href="/ru{{ $path ? '/' . $path : '' }}" class="dropdown-item d-flex align-items-center{{ $currentLocale === 'ru' ? ' active' : '' }}">
-                                <img src="{{URL::asset('build/img/flags/ru.svg')}}" alt="" class="me-2" height="20" width="20" style="border-radius:50%;object-fit:cover"> <span class="align-middle flex-grow-1">Русский</span>@if($currentLocale === 'ru')<x-icon name="check" class="ms-2" size="16"/>@endif
-                            </a>
-                            <a href="/hy{{ $path ? '/' . $path : '' }}" class="dropdown-item d-flex align-items-center{{ $currentLocale === 'hy' ? ' active' : '' }}">
-                                <img src="{{URL::asset('build/img/flags/am.svg')}}" alt="" class="me-2" height="20" width="20" style="border-radius:50%;object-fit:cover"> <span class="align-middle flex-grow-1">Հայերեն</span>@if($currentLocale === 'hy')<x-icon name="check" class="ms-2" size="16"/>@endif
-                            </a>
+                            @endforeach
                         </div>
                     </div>
                     <a href="/{{ $currentLocale }}/favorites" class="topbar-link btn btn-light" title="{{ __('header.favorites') }}" style="position:relative">
@@ -102,6 +122,20 @@
                     <span class="compare-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#1565c0;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;line-height:16px;text-align:center;border-radius:50%;padding:0 3px;pointer-events:none"></span>
                 </a>
                 @endif
+
+                <!-- Currency switcher -->
+                <div class="dropdown topbar-currency">
+                    <a href="#" class="topbar-link btn btn-light" data-bs-toggle="dropdown">
+                        <span class="currency-symbol-trigger fw-semibold">{{ $currencySymbols[$currentCurrency] ?? $currentCurrency }}</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        @foreach($supportedCurrencies as $cur)
+                        <a href="{{ url('/currency/' . $cur) }}" data-no-instant data-currency="{{ $cur }}" class="dropdown-item currency-switch d-flex align-items-center{{ $currentCurrency === $cur ? ' active' : '' }}">
+                            <span class="currency-symbol me-2">{{ $currencySymbols[$cur] ?? $cur }}</span> <span class="align-middle flex-grow-1">{{ $cur }}</span><x-icon name="check" class="ms-2 currency-check" size="16"/>
+                        </a>
+                        @endforeach
+                    </div>
+                </div>
 
                 <div class="dropdown topbar-lang">
                     <a href="#" class="topbar-link btn btn-light" data-bs-toggle="dropdown">

@@ -17,7 +17,7 @@
             <a href="/{{ $locale }}/property/{{ $prop['slug'] }}" style="display:block;height:100%;">
                 @if(!empty($prop['primaryImageUrl']))
                     <img src="{{ $prop['primaryImageUrl'] }}"
-                         alt="{{ $prop['title'] }}"
+                         alt="{{ $prop['title'] ?? '' }}"
                          style="width:100%;height:220px;object-fit:cover;display:block;transition:transform 0.4s ease;"
                          onmouseover="this.style.transform='scale(1.05)'"
                          onmouseout="this.style.transform='scale(1)'"
@@ -83,7 +83,7 @@
             <div class="mb-3">
                 <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
                     <h6 class="mb-0" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4;min-width:0;flex:1;">
-                        <a href="/{{ $locale }}/property/{{ $prop['slug'] }}" class="text-dark text-decoration-none">{{ $prop['title'] }}</a>
+                        <a href="/{{ $locale }}/property/{{ $prop['slug'] ?? '' }}" class="text-dark text-decoration-none">{{ $prop['title'] ?? '' }}</a>
                     </h6>
                     <span class="badge bg-secondary flex-shrink-0">{{ __($ptKey) !== $ptKey ? __($ptKey) : ($prop['propertyType'] ?? '') }}</span>
                 </div>
@@ -102,7 +102,7 @@
                 <div class="text-end">
                     <div class="fs-12 text-muted">{{ __('property.starts_from') }}</div>
                     <div class="text-primary fw-semibold">
-                        {{ number_format($prop['price'] ?? 0, 0) }} {{ $prop['currency'] ?? '' }}
+                        <x-price :amount="$prop['price'] ?? 0" :currency="$prop['currency'] ?? null" />
                         @if($txType === 'rentdaily')
                             <span class="fs-12 fw-normal text-muted">/{{ __('property-single.per_day') }}</span>
                         @elseif(str_starts_with($txType, 'rent'))

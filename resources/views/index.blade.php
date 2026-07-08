@@ -89,7 +89,7 @@
                     <div class="col-12 col-md-6 col-lg-4 col-xl">
                         <label class="form-label">{{ __('index.search_min_price') }}</label>
                         <div class="filter-stepper">
-                            <input type="number" name="minPrice" id="minPriceIndex" min="0" placeholder="{{ __('index.search_currency_symbol') }}">
+                            <input type="number" name="minPrice" id="minPriceIndex" min="0" placeholder="{{ currency_symbol(display_currency()) }}" data-currency-symbol>
                             <div class="stepper-btns">
                                 <button type="button" onclick="this.closest('.filter-stepper').querySelector('input').stepUp()">+</button>
                                 <button type="button" onclick="this.closest('.filter-stepper').querySelector('input').stepDown()">−</button>
@@ -99,7 +99,7 @@
                     <div class="col-12 col-md-6 col-lg-4 col-xl">
                         <label class="form-label">{{ __('index.search_max_price') }}</label>
                         <div class="filter-stepper">
-                            <input type="number" name="maxPrice" id="maxPriceIndex" min="0" placeholder="{{ __('index.search_currency_symbol') }}">
+                            <input type="number" name="maxPrice" id="maxPriceIndex" min="0" placeholder="{{ currency_symbol(display_currency()) }}" data-currency-symbol>
                             <div class="stepper-btns">
                                 <button type="button" onclick="this.closest('.filter-stepper').querySelector('input').stepUp()">+</button>
                                 <button type="button" onclick="this.closest('.filter-stepper').querySelector('input').stepDown()">−</button>
@@ -326,7 +326,7 @@
                                         {{ $featuredMain['city'] ?? '' }}
                                     </p>
                                     <span class="featured-main-price">
-                                        {{ number_format($featuredMain['price'] ?? 0, 0) }} {{ $featuredMain['currency'] ?? '' }}
+                                        <x-price :amount="$featuredMain['price'] ?? 0" :currency="$featuredMain['currency'] ?? null" />
                                     </span>
                                 </div>
                             </div>

@@ -79,10 +79,6 @@ return [
 
     // FAQ Answers
     'faq_cancellation_answer' => 'Does have fully refundable room rates available to book on our site. If you\'ve booked a fully refundable room rate, this can be cancelled up to a few days before check-in depending on the property\'s cancellation policy. Just make sure to check this property\'s cancellation policy for the exact terms and conditions.',
-    'faq_pool_answer' => 'Yes, there is a pool available for guests, providing a perfect place to relax, unwind, and enjoy some leisure time during their stay.',
-    'faq_pets_answer' => 'Yes, pets are allowed, and we welcome your furry friends to stay with you, ensuring a comfortable experience for both you and your pets.',
-    'faq_shuttle_answer' => 'Yes, airport shuttle service is offered to provide convenient and reliable transportation for our guests between the airport and their destination, ensuring a smooth and stress-free travel experience.',
-    'faq_checkin_answer' => 'Check-in is typically from 12:00 PM, and check-out is usually by 11:00 AM to ensure a smooth transition for all guests.',
 
     // Reviews
     'customer_reviews_ratings' => 'Customer Reviews & Ratings',
@@ -103,11 +99,6 @@ return [
     'convenient_location' => 'Convenient Location!',
     'reply' => 'Reply',
     'see_all_reviews' => 'See All Reviews',
-
-    // Review Comments (sample)
-    'review_1' => 'This hotel exceeded my expectations! The pool, spa, and dining options were top-notch, and the room had every amenity I could ask for. It felt like a true getaway.',
-    'review_2' => 'The location was perfect for exploring the city, and the views from our room were breathtaking. It made our trip so much more enjoyable to stay somewhere central and scenic.',
-    'review_3' => 'Thank you so much for your kind words! We\'re thrilled to hear that our location and views made your trip even more enjoyable. We hope to welcome you back soon for another scenic stay!',
 
     // Sidebar
     'provider_details' => 'Agent Details',
@@ -130,20 +121,6 @@ return [
     'enquire_error' => 'Something went wrong. Please try again.',
     'enquire_message_placeholder' => 'Write your question about this property...',
 
-    // Why Book With Us
-    'why_book' => 'Why Book With Us',
-    'expertise_experience' => 'Expertise and Experience',
-    'tailored_services' => 'Tailored Services',
-    'comprehensive_planning' => 'Comprehensive Planning',
-    'client_satisfaction' => 'Client Satisfaction',
-    'support_247' => '24/7 Support',
-
-    // Nearby Landmarks
-    'nearby_landmarks' => 'Nearby Landmarks & Visits',
-    'near_statue_liberty' => 'Near By Statue of Liberty',
-    'metropolitan_museum' => 'The Metropolitan Museum of Art',
-    'yellowstone_park' => 'Yellowstone National Park',
-
     // Transaction Types
     'rent_monthly' => 'Monthly Rent',
     'rent_daily' => 'Daily Rent',
@@ -157,15 +134,6 @@ return [
     'no_reviews_yet' => 'No reviews yet.',
     'comments' => 'Comments',
     'no_comments_yet' => 'No comments yet.',
-
-    // Property Listing
-    'listed_on' => 'Listed on :',
-    'bedroom' => 'Bedroom',
-    'bath' => 'Bath',
-    'sq_ft' => 'Sq Ft',
-
-    // UI Elements
-    'read_more' => 'Read More',
 
     // Extended Property Features
     'area_living' => 'Living Area',
@@ -391,6 +359,8 @@ return [
     'amenity_surveyed'              => 'Surveyed',
     'amenity_waterrights'           => 'Water Rights',
     'amenity_mineralrights'         => 'Mineral Rights',
+    'amenity_sauna'                 => 'Sauna',
+    'amenity_barbecuearea'          => 'Barbecue Area',
 
     // Amenities (list.am appliances + features)
     'amenity_air_conditioner' => 'Air Conditioner',

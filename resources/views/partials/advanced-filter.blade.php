@@ -583,7 +583,7 @@ html[data-theme="light"] {
         <!-- Price / Area / Land -->
         <div class="afv2-ranges-row">
             <div class="afv2-range-group">
-                <label class="afv2-label">{{ __('map.price') }}</label>
+                <label class="afv2-label">{{ __('map.price') }} (<span class="js-currency-symbol">{{ currency_symbol(display_currency()) }}</span>)</label>
                 <div class="afv2-range-pair">
                     <input type="number" name="minPrice" value="{{ request('minPrice') }}" placeholder="{{ __('map.price_from') }}" min="0" class="afv2-num-input">
                     <span class="afv2-range-dash">—</span>
@@ -592,12 +592,13 @@ html[data-theme="light"] {
             </div>
             <div class="afv2-range-group">
                 <label class="afv2-label">{{ __('map.currency') }}</label>
+                @php $selectedCurrency = request('currency', display_currency()); @endphp
                 <select name="currency" class="filter-select">
                     <option value="">{{ __('map.any') }}</option>
-                    <option value="USD" @selected(request('currency') === 'USD')>USD ($)</option>
-                    <option value="AMD" @selected(request('currency') === 'AMD')>AMD (֏)</option>
-                    <option value="RUB" @selected(request('currency') === 'RUB')>RUB (₽)</option>
-                    <option value="EUR" @selected(request('currency') === 'EUR')>EUR (€)</option>
+                    <option value="USD" @selected($selectedCurrency === 'USD')>USD ($)</option>
+                    <option value="AMD" @selected($selectedCurrency === 'AMD')>AMD (֏)</option>
+                    <option value="RUB" @selected($selectedCurrency === 'RUB')>RUB (₽)</option>
+                    <option value="EUR" @selected($selectedCurrency === 'EUR')>EUR (€)</option>
                 </select>
             </div>
             <div class="afv2-range-group">

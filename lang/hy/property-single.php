@@ -359,6 +359,8 @@ return [
     'amenity_surveyed'              => 'Հողաչափ',
     'amenity_waterrights'           => 'Ջրային իրավունք',
     'amenity_mineralrights'         => 'Հանքային իրավունք',
+    'amenity_sauna'                 => 'Սաունա',
+    'amenity_barbecuearea'          => 'Խորովածի գոտի',
 
     // Amenities (list.am appliances + features)
     'amenity_air_conditioner' => 'Կոնդիցիոներ',
