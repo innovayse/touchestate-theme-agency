@@ -60,19 +60,17 @@
                 </div>
 
                 <!-- Property Grid (hidden until DOM ready) -->
-                <div class="row mb-4" id="prop-grid" style="display:none;opacity:0;transition:opacity 0.35s ease">
-                    @foreach($properties['items'] ?? [] as $prop)
-                        <x-property-card :prop="$prop" />
-                    @endforeach
+                <div class="row mb-4" id="prop-grid" data-has-next="{{ ($properties['hasNextPage'] ?? false) ? '1' : '0' }}" style="display:none;opacity:0;transition:opacity 0.35s ease">
+                    @include('partials.property-cards', ['properties' => $properties])
                 </div>
 
                 <!-- Load More / Show Less -->
                 <div class="text-center mb-4 align-items-center justify-content-center gap-3" id="grid-controls">
-                    <button type="button" class="btn btn-dark d-inline-flex align-items-center gap-1" id="btnShowLess" style="display:none; border-radius:10px">
+                    <button type="button" class="btn btn-dark d-inline-flex align-items-center gap-1" id="btnShowLess" style="display:none!important; border-radius:10px">
                         <i class="material-icons-outlined" style="font-size:18px">expand_less</i>
                         {{ __('property.show_less') }}
                     </button>
-                    <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-1" id="btnLoadMore" style="display:none; border-radius:10px">
+                    <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-1" id="btnLoadMore" style="display:none!important; border-radius:10px">
                         {{ __('property.load_more') }}
                         <i class="material-icons-outlined" style="font-size:18px">expand_more</i>
                     </button>
@@ -84,75 +82,113 @@
     </div>
 
 <script>
+    // ── Load More / Show Less — real server-side pagination ─────────────────
+    // Each "Load More" fetches the next page from the server (same filters, +1 page)
+    // and appends the rendered cards. "Show Less" collapses back to the first page.
+    var LM = { page: 1, hasNext: false, initialCount: 0, shown: 0, loading: false };
+
+    function lmEndpoint() {
+        return window.location.pathname.replace(/\/+$/, '') + '/load-more';
+    }
+
+    // Toggle a Bootstrap `d-inline-flex` button. Its display utility is `!important`,
+    // so a plain inline `display` can't hide it — force `none !important`, and reveal
+    // by removing the inline rule so the class takes over.
+    function lmSetVisible(el, visible) {
+        if (!el) return;
+        if (visible) el.style.removeProperty('display');
+        else el.style.setProperty('display', 'none', 'important');
+    }
+
+    function lmSyncButtons() {
+        lmSetVisible(document.getElementById('btnLoadMore'), LM.hasNext);
+        lmSetVisible(document.getElementById('btnShowLess'), LM.page > 1);
+    }
+
+    // (Re)initialise pagination state from the current DOM. Called on first load and
+    // after a filter swap replaces the grid.
     function reinitLoadMore() {
         var grid = document.getElementById('prop-grid');
-        var btnMore = document.getElementById('btnLoadMore');
-        var btnLess = document.getElementById('btnShowLess');
         var resultLoaded = document.getElementById('result-loaded');
-        if (!grid || !btnMore || !btnLess) return;
-
-        // Remove old listeners by replacing buttons with clones
-        var newBtnMore = btnMore.cloneNode(true);
-        var newBtnLess = btnLess.cloneNode(true);
-        btnMore.parentNode.replaceChild(newBtnMore, btnMore);
-        btnLess.parentNode.replaceChild(newBtnLess, btnLess);
-        btnMore = newBtnMore;
-        btnLess = newBtnLess;
-
-        var cards = grid.children;
-        var INITIAL = 20;
-        var STEP = 10;
-        var visible = Math.min(INITIAL, cards.length);
-
-        if (cards.length <= INITIAL) {
-            btnMore.style.display = 'none';
-            btnLess.style.display = 'none';
-            if (resultLoaded) resultLoaded.textContent = cards.length;
-            return;
-        }
-
-        function update() {
-            for (var i = 0; i < cards.length; i++) {
-                if (i < visible) {
-                    cards[i].classList.remove('d-none');
-                } else {
-                    cards[i].classList.add('d-none');
-                }
-            }
-            btnMore.style.display = visible < cards.length ? '' : 'none';
-            btnLess.style.display = visible > INITIAL ? '' : 'none';
-            if (resultLoaded) resultLoaded.textContent = visible;
-        }
-
-        btnMore.addEventListener('click', function () {
-            var prevVisible = visible;
-            visible = Math.min(visible + STEP, cards.length);
-            for (var i = prevVisible; i < visible; i++) {
-                cards[i].classList.remove('d-none');
-                cards[i].style.opacity = '0';
-                cards[i].style.transform = 'translateY(20px)';
-                cards[i].style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-                (function(el, delay) {
-                    setTimeout(function() {
-                        el.style.opacity = '1';
-                        el.style.transform = 'translateY(0)';
-                    }, delay);
-                })(cards[i], (i - prevVisible) * 80);
-            }
-            btnMore.style.display = visible < cards.length ? '' : 'none';
-            btnLess.style.display = visible > INITIAL ? '' : 'none';
-            if (resultLoaded) resultLoaded.textContent = visible;
-            if (cards[prevVisible]) setTimeout(function() { cards[prevVisible].scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
-        });
-
-        btnLess.addEventListener('click', function () {
-            visible = Math.max(visible - STEP, INITIAL);
-            update();
-            if (cards[visible - 1]) cards[visible - 1].scrollIntoView({ behavior: 'smooth', block: 'end' });
-        });
-
-        update();
+        if (!grid) return;
+        LM.page = 1;
+        LM.hasNext = grid.dataset.hasNext === '1';
+        LM.initialCount = grid.children.length;
+        LM.shown = LM.initialCount;
+        LM.loading = false;
+        if (resultLoaded) resultLoaded.textContent = LM.shown;
+        lmSyncButtons();
     }
+
+    function lmLoadMore() {
+        var grid = document.getElementById('prop-grid');
+        var btnMore = document.getElementById('btnLoadMore');
+        var resultLoaded = document.getElementById('result-loaded');
+        if (!grid || !btnMore || LM.loading || !LM.hasNext) return;
+
+        LM.loading = true;
+        btnMore.disabled = true;
+        btnMore.style.opacity = '0.6';
+
+        var params = new URLSearchParams(window.location.search);
+        params.set('page', String(LM.page + 1));
+
+        fetch(lmEndpoint() + '?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                var tmp = document.createElement('div');
+                tmp.innerHTML = data.html;
+                var added = Array.prototype.slice.call(tmp.children);
+                var firstNewIndex = grid.children.length;
+
+                added.forEach(function (el, i) {
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(20px)';
+                    el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                    grid.appendChild(el);
+                    (function (node, delay) {
+                        setTimeout(function () { node.style.opacity = '1'; node.style.transform = 'translateY(0)'; }, delay);
+                    })(el, i * 60);
+                });
+
+                LM.page += 1;
+                LM.hasNext = !!data.hasNextPage;
+                LM.shown += added.length;
+                if (resultLoaded) resultLoaded.textContent = LM.shown;
+                lmSyncButtons();
+
+                var anchor = grid.children[firstNewIndex];
+                if (anchor) setTimeout(function () { anchor.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120);
+            })
+            .catch(function () { /* leave button enabled so the user can retry */ })
+            .finally(function () {
+                LM.loading = false;
+                btnMore.disabled = false;
+                btnMore.style.opacity = '';
+            });
+    }
+
+    function lmShowLess() {
+        var grid = document.getElementById('prop-grid');
+        var resultLoaded = document.getElementById('result-loaded');
+        if (!grid) return;
+        while (grid.children.length > LM.initialCount) {
+            grid.removeChild(grid.lastElementChild);
+        }
+        LM.page = 1;
+        LM.hasNext = grid.dataset.hasNext === '1';
+        LM.shown = LM.initialCount;
+        if (resultLoaded) resultLoaded.textContent = LM.shown;
+        lmSyncButtons();
+        if (grid.firstElementChild) grid.firstElementChild.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Event delegation — survives grid/button swaps without re-binding.
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest) return;
+        if (e.target.closest('#btnLoadMore')) { e.preventDefault(); lmLoadMore(); }
+        else if (e.target.closest('#btnShowLess')) { e.preventDefault(); lmShowLess(); }
+    });
 
     document.addEventListener('DOMContentLoaded', function () {
 
@@ -239,7 +275,10 @@
                             var doc = new DOMParser().parseFromString(html, 'text/html');
 
                             var newGrid = doc.getElementById('prop-grid');
-                            if (grid && newGrid) grid.innerHTML = newGrid.innerHTML;
+                            if (grid && newGrid) {
+                                grid.innerHTML = newGrid.innerHTML;
+                                grid.dataset.hasNext = newGrid.dataset.hasNext || '0';
+                            }
 
                             var newLoaded = doc.getElementById('result-loaded');
                             var newTotal  = doc.getElementById('result-total');

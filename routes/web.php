@@ -231,11 +231,25 @@ Route::get('/api/contacts/{id}', [ContactController::class, 'show']);
 // Default routes (no locale prefix) → Armenian
 // ─────────────────────────────────────────────
 
+// Currency switcher — stores the chosen display currency in the session, then
+// returns to the referring page (locale prefix is preserved by the referer).
+Route::get('/currency/{currency}', function (\Illuminate\Http\Request $request, string $currency) {
+    if (in_array($currency, config('currency.supported'), true)) {
+        session(['currency' => $currency]);
+    }
+    // JS switches currency client-side and hits this only to persist the session.
+    if ($request->ajax() || $request->wantsJson()) {
+        return response()->noContent();
+    }
+    return redirect()->back();
+})->where('currency', 'USD|AMD|RUB|EUR')->name('currency.switch');
+
 // Home
 Route::get('/', [HomeController::class, 'index']);
 
 // Property listing + single (API-driven)
 Route::get('/property', [PropertyController::class, 'index']);
+Route::get('/property/load-more', [PropertyController::class, 'loadMore']); // must precede /property/{slug}
 Route::get('/property/{slug}', [PropertyController::class, 'show']);
 Route::get('/property/{slug}/extras', [PropertyController::class, 'extras']); // skeleton-first: similar + comments
 Route::post('/api/property/{slug}/view', [PropertyController::class, 'recordView']);
@@ -268,7 +282,8 @@ Route::group(
         Route::get('/', [HomeController::class, 'index'])->name('index');
 
         // Property listing + single (API-driven)
-        Route::get('/property', [PropertyController::class, 'index'])->name('property');
+        Route::get('/property',        [PropertyController::class, 'index'])->name('property');
+        Route::get('/property/load-more', [PropertyController::class, 'loadMore'])->name('property.loadmore'); // must precede /property/{slug}
         Route::get('/property/{slug}', [PropertyController::class, 'show'])->name('property.single');
         Route::get('/property/{slug}/extras', [PropertyController::class, 'extras'])->name('property.extras'); // skeleton-first: similar + comments
 

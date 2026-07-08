@@ -37,7 +37,7 @@
                     </span>
                 </div>
                 <div class="d-flex align-items-center justify-content-between position-absolute bottom-0 end-0 start-0 p-3 z-1">
-                    <h6 class="text-white mb-0">{{ number_format($prop['price'], 0) }} {{ $prop['currency'] }}</h6>
+                    <h6 class="text-white mb-0"><x-price :amount="$prop['price'] ?? 0" :currency="$prop['currency'] ?? null" /></h6>
                 </div>
             </div>
             <div class="buy-grid-content">

@@ -26,7 +26,12 @@ foreach ($properties as $pi => $prop) {
         if (!empty($row['custom'])) {
             switch ($row['custom']) {
                 case 'price':
-                    $p = number_format($prop['price'] ?? 0, 0) . ' ' . ($prop['currency'] ?? '');
+                    // js-price span (mirrors <x-price>) so JS reconverts on currency switch.
+                    $np     = convert_price($prop['price'] ?? 0, $prop['currency'] ?? null);
+                    $native = ($prop['currency'] ?? null) ?: display_currency();
+                    $p = '<span class="js-price" data-amount="' . (float) ($prop['price'] ?? 0)
+                       . '" data-currency="' . e($native) . '">'
+                       . number_format($np['amount'], 0) . ' ' . e($np['currency']) . '</span>';
                     if ($txType === 'rentdaily')               $p .= ' /' . __('property-single.per_day');
                     elseif (str_starts_with($txType, 'rent')) $p .= ' /' . __('property-single.per_month');
                     $val = $p; break;
@@ -86,7 +91,7 @@ foreach ($properties as $pi => $prop) {
             @if($ptLabel)<div class="cmc-tags"><span class="cmc-badge">{{ $ptLabel }}</span></div>@endif
             @php $priceBest = !empty($highlights['price']) && in_array($prop['slug'] ?? '', $highlights['price']); @endphp
             <div class="cmc-price{{ $priceBest ? ' cmc-best-value' : '' }}">
-                {{ $propRows[$pi][0] }}@if($priceBest)<span class="cmc-best-star">★</span>@endif
+                {!! $propRows[$pi][0] !!}@if($priceBest)<span class="cmc-best-star">★</span>@endif
             </div>
             <div class="cmc-stats-grid">
                 @foreach($rows as $ri => $row)
@@ -135,9 +140,9 @@ foreach ($properties as $pi => $prop) {
                 @php $isBest = !empty($row['highlight']) && in_array($prop['slug'] ?? '', $highlights[$row['highlight']] ?? []); @endphp
                 <td class="compare-row-value{{ $isBest ? ' compare-best' : '' }}">
                     @if($isBest)
-                        <span class="compare-best-pill">★ {{ $propRows[$pi][$ri] }}</span>
+                        <span class="compare-best-pill">★ @if($ri === 0){!! $propRows[$pi][$ri] !!}@else{{ $propRows[$pi][$ri] }}@endif</span>
                     @else
-                        {{ $propRows[$pi][$ri] }}
+                        @if($ri === 0){!! $propRows[$pi][$ri] !!}@else{{ $propRows[$pi][$ri] }}@endif
                     @endif
                 </td>
                 @endforeach

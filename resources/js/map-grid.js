@@ -319,6 +319,14 @@ function getBalloonContent(marker) {
   `;
 }
 
+// ─── Price in the active display currency (falls back to the server-rendered string) ──
+function _locPrice(loc) {
+  if (window.CurrencyManager && loc && loc.priceCurrency != null && loc.priceAmount != null) {
+    return window.CurrencyManager.format(loc.priceAmount, loc.priceCurrency);
+  }
+  return (loc && loc.price) || '';
+}
+
 // ─── Balloon content for API locations ───────────────────────────────────────
 function getBalloonContentFromApi(loc) {
   var imgSrc = loc.image || '/build/img/buy/buy-grid-img-01.jpg';
@@ -333,7 +341,7 @@ function getBalloonContentFromApi(loc) {
               onerror="this.onerror=null;this.src='/build/img/buy/buy-grid-img-01.jpg';">
           </a>
           <div class="d-flex align-items-center justify-content-between position-absolute bottom-0 end-0 start-0 p-3 z-1">
-            <h6 class="text-white mb-0">${loc.price}</h6>
+            <h6 class="text-white mb-0">${_locPrice(loc)}</h6>
           </div>
         </div>
         <div class="buy-grid-content p-3">
@@ -367,7 +375,7 @@ function getMiniCardHtml(loc) {
       '<img src="' + imgSrc + '" alt="" style="width:100%;height:140px;object-fit:cover;display:block;">' +
       '<div style="position:absolute;bottom:0;left:0;right:0;padding:6px 10px;' +
         'background:linear-gradient(transparent,rgba(0,0,0,.65));">' +
-        '<span style="font-size:15px;font-weight:700;color:#fff;">' + (loc.price || '') + '</span>' +
+        '<span style="font-size:15px;font-weight:700;color:#fff;">' + _locPrice(loc) + '</span>' +
       '</div>' +
     '</div>' +
     '<div style="padding:10px 12px;">' +

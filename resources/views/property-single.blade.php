@@ -12,6 +12,7 @@
     $seoImage = $property['primaryImageUrl'] ?? '';
     $seoUrl   = request()->url();
     $seoLocale = app()->getLocale();
+    $ldPrice  = convert_price($property['price'] ?? 0, $property['currency'] ?? null);
 @endphp
 {{-- Canonical + hreflang --}}
 <link rel="canonical" href="{{ $seoUrl }}">
@@ -39,8 +40,8 @@
   "name": @json($property['title'] ?? ''),
   "description": @json(Str::limit(strip_tags($property['description'] ?? ''), 300)),
   "url": @json($seoUrl),
-  "price": {{ (float)($property['price'] ?? 0) }},
-  "priceCurrency": @json($property['currency'] ?? 'USD'),
+  "price": {{ (float) $ldPrice['amount'] }},
+  "priceCurrency": @json($ldPrice['currency']),
   "numberOfRooms": {{ (int)($property['rooms'] ?? 0) }},
   "address": {
     "@@type": "PostalAddress",
@@ -383,13 +384,23 @@
                             </div>
                             <div class="d-flex align-items-center gap-3 justify-content-xl-end justify-content-start">
                                 <h4 class="mb-0 text-primary text-xl-end text-start">
-                                    {{ number_format($property['price'] ?? 0, 0) }} {{ $property['currency'] ?? '' }}
+                                    <x-price :amount="$property['price'] ?? 0" :currency="$property['currency'] ?? null" />
                                     @if($txType === 'rentmonthly')
                                         <span class="fs-14 fw-normal text-white">{{ __('property-single.per_month') }}</span>
                                     @elseif($txType === 'rentdaily')
                                         <span class="fs-14 fw-normal text-white">{{ __('property-single.per_day') }}</span>
                                     @endif
                                 </h4>
+                            </div>
+                            <!-- Price in all other supported currencies (rebuilt client-side on currency switch) -->
+                            @php $altPrices = all_currency_prices($property['price'] ?? 0, $property['currency'] ?? null); @endphp
+                            <div class="price-alt-currencies text-xl-end text-start mt-1 js-price-alt"
+                                 data-amount="{{ (float) ($property['price'] ?? 0) }}"
+                                 data-currency="{{ $property['currency'] ?? display_currency() }}"
+                                 @unless(count($altPrices)) style="display:none" @endunless>
+                                @foreach($altPrices as $ap)
+                                    <span class="price-alt-currency">{{ $ap['formatted'] }}</span>@unless($loop->last)<span class="price-alt-sep">·</span>@endunless
+                                @endforeach
                             </div>
                         </div>
                     </div>
@@ -568,7 +579,7 @@
                                             <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-2">
                                                     <x-icon name="payments" class="text-primary"/>
-                                                    <div><small class="text-muted d-block">{{ __('property-single.price_per_sqm') }}</small><strong>{{ number_format($property['pricePerSqm'], 0) }} {{ $property['currency'] ?? '' }}</strong></div>
+                                                    <div><small class="text-muted d-block">{{ __('property-single.price_per_sqm') }}</small><strong><x-price :amount="$property['pricePerSqm']" :currency="$property['currency'] ?? null" /></strong></div>
                                                 </div>
                                             </div>
                                             @endif
@@ -879,7 +890,7 @@
                                             <div class="col-12 col-sm-6 col-lg-4">
                                                 <div class="feature-item d-flex align-items-center gap-1">
                                                     <x-icon name="account_balance_wallet" class="text-primary"/>
-                                                    <div><small class="text-muted d-block">{{ __('property-single.deposit') }}</small><strong>{{ number_format($property['deposit'], 0) }} {{ $property['currency'] ?? '' }}</strong></div>
+                                                    <div><small class="text-muted d-block">{{ __('property-single.deposit') }}</small><strong><x-price :amount="$property['deposit']" :currency="$property['currency'] ?? null" /></strong></div>
                                                 </div>
                                             </div>
                                             @endif
@@ -986,8 +997,8 @@
                                                 <x-icon :name="$icon" :class="($color) . ' mt-1'"/>
                                                 <div>
                                                     <small class="text-muted">{{ $date }}</small>
-                                                    <div>{{ $label }}: <strong>{{ number_format($newAmt, 0) }} {{ $cur }}</strong>
-                                                    @if($oldAmt !== null) <span class="text-muted ms-1 text-decoration-line-through">{{ number_format($oldAmt, 0) }} {{ $cur }}</span>@endif
+                                                    <div>{{ $label }}: <strong><x-price :amount="$newAmt" :currency="$cur" /></strong>
+                                                    @if($oldAmt !== null) <span class="text-muted ms-1 text-decoration-line-through"><x-price :amount="$oldAmt" :currency="$cur" /></span>@endif
                                                     </div>
                                                 </div>
                                             </li>
@@ -1116,7 +1127,7 @@
                                 @if($property['currency'] ?? null)
                                 <div class="d-flex justify-content-between align-items-center py-2">
                                     <span class="text-muted">{{ __('property-single.currency') }}</span>
-                                    <span class="fw-semibold">{{ $property['currency'] }}</span>
+                                    <span class="fw-semibold js-currency-code">{{ display_currency() }}</span>
                                 </div>
                                 @endif
                             </div>

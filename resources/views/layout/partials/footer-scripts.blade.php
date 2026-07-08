@@ -198,6 +198,128 @@
         });
     </script>
 
+    <!-- Currency: rates + config for client-side conversion -->
+    <script>
+        window.__CURRENCY__ = {
+            rates:     @json(app(\App\Services\ExchangeRateService::class)->rates()),
+            symbols:   @json(config('currency.symbols')),
+            supported: @json(array_values(config('currency.supported'))),
+            current:   @json(display_currency()),
+            default:   @json(config('currency.default')),
+        };
+    </script>
+
+    <!-- Currency (client-side conversion, no page reload) -->
+    <script>
+    (function () {
+        var CFG = window.__CURRENCY__ || { rates: { AMD: 1 }, symbols: {}, supported: ['AMD'], current: 'AMD', default: 'AMD' };
+        var KEY       = 'te_currency';
+        var rates     = CFG.rates || { AMD: 1 };
+        var symbols   = CFG.symbols || {};
+        var supported = CFG.supported || ['AMD'];
+
+        function isSupported(c) { return supported.indexOf(c) !== -1; }
+
+        function stored() {
+            try { var v = localStorage.getItem(KEY); return isSupported(v) ? v : null; }
+            catch (e) { return null; }
+        }
+
+        // Active display currency: localStorage wins, else the server-rendered value.
+        var current = stored() || (isSupported(CFG.current) ? CFG.current : CFG.default);
+
+        function convert(amount, from, to) {
+            amount = parseFloat(amount) || 0;
+            if (from === to) return amount;
+            var rf = rates[from], rt = rates[to];
+            if (!rf || !rt) return null;                       // rates unavailable
+            return (amount * rf) / rt;
+        }
+
+        function fmtNumber(n) {
+            return Math.round(n).toLocaleString('en-US');      // matches PHP number_format(n, 0)
+        }
+
+        function format(amount, from) {
+            from = isSupported(from) ? from : current;
+            var v = convert(amount, from, current);
+            if (v === null) return fmtNumber(amount) + ' ' + from;   // fallback: original
+            return fmtNumber(v) + ' ' + current;
+        }
+
+        function applyPrices() {
+            document.querySelectorAll('.js-price[data-amount][data-currency]').forEach(function (el) {
+                el.textContent = format(el.dataset.amount, el.dataset.currency);
+            });
+        }
+
+        // property-single: rebuild the "all other currencies" list under the headline price.
+        function applyAltBlocks() {
+            document.querySelectorAll('.js-price-alt').forEach(function (box) {
+                var amount = box.dataset.amount, from = box.dataset.currency, parts = [];
+                supported.forEach(function (c) {
+                    if (c === current) return;                 // skip the one shown as main price
+                    var v = convert(amount, from, c);
+                    if (v !== null) parts.push('<span class="price-alt-currency">' + fmtNumber(v) + ' ' + c + '</span>');
+                });
+                if (parts.length) { box.innerHTML = parts.join('<span class="price-alt-sep">·</span>'); box.style.display = ''; }
+                else { box.style.display = 'none'; }
+            });
+        }
+
+        function applySymbols() {
+            var sym = symbols[current] || current;
+            document.querySelectorAll('[data-currency-symbol]').forEach(function (el) { el.setAttribute('placeholder', sym); });
+            document.querySelectorAll('.js-currency-symbol').forEach(function (el) { el.textContent = sym; });
+            document.querySelectorAll('.js-currency-code').forEach(function (el) { el.textContent = current; });
+        }
+
+        function applyHeader() {
+            var sym = symbols[current] || current;
+            document.querySelectorAll('.topbar-currency .currency-symbol-trigger').forEach(function (el) { el.textContent = sym; });
+            document.querySelectorAll('.currency-switch').forEach(function (a) {
+                a.classList.toggle('active', a.dataset.currency === current);
+            });
+        }
+
+        function apply() { applyPrices(); applyAltBlocks(); applySymbols(); applyHeader(); }
+
+        // Fire-and-forget: keep the server session in sync for the next full page load.
+        function persist(c) {
+            try { fetch('/currency/' + c, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }); } catch (e) {}
+        }
+
+        function setCurrency(c) {
+            if (!isSupported(c) || c === current) return;
+            current = c;
+            try { localStorage.setItem(KEY, c); } catch (e) {}
+            apply();
+            persist(c);
+        }
+
+        // Expose for map balloons (map-grid.js) and any external caller.
+        window.CurrencyManager = {
+            format: format,
+            apply: apply,
+            set: setCurrency,
+            get current() { return current; }
+        };
+
+        // Click any currency switch link → convert in place, no reload.
+        document.addEventListener('click', function (e) {
+            var a = e.target.closest('.currency-switch');
+            if (!a) return;
+            e.preventDefault();
+            setCurrency(a.dataset.currency);
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            apply();
+            if (current !== CFG.current) persist(current);     // session lagged behind localStorage → sync
+        });
+    }());
+    </script>
+
     <!-- Compare (localStorage) -->
     <script>
     (function () {
