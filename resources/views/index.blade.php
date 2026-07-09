@@ -311,11 +311,13 @@
                                         {{ $txMain === 'sale' ? __('index.popular_for_sale') : __('index.popular_for_rent') }}
                                     </span>
                                     <div class="d-flex gap-1">
-                                        <a href="javascript:void(0)" class="featured-action-btn compare-btn">
-                                            <x-icon name="balance" size="16"/>
+                                        <a href="javascript:void(0)" class="compare-btn"
+                                           style="background:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.15);">
+                                            <x-icon name="balance" size="17" style="color:#555"/>
                                         </a>
-                                        <a href="javascript:void(0)" class="featured-action-btn favourite">
-                                            <x-icon name="favorite_border" size="16"/>
+                                        <a href="javascript:void(0)" class="favourite"
+                                           style="background:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.15);">
+                                            <x-icon name="favorite_border" size="17"/>
                                         </a>
                                     </div>
                                 </div>

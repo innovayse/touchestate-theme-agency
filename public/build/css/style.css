@@ -7765,35 +7765,6 @@ span.select2-container.select2-container--default.select2-container--open {
   font-size: 16px;
 }
 
-.featured-action-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.9);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.featured-action-btn:hover {
-  background: #fff;
-}
-
-.featured-action-btn svg {
-  fill: #555;
-}
-
-.featured-action-btn.favourite svg {
-  fill: #e53935;
-}
-
-.featured-action-btn.compare-btn svg {
-  fill: #555;
-}
-
 /* Dark theme */
 [data-theme=dark] .featured-heading {
   color: var(--gray-900);

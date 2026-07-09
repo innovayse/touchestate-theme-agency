@@ -100,3 +100,59 @@ if (!function_exists('all_currency_prices')) {
         return $out;
     }
 }
+
+if (!function_exists('property_is_showable')) {
+    /**
+     * True only when the API returned a real listing. An unknown/incomplete slug is
+     * sometimes answered with a blank "ghost" stub (no id/title) instead of a 404 —
+     * such stubs must be kept OUT of the shared `te_prop:{slug}` cache.
+     *
+     * @param  mixed  $p
+     */
+    function property_is_showable($p): bool
+    {
+        return is_array($p) && !empty($p['id']) && !empty($p['title']);
+    }
+}
+
+if (!function_exists('normalize_property')) {
+    /**
+     * Enrich a raw single-property retrieve() payload with the derived fields every
+     * property-card / property page needs but the endpoint does NOT return: `slug`,
+     * `primaryImageUrl` (first isPrimary media, else first media) and `fullAddress`.
+     *
+     * Shared by PropertyController::show()/extras(), FavoritesController and
+     * CompareController — the first three write the SAME `te_prop:{slug}` cache key, so
+     * the cached shape must be identical no matter which request fills it first (else a
+     * card read from a page-populated cache would miss primaryImageUrl → no image).
+     *
+     * @param  array<string, mixed>  $p
+     * @return array<string, mixed>
+     */
+    function normalize_property(array $p, string $slug): array
+    {
+        $p['slug'] = $slug;
+
+        $p['primaryImageUrl'] = null;
+        foreach ($p['media'] ?? [] as $m) {
+            if ($m['isPrimary'] ?? false) {
+                $p['primaryImageUrl'] = $m['url'] ?? null;
+                break;
+            }
+        }
+        if (!$p['primaryImageUrl'] && !empty($p['media'])) {
+            $p['primaryImageUrl'] = $p['media'][0]['url'] ?? null;
+        }
+
+        $addrParts = array_filter([
+            $p['street']         ?? null,
+            $p['buildingNumber'] ?? null,
+            $p['district']       ?? null,
+            $p['city']           ?? null,
+            $p['country']        ?? null,
+        ]);
+        $p['fullAddress'] = $addrParts ? implode(', ', $addrParts) : null;
+
+        return $p;
+    }
+}
