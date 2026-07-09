@@ -5,8 +5,8 @@
 
 /* ── GOLDHOUSE design tokens ─────────────────────────────────────────── */
 @theme {
-    --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-    --font-display: "Playfair Display", ui-serif, Georgia, serif;
+    --font-sans: ui-sans-serif, system-ui, -apple-system, Arial, sans-serif;
+    --font-display: "Cormorant Garamond", serif;
 
     /* Terracotta brand ramp */
     --color-brand-50:  #f8efe9;
@@ -32,15 +32,17 @@
 @layer base {
     html {
         scroll-behavior: smooth;
+        overflow-x: clip;
     }
     body {
         font-family: var(--font-sans);
         background-color: var(--color-cream);
         color: #5d5650;
-        overflow-x: hidden;
+        overflow-x: clip;
     }
     h1, h2, h3, .font-display {
         font-family: var(--font-display);
+        font-variant-numeric: lining-nums;
     }
 }
 
@@ -52,6 +54,68 @@
         @apply inline-flex items-center justify-center gap-2 rounded-full border border-brand-600 px-6 py-3 text-sm font-semibold text-brand-700 transition hover:bg-brand-600 hover:text-white;
     }
     .container-x {
-        @apply mx-auto w-full max-w-7xl px-5 sm:px-8;
+        @apply mx-auto w-full max-w-7xl px-4;
     }
+    @media (min-width: 640px) {
+        .container-x {
+            padding-inline: 2rem; /* px-8 = 32px */
+        }
+    }
+    /* Unified form field */
+    .field {
+        @apply w-full rounded-2xl border border-sand bg-white px-4 py-3 text-sm text-ink transition
+               placeholder:text-neutral-400
+               focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200;
+    }
+    .field-select {
+        @apply w-full rounded-2xl border border-sand bg-white px-4 py-3 text-sm text-ink transition appearance-none
+               focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23925441' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        padding-right: 2.5rem;
+    }
+}
+
+.scrollbar-none { scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
+.scrollbar-brand { scrollbar-width: thin; scrollbar-color: var(--color-brand-200) transparent; }
+.scrollbar-brand::-webkit-scrollbar       { height: 4px; width: 4px; }
+.scrollbar-brand::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-brand::-webkit-scrollbar-thumb { background: var(--color-brand-200); border-radius: 999px; }
+
+.scrollbar-brand-dark { scrollbar-width: thin; scrollbar-color: var(--color-brand-600) transparent; }
+.scrollbar-brand-dark::-webkit-scrollbar       { height: 4px; width: 4px; }
+.scrollbar-brand-dark::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-brand-dark::-webkit-scrollbar-thumb { background: var(--color-brand-600); border-radius: 999px; }
+
+/* ── Custom scrollbar ────────────────────────────────────────────────── */
+#filter-form {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-brand-300) transparent;
+}
+#filter-form::-webkit-scrollbar       { width: 4px; }
+#filter-form::-webkit-scrollbar-track { background: transparent; }
+#filter-form::-webkit-scrollbar-thumb {
+    background: var(--color-brand-300);
+    border-radius: 999px;
+}
+#filter-form::-webkit-scrollbar-thumb:hover {
+    background: var(--color-brand-500);
+}
+
+/* Custom select dropdown scrollbar */
+.x-custom-select-list::-webkit-scrollbar       { width: 4px; }
+.x-custom-select-list::-webkit-scrollbar-track { background: transparent; }
+.x-custom-select-list::-webkit-scrollbar-thumb { background: #e8c5b8; border-radius: 999px; }
+.x-custom-select-list::-webkit-scrollbar-thumb:hover { background: var(--color-brand-500); }
+
+/* x-cloak: hide Alpine elements until initialized */
+[x-cloak] { display: none !important; }
+
+/* Turbo Drive progress bar */
+.turbo-progress-bar {
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-brand-400), var(--color-brand-600));
 }

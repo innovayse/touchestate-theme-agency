@@ -17,5 +17,10 @@ return [
     'submit_enquiry' => 'Ուղարկել հարցում',
     'email' => 'Էլ. փոստ',
     'working_hours' => 'Աշխատանքային ժամեր',
-    'search_country' => 'Որոնել երկիր…',
+    'search_country'    => 'Որոնել երկիր…',
+    'phone_placeholder' => '+374 XX XXX XXX',
+    'email_placeholder' => 'you@example.com',
+    'whatsapp'          => 'WhatsApp',
+    'viber'             => 'Viber',
+    'telegram'          => 'Telegram',
 ];

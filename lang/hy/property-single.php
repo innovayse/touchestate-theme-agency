@@ -38,8 +38,8 @@ return [
     // Property Features
     'bedrooms' => 'Ննջասենյակներ՝',
     'bathrooms' => 'Լոգասենյակներ՝',
-    'parking' => 'Կայանատեղի՝',
-    'balcony' => 'Պատշգամբ՝',
+    'parking_label' => 'Կայանատեղի՝',
+    'balcony_label' => 'Պատշգամբ՝',
     'floor' => 'Հարկ՝',
     'microwave' => 'Միկրոալիքային վառարան՝',
     'wardrobe' => 'Զգեստապահարան՝',
@@ -54,14 +54,10 @@ return [
     // Amenities (from API)
     'amenity_air conditioning' => 'Օդորակիչ',
     'amenity_balcony' => 'Պատշգամբ',
-    'amenity_concierge' => 'Կոնսիերժ ծառայություն',
-    'amenity_elevator' => 'Վերելակ',
     'amenity_furnished' => 'Կահավորված',
     'amenity_garden' => 'Այգի',
-    'amenity_gym' => 'Մարզասրահ',
     'amenity_heating' => 'Ջեռուցում',
     'amenity_parking' => 'Կայանատեղի',
-    'amenity_pool' => 'Լողավազան',
     'amenity_security' => 'Անվտանգություն',
     'amenity_terrace' => 'Տեռաս',
 
@@ -138,14 +134,14 @@ return [
     // Extended Property Features
     'area_living' => 'Բնակելի մակերես',
     'year_built' => 'Կառուցման տարի',
-    'ceiling_height' => 'Առաստաղի բարձրություն',
     'meters' => 'մ',
-    'land_area' => 'Հողատարածքի մակերես',
-    'parking_spaces' => 'Կայանատեղիների քանակ',
-    'price_per_sqm' => 'Գին՝ 1 մ²-ի համար',
     'total_units' => 'Ընդհանուր միավորներ',
     'available_units' => 'Մատչելի միավորներ',
     'total_buildings' => 'Շենքերի քանակ',
+    'floors_total'       => 'Հարկերի Փանակ',
+    'apartment_number'   => 'Բնակարան',
+    'postal_code'        => 'Փոստային Կոդ',
+    'entrances'          => 'Մուտկեր',
     'code' => 'Կոդ',
 
     // Property Details card
@@ -159,13 +155,97 @@ return [
     'location_details'  => 'Տեղակայման մանրամասներ',
     'country'           => 'Երկիր',
     'city'              => 'Քաղաք',
+    'district'          => 'Թաղամաս',
     'street'            => 'Փողոց',
+    'building_number'   => 'Շենք',
     'additional_info'   => 'Լրացուցիչ տեղեկություններ',
     'nearby'            => 'Մոտակայքում',
     'cat_transport'     => 'Մետրո',
     'cat_education'     => 'Կրթություն',
     'cat_food'          => 'Խանութներ',
+    'cat_fitness'       => 'Ֆիթնես',
     'open_yandex_maps'  => 'Բացել Yandex Քարտեզում',
+
+    // Extra specs
+    'price_per_sqm'       => 'Գին/մ²',
+    'ceiling_height'      => 'Առաստաղի բարձր.',
+    'meters_short'        => 'մ',
+    'heating'             => 'Ջեռուցում',
+    'balcony'             => 'Պատշգամբ',
+    'terrace'             => 'Տերաս',
+    'parking'             => 'Կայանատեղ',
+    'parking_spaces'      => 'Կայան. քանակ',
+    'window_view'         => 'Տեսարան',
+    'land_area'           => 'Հողի մակ.',
+    'deposit'             => 'Ավանդ',
+    'utilities_policy'    => 'Կոմ. ծառ.',
+    'zoning'              => 'Գոտեվորում',
+    // Heating
+    'heating_gas'         => 'Գազային',
+    'heating_electric'    => 'Էլեկտրական',
+    'heating_central'     => 'Կենտրոնական',
+    'heating_solar'       => 'Արեվային',
+    'heating_wood'        => 'Ծառային',
+    'heating_other'       => 'Այլ',
+    // Balcony/Terrace
+    'balcony_open'        => 'Բաց',
+    'balcony_closed'      => 'Ւակ',
+    'balcony_glazed'      => 'Ապակեգործված',
+    'terrace_open'        => 'Բաց',
+    'terrace_closed'      => 'Ւակ',
+    // Parking
+    'parking_open'        => 'Բաց',
+    'parking_underground' => 'Կտակաջին',
+    'parking_garage'      => 'Ավտոտնակ',
+    'parking_covered'     => 'Ծածկված',
+    'parking_street'      => 'Պողոցային',
+    // Window view
+    'view_yard'           => 'Բակի Տեսարան',
+    'view_street'         => 'Պողոցի Տեսարան',
+    'view_city'           => 'Կաղաքի Տեսարան',
+    'view_mountain'       => 'Լեռան Տեսարան',
+    'view_sea'            => 'Ծովի Տեսարան',
+    'view_park'           => 'Պարկի Տեսարան',
+    'view_garden'         => 'Այգու Տեսարան',
+    // Utilities policy
+    'utilities_included'    => 'Ներառված',
+    'utilities_notincluded' => 'Ներառված Չէ',
+    'utilities_negotiable'  => 'Բանակցային',
+    'additional_specs'    => 'Լրացուցիչ',
+    // Conditions
+    'conditions'          => 'Վարձակ. Պայմաններ',
+    'pets_policy'         => 'Կենդանիներ',
+    'children_policy'     => 'Երեխաներ',
+    'policy_yes'          => 'Թույլատրվում է',
+    'policy_no'           => 'Արգելված է',
+    'policy_negotiable'   => 'Բանակցային',
+    'policy_restricted'   => 'Սահմանափակ',
+    // Amenities
+    'amenities_extra'              => 'Լրացուցիչ Հարմարվետ.',
+    'amenity_airconditioning'      => 'Օդորակիչ',
+    'amenity_cabletv'              => 'Մալուխային TV',
+    'amenity_internet'             => 'Ինտերնետ',
+    'amenity_satellite'            => 'Արբանյակային TV',
+    'amenity_cctv'                 => 'Հսկող Կամերա',
+    'amenity_intercom'             => 'Դոմոֆոն',
+    'amenity_alarm'                => 'Ահազանգ',
+    'amenity_smartlock'            => 'խելացի կողպեկ',
+    'amenity_gym'                  => 'Մարմնամարզարան',
+    'amenity_pool'                 => 'Լողավազան',
+    'amenity_sauna'                => 'Սաունա',
+    'amenity_elevator'             => 'Վերելակ',
+    'amenity_concierge'            => 'Կոնսիեռժ',
+    // Badges
+    'is_negotiable'       => 'Գինը Բանակցային է',
+    'is_new_construction' => 'Նոր Շինարարություն',
+    'is_front_line'       => 'Առաջին Շառք',
+    'is_long_term'        => 'Երկարաժմկետ',
+    'is_uninhabited'      => 'Անբնակ',
+    // Agent & dates
+    'agent'               => 'Գործակալ',
+    'contact_agent'       => 'Կապ գործակալի հետ',
+    'listed_on'           => 'Ավելացվել',
+    'updated_on'          => 'Թարմացվել',
 
     // Boolean Features
     'elevator' => 'Վերելակ',
@@ -179,6 +259,9 @@ return [
     'location' => 'Գտնվելու վայր',
     'nearby_metro' => 'Մետրո մոտակայքում',
     'no_metro_nearby' => 'Մետրոյի կայարաններ չեն գտնվել մոտակայքում',
+    'nearby_nothing_found' => '500 մ շրջանում ոչ մի բան չի գտնվել',
+    'nearby_retrying' => '30 վայրկյանից կրկին որոնում…',
+    'map_loading'     => 'Քարտեզը պատրաստվում է — մի պահ հետո թարմացրեք',
     'owner' => 'Սեփականատեր',
     'anonymous' => 'Անանուն',
 
@@ -216,7 +299,7 @@ return [
     // Rental conditions
     'deposit'           => 'Ավանդ',
     'pets_policy'       => 'Կենդանիներ',
-    'children_policy'   => 'Երեխաների հետ',
+    'children_policy'   => 'Երեխաներ',
     'utilities_policy'  => 'Կոմունալ',
     'negotiable'        => 'Գինը բանակցելի է',
     'new_construction'  => 'Նոր կառույց',
@@ -224,8 +307,8 @@ return [
     'sun_direction'     => 'Արևային կողմ',
 
     // Policy enums
-    'policy_yes'          => 'Թույլատրված',
-    'policy_no'           => 'Չի թույլատրվում',
+    'policy_yes'          => 'Թույլատրվում է',
+    'policy_no'           => 'Արգելված է',
     'policy_by_agreement' => 'Համաձայնությամբ',
     'utilities_included'      => 'Ընդգրկված',
     'utilities_not_included'  => 'Չի ընդգրկված',
@@ -258,12 +341,12 @@ return [
 
     // Balcony / Terrace
     'balcony_unavailable' => 'Պատշգամբ չկա',
-    'balcony_open'        => 'Բաց պատշգամբ',
-    'balcony_closed'      => 'Փակ պատշգամբ',
+    'balcony_open'        => 'Բաց',
+    'balcony_closed'      => 'Ւակ',
     'balcony_type'        => 'Պատշգամբ',
     'terrace_unavailable' => 'Տեռաս չկա',
-    'terrace_open'        => 'Բաց տեռաս',
-    'terrace_closed'      => 'Փակ տեռաս',
+    'terrace_open'        => 'Բաց',
+    'terrace_closed'      => 'Ւակ',
     'terrace_type'        => 'Տեռաս',
 
     // Zoning
@@ -279,23 +362,23 @@ return [
     'heating_gas'          => 'Գազ',
     'heating_electric'     => 'Էլեկտրական',
     'heating_autonomous'   => 'Ինքնավար',
-    'heating_solar'        => 'Արևային',
+    'heating_solar'        => 'Արեվային',
     'heating_underfloor'   => 'Հատակի ջեռուցում',
     'heating_underfloor_heating' => 'Հատակի ջեռուցում',
     'heating_type'         => 'Ջեռուցում',
 
     // Parking (multi-select)
     'parking_open'    => 'Բաց',
-    'parking_covered' => 'Ծածկ',
+    'parking_covered' => 'Ծածկված',
     'parking_garage'  => 'Ավտոտնակ',
     'parking_barrier' => 'Ավտոմատ դարպաս',
     'parking_type'    => 'Կայանատեղու տեսակ',
 
     // Window view (multi-select)
-    'view_garden' => 'Այգի',
-    'view_city'   => 'Քաղաք',
-    'view_street' => 'Փողոց',
-    'view_yard'   => 'Բակ',
+    'view_garden' => 'Այգու Տեսարան',
+    'view_city'   => 'Կաղաքի Տեսարան',
+    'view_street' => 'Պողոցի Տեսարան',
+    'view_yard'   => 'Բակի Տեսարան',
     'window_view' => 'Տեսարան պատուհանից',
 
     // Features (array)
@@ -312,7 +395,7 @@ return [
     'feature_panoramic_windows'  => 'Պանորամային պատուհաններ',
     'feature_sauna'             => 'Սաունա',
     'feature_fireplace'         => 'Բուխարի',
-    'feature_gazebo'            => 'Беседка',
+    'feature_gazebo'            => 'Հովանոց',
     'feature_barbecue_area'      => 'BBQ գոտի',
     'feature_sports_court'       => 'Մարզադաշտ',
 
@@ -338,13 +421,13 @@ return [
     // Amenities (extended list)
     'amenity_airconditioning'       => 'Օդորակիչ',
     'amenity_internet'              => 'Ինտերնետ',
-    'amenity_cabletv'               => 'Կաբելային հեռուստատեսություն',
+    'amenity_cabletv'               => 'Մալուխային TV',
     'amenity_wheelchairaccessible'  => 'Հաշմանդամների համար',
     'amenity_storage'               => 'Պահեստ',
     'amenity_intercom'              => 'Դոմոֆոն',
     'amenity_childrensplayground'   => 'Մանկական խաղահրապարակ',
     'amenity_laundry'               => 'Լվացքատուն',
-    'amenity_receptionarea'         => 'Ռեսեպшн',
+    'amenity_receptionarea'         => 'Ընդունարան',
     'amenity_conferenceroom'        => 'Կոնֆերանս-սրահ',
     'amenity_kitchen'               => 'Խոհանոց',
     'amenity_access247'             => '24/7 մուտք',
@@ -376,7 +459,7 @@ return [
     'amenity_playground'      => 'Խաղահրապարակ',
 
     // Window views (extra)
-    'view_park'   => 'Այգու տեսք',
+    'view_park'   => 'Պարկի Տեսարան',
     'view_ararat' => 'Արարատի տեսք',
 
     // Price history

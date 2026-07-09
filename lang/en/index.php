@@ -3,7 +3,7 @@
 return [
     // Hero Section
     'hero_rating' => 'Ratings',
-    'hero_trusted' => 'Trusted By Client around the World',
+    'hero_trusted' => 'Trusted by Clients Around the World',
     'hero_title' => 'Find your',
     'hero_title_highlight' => 'Next Home',
     'hero_title_end' => 'with Confidence.',
@@ -17,8 +17,8 @@ return [
     'search_buy_property' => 'Buy Property',
     'search_rent_property' => 'Rent Property',
     'search_location' => 'Location',
-    'search_min_price' => 'Min Price',
-    'search_max_price' => 'Max Price',
+    'search_min_price' => 'Min.',
+    'search_max_price' => 'Max.',
     'search_currency_symbol' => '$',
 
     // About Us Section
@@ -29,8 +29,9 @@ return [
     'about_contact' => 'Contact Us',
 
     // Counters
-    'counter_deals' => 'Successful Deals',
+    'counter_deals' => 'Happy Clients',
     'counter_active' => 'Active Listings',
+    'counter_experience' => 'Years of Experience',
 
     // Property Type Section
     'property_type_title' => 'Recommended',
@@ -96,7 +97,7 @@ return [
     'work_title' => 'Looking for the right property? We make the search simple and transparent.',
     'work_description' => 'Whether you want to buy or rent, browse verified listings with clear details and reach the broker directly — no middlemen, no guesswork.',
     'work_find_property' => 'Find Your Property',
-    'work_how_badge' => 'How it Works',
+    'work_how_badge' => 'How It Works',
     'work_how_title' => 'Three simple steps to your next property',
     'work_step1' => 'Search for Location',
     'work_step1_desc' => 'Search by location, category, budget, and amenities. Find listings that match your needs—whether it\'s a home, office, or land.',
@@ -133,7 +134,7 @@ return [
     'bedroom' => 'Bedroom',
     'bath' => 'Bath',
     'sq_ft' => 'Sq Ft',
-    'explore_all_listings' => 'Explore all Listings',
+    'explore_all_listings' => 'Explore All Listings',
 
     // Property Types
     'villa' => 'Villa',

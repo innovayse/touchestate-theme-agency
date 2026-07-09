@@ -24,19 +24,21 @@
     $enquireUrl  = url('/api/property/'.$slug.'/enquire');
     $viewUrl     = url('/api/property/'.$slug.'/view');
 
-    $lat         = null;
-    $lng         = null;
-    $yandexKey   = config('services.yandex.maps_key', env('YANDEX_MAPS_API_KEY', ''));
-
-    $geoAddressParts = array_filter([
+    // $lat/$lng from server-side cache (may be null on first visit — JS geocodes instead)
+    $lat          = $lat ?? null;
+    $lng          = $lng ?? null;
+    $yandexKey    = config('services.yandex.maps_key', env('YANDEX_MAPS_API_KEY', ''));
+    $hasLocFields = !empty($property['country']) || !empty($property['city'])
+                 || !empty($property['district']) || !empty($property['street'])
+                 || !empty($property['buildingNumber']);
+    $geocodeQuery = implode(', ', array_filter([
         $property['street']         ?? null,
         $property['buildingNumber'] ?? null,
         $property['district']       ?? null,
         $property['city']           ?? null,
         $property['country']        ?? null,
-    ]);
-    $geoAddress = implode(', ', $geoAddressParts);
-    $hasMap = $yandexKey && $geoAddress;
+    ]));
+    $hasMap = $yandexKey && ($hasLocFields || ($lat && $lng));
 
     // Spec rows
     $specs = [];
@@ -88,23 +90,21 @@
         $k = 'property-single.terrace_' . strtolower($property['terraceType']); $lbl = __($k);
         $specs[__('property-single.terrace')] = ($lbl === $k ? $property['terraceType'] : $lbl);
     }
+    // Multi-select fields — rendered as tags, not in the specs grid
+    $heatingTypes = [];
     if (!empty($property['heatingType'])) {
         $ht = array_filter(is_array($property['heatingType']) ? $property['heatingType'] : [$property['heatingType']]);
-        $specs[__('property-single.heating')] = implode(', ', array_map(function($h) {
-            $k = 'property-single.heating_' . strtolower($h); $l = __($k); return $l === $k ? $h : $l;
-        }, $ht));
+        foreach ($ht as $h) { $k = 'property-single.heating_'.strtolower($h); $l = __($k); $heatingTypes[] = $l === $k ? $h : $l; }
     }
+    $parkingTypes = [];
     if (!empty($property['parkingType'])) {
         $pt = array_filter(is_array($property['parkingType']) ? $property['parkingType'] : [$property['parkingType']]);
-        $specs[__('property-single.parking')] = implode(', ', array_map(function($t) {
-            $k = 'property-single.parking_' . strtolower($t); $l = __($k); return $l === $k ? $t : $l;
-        }, $pt));
+        foreach ($pt as $t) { $k = 'property-single.parking_'.strtolower($t); $l = __($k); $parkingTypes[] = $l === $k ? $t : $l; }
     }
+    $windowViews = [];
     if (!empty($property['windowView'])) {
         $wv = array_filter(is_array($property['windowView']) ? $property['windowView'] : [$property['windowView']]);
-        $specs[__('property-single.window_view')] = implode(', ', array_map(function($v) {
-            $k = 'property-single.view_' . strtolower($v); $l = __($k); return $l === $k ? $v : $l;
-        }, $wv));
+        foreach ($wv as $v) { $k = 'property-single.view_'.strtolower($v); $l = __($k); $windowViews[] = $l === $k ? $v : $l; }
     }
     if (!empty($property['utilitiesPolicy'])) {
         $k = 'property-single.utilities_' . strtolower($property['utilitiesPolicy']); $lbl = __($k);
@@ -128,55 +128,23 @@
     if (!empty($property['isLongTermRental']))  $badges[] = __('property-single.is_long_term');
     if (!empty($property['isUninhabited']))     $badges[] = __('property-single.is_uninhabited');
 
-    $agentName = $property['assignedAgentName'] ?? null;
+    $agentName   = $workspace['name']    ?? null;
+    $agentPhone  = $workspace['phone']   ?? null;
+    $agentAvatar = $workspace['logoUrl'] ?? null;
     $listedAt  = !empty($property['createdAt']) ? \Carbon\Carbon::parse($property['createdAt'])->format('d.m.Y') : null;
     $updatedAt = !empty($property['updatedAt']) ? \Carbon\Carbon::parse($property['updatedAt'])->format('d.m.Y') : null;
 @endphp
 
 @section('content')
 {{-- Custom breadcrumb with fav/compare actions --}}
-<section class="relative bg-ink pt-28 pb-12" x-data="{
-    slug: '{{ $slug }}',
-    isFav: false,
-    isCmp: false,
-    popFav: false,
-    popCmp: false,
-    init() {
-        this.refresh();
-        window.addEventListener('te-storage', () => this.refresh());
-    },
-    refresh() {
-        try { this.isFav = JSON.parse(localStorage.getItem('te_favorites') || '[]').includes(this.slug); } catch(e) { this.isFav = false; }
-        try { this.isCmp = JSON.parse(localStorage.getItem('te_compare') || '[]').includes(this.slug); } catch(e) { this.isCmp = false; }
-    },
-    toggleFav() {
-        let list = []; try { list = JSON.parse(localStorage.getItem('te_favorites') || '[]'); } catch(e) {}
-        const idx = list.indexOf(this.slug);
-        if (idx >= 0) list.splice(idx, 1); else list.push(this.slug);
-        localStorage.setItem('te_favorites', JSON.stringify(list));
-        this.isFav = !this.isFav;
-        this.popFav = true; setTimeout(() => this.popFav = false, 300);
-        window.dispatchEvent(new Event('te-storage'));
-    },
-    toggleCmp() {
-        let list = []; try { list = JSON.parse(localStorage.getItem('te_compare') || '[]'); } catch(e) {}
-        const idx = list.indexOf(this.slug);
-        if (idx >= 0) list.splice(idx, 1); else list.push(this.slug);
-        localStorage.setItem('te_compare', JSON.stringify(list));
-        this.isCmp = !this.isCmp;
-        this.popCmp = true; setTimeout(() => this.popCmp = false, 300);
-        window.dispatchEvent(new Event('te-storage'));
-    }
-}">
-    <div class="container-x text-center">
-        <h1 class="font-display text-xl font-bold text-white sm:text-3xl lg:text-4xl">{{ $property['title'] ?? __('header.property') }}</h1>
-        <div class="mt-3 flex items-center justify-center gap-2 text-sm text-white/60">
-            <nav class="flex flex-col items-center gap-1">
-                <div class="flex items-center gap-2">
-                    <a href="{{ url('/'.$locale) }}" class="text-brand-400 hover:text-brand-300">{{ __('header.home') }}</a>
-                    <span>›</span>
-                </div>
-                <span class="truncate max-w-xs">{{ $property['title'] ?? __('header.property') }}</span>
+<section class="relative bg-ink pt-28 pb-12 overflow-hidden" x-data="propertyToggle('{{ $slug }}')">
+    <div class="container-x text-center px-8 sm:px-12">
+        <h1 class="font-display text-xl font-bold text-white sm:text-3xl lg:text-4xl break-words">{{ $property['title'] ?? __('header.property') }}</h1>
+        <div class="mt-3 text-sm text-white/60">
+            <nav class="flex items-center justify-center gap-1">
+                <a href="{{ url('/'.$locale) }}" class="shrink-0 text-brand-400 hover:text-brand-300">{{ __('header.home') }}</a>
+                <span class="shrink-0">›</span>
+                <span class="truncate">{{ $property['title'] ?? __('header.property') }}</span>
             </nav>
         </div>
         {{-- Fav / Compare --}}
@@ -185,7 +153,7 @@
                     class="flex h-10 w-10 items-center justify-center rounded-full border transition-all duration-200"
                     :class="[isFav ? 'border-red-500 bg-white/10 text-red-500' : 'border-white/20 bg-white/10 text-white/60 hover:border-red-400 hover:text-red-400', popFav ? 'scale-125' : 'scale-100']">
                 <svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
-                     style="transition: fill 0.2s ease"
+                     class="transition-[fill] duration-200"
                      :fill="isFav ? 'currentColor' : 'none'">
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                 </svg>
@@ -201,43 +169,9 @@
     </div>
 </section>
 
-<section class="py-12" x-data="{
-    lightbox: false,
-    current: 0,
-    fading: false,
-    images: {{ json_encode($images) }},
-    enquirySent: false,
-    enquiryLoading: false,
-    enquiryError: '',
-    goto(idx) {
-        if (idx === this.current) return;
-        this.fading = true;
-        setTimeout(() => {
-            this.current = idx;
-            this.fading = false;
-        }, 180);
-        setTimeout(() => {
-            const el = this.$refs['thumb' + idx];
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        }, 220);
-    },
-    async sendEnquiry(form) {
-        this.enquiryLoading = true;
-        this.enquiryError = '';
-        try {
-            const data = Object.fromEntries(new FormData(form));
-            const r = await fetch('{{ $enquireUrl }}', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
-                body: JSON.stringify(data),
-            });
-            const j = await r.json();
-            if (j.ok) { this.enquirySent = true; form.reset(); }
-            else { this.enquiryError = '{{ __('property.enquiry_error') }}'; }
-        } catch(e) { this.enquiryError = '{{ __('property.enquiry_error') }}'; }
-        this.enquiryLoading = false;
-    }
-}" @keydown.escape.window="lightbox = false">
+<section class="py-12"
+         x-data="propertyGallery({{ Js::from($images) }}, '{{ $enquireUrl }}', {{ Js::from(__('property.enquiry_error')) }})"
+         @keydown.escape.window="lightbox = false">
 
     <div class="container-x">
         <div class="flex flex-col gap-10 lg:flex-row lg:items-start">
@@ -259,7 +193,7 @@
                             @endif
                         </div>
                         @if(count($images) > 1)
-                            <div x-ref="thumbs" class="flex gap-3 overflow-x-auto p-2" style="scrollbar-width:thin;scrollbar-color:#ead2c7 transparent">
+                            <div x-ref="thumbs" class="flex gap-3 overflow-x-auto p-2 scrollbar-brand">
                                 @foreach($images as $idx => $img)
                                     <div class="shrink-0 cursor-pointer rounded-xl transition-all duration-200 overflow-hidden"
                                          :style="{{ $idx }} === current ? 'outline: 3px solid var(--color-brand-600); outline-offset: 2px; opacity:1; position:relative; z-index:10' : 'opacity:0.5; position:relative; z-index:1'"
@@ -282,7 +216,7 @@
                      x-effect="lightbox ? document.body.classList.add('overflow-hidden') : document.body.classList.remove('overflow-hidden')"
                      @keydown.arrow-right.window="if(lightbox) goto((current+1) % images.length)"
                      @keydown.arrow-left.window="if(lightbox) goto((current-1+images.length) % images.length)"
-                     class="fixed inset-0 z-[100] flex flex-col" style="background:rgba(15,12,10,0.97);backdrop-filter:blur(12px)">
+                     class="fixed inset-0 z-[100] flex flex-col bg-[rgba(15,12,10,0.97)] backdrop-blur-lg">
 
                     {{-- Top bar --}}
                     <div class="flex shrink-0 items-center justify-between gap-4 border-b border-white/10 px-5 py-3">
@@ -328,8 +262,7 @@
                     </div>
 
                     {{-- Thumbnails strip --}}
-                    <div class="shrink-0 border-t border-white/10 bg-black/30 px-5 py-3"
-                         style="scrollbar-width:thin;scrollbar-color:#a6644f transparent;overflow-x:auto">
+                    <div class="shrink-0 border-t border-white/10 bg-black/30 px-5 py-3 overflow-x-auto scrollbar-brand-dark">
                         <div class="flex gap-2">
                             <template x-for="(img, i) in images" :key="i">
                                 <button type="button" @click="goto(i)"
@@ -348,9 +281,9 @@
                 <div class="mt-8">
                     <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-4">
                         <div class="min-w-0 sm:flex-1">
-                            <h1 class="font-display text-2xl font-bold leading-snug text-ink sm:text-3xl">{{ $property['title'] ?? '' }}</h1>
+                            <h1 class="font-display text-base font-bold leading-snug text-ink sm:text-3xl">{{ $property['title'] ?? '' }}</h1>
                             @if(!empty($property['fullAddress']) || !empty($property['city']))
-                                <p class="mt-2 flex items-center gap-1.5 text-neutral-500">
+                                <p class="mt-2 flex items-center gap-1.5 text-sm text-neutral-500">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
                                     {{ $property['fullAddress'] ?? $property['city'] ?? '' }}
                                 </p>
@@ -369,7 +302,7 @@
                     </div>
 
                     {{-- Quick stats --}}
-                    <div class="mt-6 flex flex-wrap gap-5 border-y border-sand py-5">
+                    <div class="mt-6 grid grid-cols-2 gap-3 border-y border-sand py-5 sm:flex sm:flex-wrap sm:gap-5">
                         @if(!empty($property['rooms']))
                             <div class="flex items-center gap-2 text-sm text-neutral-700">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="10" width="18" height="11" rx="2"/><path d="M7 10V7a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3"/></svg>
@@ -403,28 +336,37 @@
                     </div>
                 </div>
 
-                {{-- Description --}}
-                @if(!empty($property['description']))
-                    <div class="mt-8">
-                        <h2 class="font-display text-xl font-semibold text-ink mt-6 mb-4">{{ __('property.description') }}</h2>
-                        <div class="prose prose-neutral mt-4 max-w-none text-neutral-600 leading-relaxed">{!! $property['description'] !!}</div>
-                    </div>
-                @endif
-
                 {{-- Badges --}}
                 @if($badges)
-                    <div class="mt-6 flex flex-wrap gap-2">
+                    <div class="mt-4 flex flex-wrap gap-2">
                         @foreach($badges as $badge)
                             <span class="rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">{{ $badge }}</span>
                         @endforeach
                     </div>
                 @endif
 
+                {{-- Description --}}
+                @if(!empty($property['description']))
+                    <div class="mt-4 rounded-2xl border border-brand-200 px-4 py-4" x-data="{ open: true }">
+                        <button type="button" @click="open = !open" class="flex w-full items-center justify-between pl-2">
+                            <h2 class="font-display text-base font-semibold text-ink border-b border-brand-200 pb-2 mb-3 w-full text-left sm:text-xl">{{ __('property.description') }}</h2>
+                            <svg :class="open ? 'rotate-180' : ''" class="h-4 w-4 shrink-0 text-neutral-400 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                        </button>
+                        <div x-show="open" x-collapse style="display:block">
+                            <div class="prose prose-neutral prose-sm max-w-none text-neutral-600 leading-relaxed">{!! $property['description'] !!}</div>
+                        </div>
+                    </div>
+                @endif
+
                 {{-- Specs table --}}
                 @if($specs)
-                    <div class="mt-8">
-                        <h2 class="font-display text-xl font-semibold text-ink mt-6 mb-4">{{ __('property.details') }}</h2>
-                        <div class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    <div class="mt-4 rounded-2xl border border-brand-200 px-4 py-4" x-data="{ open: true }">
+                        <button type="button" @click="open = !open" class="flex w-full items-center justify-between pl-2">
+                            <h2 class="font-display text-base font-semibold text-ink border-b border-brand-200 pb-2 mb-3 w-full text-left sm:text-xl">{{ __('property.details') }}</h2>
+                            <svg :class="open ? 'rotate-180' : ''" class="h-4 w-4 shrink-0 text-neutral-400 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                        </button>
+                        <div x-show="open" x-collapse style="display:block">
+                        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                             @foreach($specs as $label => $value)
                                 <div class="rounded-xl border border-sand bg-panel px-3 py-2.5 sm:px-4 sm:py-3">
                                     <div class="text-[11px] leading-tight text-neutral-500 sm:text-xs">{{ $label }}</div>
@@ -438,21 +380,70 @@
                                 </div>
                             @endif
                         </div>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Multi-select specs: heating / parking / window view --}}
+                @if($heatingTypes || $parkingTypes || $windowViews)
+                    <div class="mt-4 rounded-2xl border border-brand-200 px-4 py-4" x-data="{ open: true }">
+                        <button type="button" @click="open = !open" class="flex w-full items-center justify-between pl-2">
+                            <h2 class="font-display text-base font-semibold text-ink border-b border-brand-200 pb-2 mb-3 w-full text-left sm:text-xl">{{ __('property-single.additional_specs') }}</h2>
+                            <svg :class="open ? 'rotate-180' : ''" class="h-4 w-4 shrink-0 text-neutral-400 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                        </button>
+                        <div x-show="open" x-collapse style="display:block">
+                    <div class="space-y-3">
+                        @if($heatingTypes)
+                            <div>
+                                <div class="mb-1.5 text-xs font-semibold text-neutral-500">{{ __('property-single.heating') }}</div>
+                                <div class="grid grid-cols-1 gap-2 sm:grid-cols-4">
+                                    @foreach($heatingTypes as $tag)
+                                        <span class="rounded-full border border-sand bg-white px-2 py-1.5 text-sm text-ink text-center w-full">{{ $tag }}</span>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                        @if($parkingTypes)
+                            <div>
+                                <div class="mb-1.5 text-xs font-semibold text-neutral-500">{{ __('property-single.parking') }}</div>
+                                <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                                    @foreach($parkingTypes as $tag)
+                                        <span class="rounded-full border border-sand bg-white px-2 py-1.5 text-sm text-ink text-center w-full">{{ $tag }}</span>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                        @if($windowViews)
+                            <div>
+                                <div class="mb-1.5 text-xs font-semibold text-neutral-500">{{ __('property-single.window_view') }}</div>
+                                <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                                    @foreach($windowViews as $tag)
+                                        <span class="rounded-full border border-sand bg-white px-2 py-1.5 text-sm text-ink text-center w-full">{{ $tag }}</span>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                        </div>
                     </div>
                 @endif
 
                 {{-- Features / Amenities --}}
                 @if($features || $appliances || $utilities || $amenitiesExtra)
-                    <div class="mt-8">
-                        <h2 class="font-display text-xl font-semibold text-ink mt-6 mb-4">{{ __('property.amenities') }}</h2>
+                    <div class="mt-4 rounded-2xl border border-brand-200 px-4 py-4" x-data="{ open: true }">
+                        <button type="button" @click="open = !open" class="flex w-full items-center justify-between pl-2">
+                            <h2 class="font-display text-base font-semibold text-ink border-b border-brand-200 pb-2 mb-3 w-full text-left sm:text-xl">{{ __('property.amenities') }}</h2>
+                            <svg :class="open ? 'rotate-180' : ''" class="h-4 w-4 shrink-0 text-neutral-400 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                        </button>
+                        <div x-show="open" x-collapse style="display:block">
                         <div class="mt-4 space-y-4">
                             @if($amenitiesExtra)
                                 <div>
                                     <h3 class="mb-2 text-sm font-semibold text-brand-700">{{ __('property-single.amenities_extra') }}</h3>
-                                    <div class="flex flex-wrap gap-2">
+                                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
                                         @foreach($amenitiesExtra as $a)
                                             @php $ak='property-single.amenity_'.strtolower($a); $al=__($ak); @endphp
-                                            <span class="rounded-full border border-sand bg-white px-3 py-1 text-sm text-ink">{{ $al===$ak ? $a : $al }}</span>
+                                            <span class="rounded-full border border-sand bg-white px-2 py-1.5 text-sm text-ink text-center w-full">{{ $al===$ak ? $a : $al }}</span>
                                         @endforeach
                                     </div>
                                 </div>
@@ -460,10 +451,10 @@
                             @if($features)
                                 <div>
                                     <h3 class="mb-2 text-sm font-semibold text-brand-700">{{ __('property.features') }}</h3>
-                                    <div class="flex flex-wrap gap-2">
+                                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
                                         @foreach($features as $f)
                                             @php $fk='property.feature_'.strtolower($f); $fl=__($fk); @endphp
-                                            <span class="rounded-full border border-sand bg-white px-3 py-1 text-sm text-ink">{{ $fl===$fk ? $f : $fl }}</span>
+                                            <span class="rounded-full border border-sand bg-white px-2 py-1.5 text-sm text-ink text-center w-full">{{ $fl===$fk ? $f : $fl }}</span>
                                         @endforeach
                                     </div>
                                 </div>
@@ -471,10 +462,10 @@
                             @if($appliances)
                                 <div>
                                     <h3 class="mb-2 text-sm font-semibold text-brand-700">{{ __('property.appliances') }}</h3>
-                                    <div class="flex flex-wrap gap-2">
+                                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
                                         @foreach($appliances as $a)
                                             @php $ak='property.appliance_'.strtolower($a); $al=__($ak); @endphp
-                                            <span class="rounded-full border border-sand bg-white px-3 py-1 text-sm text-ink">{{ $al===$ak ? $a : $al }}</span>
+                                            <span class="rounded-full border border-sand bg-white px-2 py-1.5 text-sm text-ink text-center w-full">{{ $al===$ak ? $a : $al }}</span>
                                         @endforeach
                                     </div>
                                 </div>
@@ -482,23 +473,28 @@
                             @if($utilities)
                                 <div>
                                     <h3 class="mb-2 text-sm font-semibold text-brand-700">{{ __('property.utilities') }}</h3>
-                                    <div class="flex flex-wrap gap-2">
+                                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
                                         @foreach($utilities as $u)
                                             @php $uk='property.utility_'.strtolower($u); $ul=__($uk); @endphp
-                                            <span class="rounded-full border border-sand bg-white px-3 py-1 text-sm text-ink">{{ $ul===$uk ? $u : $ul }}</span>
+                                            <span class="rounded-full border border-sand bg-white px-2 py-1.5 text-sm text-ink text-center w-full">{{ $ul===$uk ? $u : $ul }}</span>
                                         @endforeach
                                     </div>
                                 </div>
                             @endif
+                        </div>
                         </div>
                     </div>
                 @endif
 
                 {{-- Rental Conditions --}}
                 @if($conditions)
-                    <div class="mt-8">
-                        <h2 class="font-display text-xl font-semibold text-ink mt-6 mb-4">{{ __('property-single.conditions') }}</h2>
-                        <div class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <div class="mt-4 rounded-2xl border border-brand-200 px-4 py-4" x-data="{ open: true }">
+                        <button type="button" @click="open = !open" class="flex w-full items-center justify-between pl-2">
+                            <h2 class="font-display text-base font-semibold text-ink border-b border-brand-200 pb-2 mb-3 w-full text-left sm:text-xl">{{ __('property-single.conditions') }}</h2>
+                            <svg :class="open ? 'rotate-180' : ''" class="h-4 w-4 shrink-0 text-neutral-400 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                        </button>
+                        <div x-show="open" x-collapse style="display:block">
+                        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                             @foreach($conditions as $type => $value)
                                 @php
                                     $vk = 'property-single.policy_' . strtolower($value);
@@ -516,26 +512,12 @@
                                 </div>
                             @endforeach
                         </div>
+                        </div>
                     </div>
                 @endif
 
-                {{-- Async: Similar + Comments (skeleton until loaded) --}}
+                {{-- Async: Comments (skeleton until loaded) --}}
                 <div id="extras-wrap">
-                    {{-- Similar --}}
-                    <div id="similar-wrap" class="mt-12">
-                        <div class="h-6 w-48 animate-pulse rounded bg-sand mb-4"></div>
-                        <div class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                            @for($i=0;$i<3;$i++)
-                                <div class="animate-pulse rounded-2xl border border-sand bg-panel">
-                                    <div class="h-48 rounded-t-2xl bg-sand"></div>
-                                    <div class="space-y-2 p-4">
-                                        <div class="h-4 w-3/4 rounded bg-sand"></div>
-                                        <div class="h-3 w-1/2 rounded bg-sand"></div>
-                                    </div>
-                                </div>
-                            @endfor
-                        </div>
-                    </div>
                     {{-- Comments --}}
                     <div class="mt-12" id="comments-section">
                         <h2 class="font-display text-xl font-semibold text-ink mt-6 mb-4">{{ __('property.comments') }}</h2>
@@ -559,81 +541,38 @@
             <aside class="w-full shrink-0 lg:w-80">
                 <div class="sticky top-28 space-y-5">
 
-                    {{-- Price & Contact --}}
+                    {{-- Agent & Contact --}}
                     <div class="rounded-3xl border border-sand bg-panel p-6">
-                        @if($price)
-                            <div class="flex items-center gap-1">
-                                <span class="font-display text-3xl font-bold text-brand-700">{{ $price }} {{ $currency }}</span>
-                                @if(!empty($property['transactionType']) && strtolower($property['transactionType']) !== 'sale')
-                                    <span class="text-sm text-neutral-500">{{ strtolower($property['transactionType']) === 'rentdaily' ? __('property.per_day') : __('property.per_month') }}</span>
+                        @if($agentName)
+                        <div class="flex items-center gap-3 pb-3 mb-4 border-b border-sand">
+                            @if($agentAvatar)
+                                <img src="{{ $agentAvatar }}" alt="{{ $agentName }}"
+                                     class="h-11 w-11 shrink-0 rounded-full object-cover border border-sand">
+                            @else
+                                <span class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-100 text-brand-700">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                                </span>
+                            @endif
+                            <div class="min-w-0">
+                                <div class="text-xs text-neutral-400">{{ __('property-single.agent') }}</div>
+                                <div class="truncate font-semibold text-ink">{{ $agentName }}</div>
+                                @if($listedAt)
+                                    <div class="text-xs text-neutral-400">{{ __('property-single.listed_on') }}: <span class="text-neutral-600">{{ $listedAt }}</span></div>
                                 @endif
                             </div>
-                        @endif
-                        <div class="mt-5 space-y-2.5">
-                            @if(!empty($workspace['phone']))
-                                <a href="tel:{{ $workspace['phone'] }}" class="btn-brand w-full">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.62 19a19.45 19.45 0 0 1-6-6 19.79 19.79 0 0 1-2.91-7.18A2 2 0 0 1 4.71 3.73h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11l-1.27 1.27a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/></svg>
-                                    {{ $workspace['phone'] }}
-                                </a>
-                            @endif
-                            @if($waNumber)
-                                <a href="https://wa.me/{{ $waNumber }}" target="_blank" rel="noopener"
-                                   class="btn-outline w-full">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.017 2C6.51 2 2.04 6.47 2.04 11.975c0 1.757.46 3.47 1.33 4.978L2 22l5.2-1.36A10.01 10.01 0 0 0 12.017 22c5.506 0 9.977-4.47 9.977-9.975 0-2.664-1.04-5.17-2.92-7.05C17.19 3.09 14.68 2 12.017 2zm.009 18.13c-1.498 0-2.97-.402-4.248-1.163l-.303-.18-3.14.822.838-3.065-.197-.314A8.1 8.1 0 0 1 3.9 11.975c0-4.47 3.638-8.1 8.118-8.1a8.07 8.07 0 0 1 5.74 2.376 8.05 8.05 0 0 1 2.377 5.733c.008 4.48-3.63 8.146-8.109 8.146z"/></svg>
-                                    {{ __('contact-us.whatsapp') }}
-                                </a>
-                            @endif
-                            @if($viberNumber)
-                                <a href="viber://chat?number=%2B{{ $viberNumber }}"
-                                   class="btn-outline w-full">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11.992 2C6.91 2 2.76 5.47 2.76 11.784c0 2.94 1.042 5.49 2.895 7.312L4.96 22l3.015-.86A9.56 9.56 0 0 0 11.992 22c5.082 0 9.232-3.47 9.232-9.784 0-2.744-.98-5.18-2.76-6.95A9.21 9.21 0 0 0 11.992 2z"/></svg>
-                                    {{ __('contact-us.viber') }}
-                                </a>
-                            @endif
-                            @if($tgLink)
-                                <a href="{{ $tgLink }}" target="_blank" rel="noopener" class="btn-outline w-full">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.94 8.2l-2.02 9.53c-.15.68-.54.84-1.09.52l-3-2.21-1.45 1.4c-.16.16-.3.3-.61.3l.22-3.07 5.59-5.05c.24-.22-.05-.34-.38-.12L7.08 14.07 4.13 13.1c-.63-.2-.64-.63.13-.93l11.6-4.47c.53-.2.99.12.08 1.5z"/></svg>
-                                    {{ __('contact-us.telegram') }}
-                                </a>
-                            @endif
                         </div>
+                        @endif
+                        {{-- Single contact button --}}
+                        <button type="button" @click="$store.contactModal.open = true" class="btn-brand w-full">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.62 19a19.45 19.45 0 0 1-6-6 19.79 19.79 0 0 1-2.91-7.18A2 2 0 0 1 4.71 3.73h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11l-1.27 1.27a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/></svg>
+                            {{ __('property-single.contact_agent') }}
+                        </button>
                     </div>
 
                     {{-- Location Details --}}
-                    @php
-                        $hasLocFields = !empty($property['country']) || !empty($property['city']) || !empty($property['district']) || !empty($property['street']) || !empty($property['buildingNumber']);
-                    @endphp
                     @if($hasLocFields || ($lat && $lng))
                     <div class="overflow-hidden rounded-3xl border border-sand bg-panel"
-                         x-data="{
-                             lat: {{ $lat ?? 0 }},
-                             lng: {{ $lng ?? 0 }},
-                             locale: '{{ $locale }}',
-                             activeCategory: 'transport',
-                             cache: {},
-                             loading: false,
-                             activeItems: [],
-                             async init() { if (this.lat && this.lng) await this.loadCategory('transport'); },
-                             haversine(lat2, lon2) {
-                                 const R = 6371000, toRad = x => x * Math.PI / 180;
-                                 const dLat = toRad(lat2 - this.lat), dLon = toRad(lon2 - this.lng);
-                                 const a = Math.sin(dLat/2)**2 + Math.cos(toRad(this.lat)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
-                                 return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-                             },
-                             formatDist(m) { return m >= 1000 ? (m/1000).toFixed(1).replace(/\.0$/,'') + ' км' : m + ' м'; },
-                             async loadCategory(cat) {
-                                 if (this.cache[cat] !== undefined) { this.activeItems = this.cache[cat]; return; }
-                                 this.loading = true; this.activeItems = [];
-                                 try {
-                                     const r = await fetch('/api/nearby?lat='+this.lat+'&lon='+this.lng+'&category='+cat+'&lang='+this.locale);
-                                     const d = await r.json();
-                                     const items = (d.results||[]).map(p=>({...p,dist:this.haversine(p.lat,p.lon)})).sort((a,b)=>a.dist-b.dist).slice(0,5);
-                                     this.cache[cat] = items; this.activeItems = items;
-                                 } catch(e) { this.cache[cat] = []; this.activeItems = []; }
-                                 finally { this.loading = false; }
-                             },
-                             async setCategory(cat) { this.activeCategory = cat; await this.loadCategory(cat); }
-                         }"
+                         x-data="nearbyMap({{ $lat ?? 0 }}, {{ $lng ?? 0 }}, '{{ $locale }}')"
                          x-init="init()">
 
                         <div class="p-6">
@@ -678,7 +617,7 @@
                             <div class="mt-5">
                                 <p class="text-xs font-semibold uppercase tracking-widest text-neutral-400">{{ __('property-single.additional_info') }}</p>
 
-                                <div class="mt-2 min-h-[90px] divide-y divide-sand">
+                                <div class="mt-2 divide-y divide-sand">
                                     <template x-if="loading && !activeItems.length">
                                         <div class="flex items-center justify-center py-6 text-neutral-400">
                                             <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
@@ -686,26 +625,29 @@
                                     </template>
                                     <template x-for="(item, i) in activeItems" :key="i">
                                         <div class="flex items-center gap-2.5 py-2">
-                                            <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-700">
+                                            <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-700">
                                                 <template x-if="activeCategory === 'transport'">
-                                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="6" width="22" height="13" rx="2"/><path d="M1 11h22M7 22l5-3 5 3"/></svg>
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="6" width="22" height="13" rx="2"/><path d="M1 11h22M7 22l5-3 5 3"/></svg>
                                                 </template>
                                                 <template x-if="activeCategory === 'education'">
-                                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M12 4L2 9l10 5 10-5-10-5z"/><path d="M6 12v5a6 6 0 0012 0v-5"/></svg>
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M12 4L2 9l10 5 10-5-10-5z"/><path d="M6 12v5a6 6 0 0012 0v-5"/></svg>
                                                 </template>
                                                 <template x-if="activeCategory === 'food'">
-                                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 01-8 0"/></svg>
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 01-8 0"/></svg>
                                                 </template>
                                                 <template x-if="activeCategory === 'fitness'">
-                                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1M5 8H4a4 4 0 000 8h1M8 8v8M16 8v8M8 12h8"/></svg>
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1M5 8H4a4 4 0 000 8h1M8 8v8M16 8v8M8 12h8"/></svg>
                                                 </template>
                                             </span>
                                             <span class="flex-1 truncate text-sm text-ink" x-text="item.name"></span>
                                             <span class="shrink-0 text-sm font-semibold text-brand-700" x-text="formatDist(item.dist)"></span>
                                         </div>
                                     </template>
-                                    <template x-if="!loading && !activeItems.length">
-                                        <div class="py-5 text-center text-sm text-neutral-400">—</div>
+                                    <template x-if="!loading && !activeItems.length && cache[activeCategory] !== null">
+                                        <div class="py-5 text-center text-sm text-neutral-400">{{ __('property-single.nearby_nothing_found') }}</div>
+                                    </template>
+                                    <template x-if="!loading && !activeItems.length && cache[activeCategory] === null">
+                                        <div class="py-5 text-center text-sm text-neutral-400">{{ __('property-single.nearby_retrying') }}</div>
                                     </template>
                                 </div>
                             </div>
@@ -713,7 +655,7 @@
                             {{-- Category filter --}}
                             <div class="mt-4">
                                 <p class="mb-2 text-xs font-semibold uppercase tracking-widest text-neutral-400">{{ __('property-single.nearby') }}</p>
-                                <div class="flex flex-wrap gap-1.5">
+                                <div class="flex flex-nowrap gap-1.5 mt-4 overflow-x-auto pb-1 scrollbar-brand">
                                     @foreach([
                                         'transport' => __('property-single.cat_transport'),
                                         'education' => __('property-single.cat_education'),
@@ -738,28 +680,6 @@
                     </div>
                     @endif
 
-                    {{-- Agent & dates --}}
-                    @if($agentName || $listedAt)
-                    <div class="rounded-2xl border border-sand bg-panel px-5 py-4 text-sm">
-                        @if($agentName)
-                        <div class="flex items-center gap-2.5">
-                            <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-100 text-brand-700">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-                            </span>
-                            <div class="min-w-0">
-                                <div class="text-xs text-neutral-400">{{ __('property-single.agent') }}</div>
-                                <div class="truncate font-semibold text-ink">{{ $agentName }}</div>
-                            </div>
-                        </div>
-                        @endif
-                        @if($listedAt || $updatedAt)
-                        <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-400 {{ $agentName ? 'border-t border-sand pt-3' : '' }}">
-                            @if($listedAt)<span>{{ __('property-single.listed_on') }}: <span class="text-neutral-600">{{ $listedAt }}</span></span>@endif
-                            @if($updatedAt)<span>{{ __('property-single.updated_on') }}: <span class="text-neutral-600">{{ $updatedAt }}</span></span>@endif
-                        </div>
-                        @endif
-                    </div>
-                    @endif
 
                     {{-- Enquiry form (temporarily disabled) --}}
                     @if(false)
@@ -791,6 +711,22 @@
 
                 </div>
             </aside>
+        </div>
+
+        {{-- Similar properties — full width, always at the bottom --}}
+        <div id="similar-wrap" class="mt-12">
+            <div class="h-6 w-48 animate-pulse rounded bg-sand mb-4"></div>
+            <div class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                @for($i=0;$i<3;$i++)
+                    <div class="animate-pulse rounded-2xl border border-sand bg-panel">
+                        <div class="h-48 rounded-t-2xl bg-sand"></div>
+                        <div class="space-y-2 p-4">
+                            <div class="h-4 w-3/4 rounded bg-sand"></div>
+                            <div class="h-3 w-1/2 rounded bg-sand"></div>
+                        </div>
+                    </div>
+                @endfor
+            </div>
         </div>
     </div>
 </section>
@@ -840,43 +776,174 @@ fetch('{{ $extrasUrl }}')
     $balloonHtml = '<div style="line-height:1.7;padding:2px 4px;max-width:210px">' . implode('<br>', $bLines) . '</div>';
 @endphp
 (function loadMap() {
-    const GEO_ADDR = @json($geoAddress);
-    const BALLOON  = @json($balloonHtml);
+    // Cached coords from server (null on first visit) — JS geocodes if missing
+    const CACHED_COORDS = {{ $lat && $lng ? '[' . $lat . ',' . $lng . ']' : 'null' }};
+    const GEO_QUERY     = @json($geocodeQuery);
+    const BALLOON       = @json($balloonHtml);
 
-    const script = document.createElement('script');
-    script.src = 'https://api-maps.yandex.ru/2.1/?apikey={{ $yandexKey }}&lang={{ app()->getLocale() === "en" ? "en_US" : "ru_RU" }}';
-    script.onload = function() {
+    function initYmaps() {
         ymaps.ready(function() {
             const HousePin = ymaps.templateLayoutFactory.createClass(
-                '<div style="display:flex;flex-direction:column;align-items:center;cursor:pointer;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.28))">' +
-                '<div style="width:44px;height:44px;border-radius:50%;background:#a6644f;display:flex;align-items:center;justify-content:center">' +
+                '<div style="position:relative;width:44px;height:55px;cursor:pointer;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.28))">' +
+                '<div style="position:absolute;top:0;left:0;width:44px;height:44px;border-radius:50%;background:#a6644f;display:flex;align-items:center;justify-content:center">' +
                 '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
                 '<path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/>' +
                 '<path d="M9 21V12h6v9"/>' +
                 '</svg>' +
                 '</div>' +
-                '<div style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:11px solid #a6644f;margin-top:-1px"></div>' +
+                '<div style="position:absolute;top:44px;left:14px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:11px solid #a6644f"></div>' +
                 '</div>'
             );
-            const pinOpts = {
-                iconLayout: HousePin,
-                iconOffset: [-22, -55],
-                iconShape: { type: 'Rectangle', coordinates: [[-26, -60], [26, 5]] },
-                balloonOffset: [0, -60],
-            };
 
-            ymaps.geocode(GEO_ADDR, { results: 1 }).then(function(res) {
-                const obj = res.geoObjects.get(0);
-                if (!obj) return;
-                const coords = obj.geometry.getCoordinates();
+            function startMap(coords) {
                 const map = new ymaps.Map('prop-map', { center: coords, zoom: 15, controls: ['zoomControl'] });
-                map.geoObjects.add(new ymaps.Placemark(coords, { balloonContent: BALLOON }, pinOpts));
-            });
+                map.container.fitToViewport();
+                map.geoObjects.add(new ymaps.Placemark(coords, { balloonContent: BALLOON }, {
+                    iconLayout: HousePin,
+                    iconOffset: [-22, -55],
+                    iconShape: { type: 'Rectangle', coordinates: [[-26, -60], [26, 5]] },
+                    balloonOffset: [0, -60],
+                }));
+
+                const CAT_COLORS = { transport: '#3b82f6', education: '#8b5cf6', food: '#f59e0b', fitness: '#10b981' };
+                const CAT_ICONS  = {
+                    transport: '<rect x="1" y="7" width="22" height="12" rx="2"/><path d="M1 12h22M7 21l2-2M17 21l-2-2"/>',
+                    education: '<path d="M2 10l10-5 10 5-10 5-10-5z"/><path d="M6 12.5v4c3 2.5 9 2.5 12 0v-4"/>',
+                    food:      '<path d="M6 2L3 6v14a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>',
+                    fitness:   '<path d="M6 4v16M18 4v16M3 8h4M17 8h4M3 16h4M17 16h4"/>',
+                };
+                window._propMapCatMarkers = [];
+                window.updateNearbyMarkers = function(items, cat) {
+                    window._propMapCatMarkers.forEach(function(m) { map.geoObjects.remove(m); });
+                    window._propMapCatMarkers = [];
+                    const color = CAT_COLORS[cat] || '#6b7280';
+                    const icon  = CAT_ICONS[cat]  || '';
+                    const PinLayout = ymaps.templateLayoutFactory.createClass(
+                        '<div style="position:relative;width:36px;height:46px;filter:drop-shadow(0 3px 7px rgba(0,0,0,0.32))">' +
+                        '<div style="position:absolute;top:0;left:0;width:36px;height:36px;border-radius:50%;background:' + color + ';display:flex;align-items:center;justify-content:center">' +
+                        '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + icon + '</svg>' +
+                        '</div>' +
+                        '<div style="position:absolute;top:36px;left:11px;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:10px solid ' + color + '"></div>' +
+                        '</div>'
+                    );
+                    items.forEach(function(item) {
+                        const m = new ymaps.Placemark([item.lat, item.lon], { balloonContent: item.name }, {
+                            iconLayout: PinLayout,
+                            iconOffset: [-18, -46],
+                            iconShape: { type: 'Rectangle', coordinates: [[-18, -46], [18, 0]] },
+                        });
+                        map.geoObjects.add(m);
+                        window._propMapCatMarkers.push(m);
+                    });
+                };
+
+                // Store map instance so Turbo can destroy it on navigation (prevents memory leak)
+                window._propMapInstance = map;
+                // Store coords so Alpine can pick them up even if it initializes after this fires
+                window._propMapCoords = [coords[0], coords[1]];
+                if (window._onCoordsReady) window._onCoordsReady(coords[0], coords[1]);
+            }
+
+            if (CACHED_COORDS) {
+                startMap(CACHED_COORDS);
+            } else {
+                ymaps.geocode(GEO_QUERY, { results: 1 }).then(function(res) {
+                    var obj = res.geoObjects.get(0);
+                    if (obj) startMap(obj.geometry.getCoordinates());
+                });
+            }
         });
+    }
+
+    // Yandex Maps already loaded (previous Turbo navigation) — init directly, no re-download
+    if (window.ymaps) {
+        initYmaps();
+        return;
+    }
+
+    // Script already appended to head but still loading — queue this init
+    if (document.querySelector('script[src*="api-maps.yandex.ru"]')) {
+        window.__ymapsQueue = window.__ymapsQueue || [];
+        window.__ymapsQueue.push(initYmaps);
+        return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://api-maps.yandex.ru/2.1/?apikey={{ $yandexKey }}&lang={{ app()->getLocale() === "en" ? "en_US" : "ru_RU" }}';
+    script.onload = function() {
+        initYmaps();
+        (window.__ymapsQueue || []).forEach(function(fn) { fn(); });
+        window.__ymapsQueue = [];
     };
     document.head.appendChild(script);
 })();
 </script>
 @endif
 @endpush
+
+@push('modals')
+{{-- Contact agent modal — rendered at body level to avoid stacking context issues --}}
+<div x-data
+     x-show="$store.contactModal.open"
+     x-transition:enter="transition ease-out duration-200"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-150"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     @keydown.escape.window="$store.contactModal.open = false"
+     class="fixed inset-0 z-[100] flex items-center justify-center p-4"
+     x-cloak>
+
+    <div class="absolute inset-0 bg-ink/80 backdrop-blur-sm"
+         @click="$store.contactModal.open = false"></div>
+
+    <div x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         class="relative z-10 w-full max-w-sm rounded-3xl bg-white p-7 shadow-2xl">
+
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h3 class="font-display text-lg font-bold text-ink">{{ __('property-single.contact_agent') }}</h3>
+            </div>
+            <button type="button" @click="$store.contactModal.open = false"
+                    class="grid h-8 w-8 place-items-center rounded-full text-neutral-400 hover:bg-sand hover:text-ink transition">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        <div class="space-y-3">
+            @if(!empty($workspace['phone']))
+                <a href="tel:{{ $workspace['phone'] }}" class="btn-brand w-full">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.62 19a19.45 19.45 0 0 1-6-6 19.79 19.79 0 0 1-2.91-7.18A2 2 0 0 1 4.71 3.73h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11l-1.27 1.27a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7a2 2 0 0 1 1.72 2.02z"/></svg>
+                    {{ $workspace['phone'] }}
+                </a>
+            @endif
+            @if($waNumber)
+                <a href="https://wa.me/{{ $waNumber }}" target="_blank" rel="noopener" class="btn-outline w-full">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.017 2C6.51 2 2.04 6.47 2.04 11.975c0 1.757.46 3.47 1.33 4.978L2 22l5.2-1.36A10.01 10.01 0 0 0 12.017 22c5.506 0 9.977-4.47 9.977-9.975 0-2.664-1.04-5.17-2.92-7.05C17.19 3.09 14.68 2 12.017 2zm.009 18.13c-1.498 0-2.97-.402-4.248-1.163l-.303-.18-3.14.822.838-3.065-.197-.314A8.1 8.1 0 0 1 3.9 11.975c0-4.47 3.638-8.1 8.118-8.1a8.07 8.07 0 0 1 5.74 2.376 8.05 8.05 0 0 1 2.377 5.733c.008 4.48-3.63 8.146-8.109 8.146z"/></svg>
+                    {{ __('contact-us.whatsapp') }}
+                </a>
+            @endif
+            @if($viberNumber)
+                <a href="viber://chat?number=%2B{{ $viberNumber }}" class="btn-outline w-full">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11.992 2C6.91 2 2.76 5.47 2.76 11.784c0 2.94 1.042 5.49 2.895 7.312L4.96 22l3.015-.86A9.56 9.56 0 0 0 11.992 22c5.082 0 9.232-3.47 9.232-9.784 0-2.744-.98-5.18-2.76-6.95A9.21 9.21 0 0 0 11.992 2z"/></svg>
+                    {{ __('contact-us.viber') }}
+                </a>
+            @endif
+            @if($tgLink)
+                <a href="{{ $tgLink }}" target="_blank" rel="noopener" class="btn-outline w-full">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.94 8.2l-2.02 9.53c-.15.68-.54.84-1.09.52l-3-2.21-1.45 1.4c-.16.16-.3.3-.61.3l.22-3.07 5.59-5.05c.24-.22-.05-.34-.38-.12L7.08 14.07 4.13 13.1c-.63-.2-.64-.63.13-.93l11.6-4.47c.53-.2.99.12.08 1.5z"/></svg>
+                    {{ __('contact-us.telegram') }}
+                </a>
+            @endif
+        </div>
+    </div>
+</div>
+@endpush
+
 @endsection

@@ -17,5 +17,10 @@ return [
     'submit_enquiry' => 'Отправить запрос',
     'email' => 'Эл. почта',
     'working_hours' => 'Часы работы',
-    'search_country' => 'Поиск страны…',
+    'search_country'    => 'Поиск страны…',
+    'phone_placeholder' => '+374 XX XXX XXX',
+    'email_placeholder' => 'you@example.com',
+    'whatsapp'          => 'WhatsApp',
+    'viber'             => 'Viber',
+    'telegram'          => 'Telegram',
 ];

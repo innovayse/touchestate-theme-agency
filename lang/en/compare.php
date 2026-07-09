@@ -2,16 +2,29 @@
 
 return [
     'title'        => 'Compare Properties',
+    'comparing'    => 'Comparing',
+    'max_4'        => 'max 4',
+    'empty'        => 'No properties to compare',
+    'hint'         => 'Add properties from the listing page to compare them side by side.',
     'empty_title'  => 'No properties selected',
     'empty_text'   => 'Add properties to compare them side by side.',
     'browse'       => 'Browse Properties',
     'clear_all'    => 'Clear All',
+    'swipe_hint'   => 'Swipe to compare',
     'remove'       => 'Remove',
     'max_reached'  => 'Maximum :max properties',
     'open_property' => 'Open Property',
 
+    // Tabs
+    'tab_main'       => 'Characteristics',
+    'tab_location'   => 'Location',
+    'tab_amenities'  => 'Amenities & Furniture',
+    'show_diffs'     => 'Show differences',
+    'show_all'       => 'Show all',
+
     // Table row labels
     'price'            => 'Price',
+    'price_per_sqm'    => 'Price per m²',
     'transaction_type' => 'Transaction Type',
     'property_type'    => 'Property Type',
     'area'             => 'Total Area',
@@ -23,7 +36,10 @@ return [
     'renovation'       => 'Renovation',
     'construction'     => 'Construction',
     'address'          => 'Address',
+    'city'             => 'City',
     'district'         => 'District',
+    'views'            => 'Views',
+    'status'           => 'Status',
 
     // Transaction type labels
     'sale'       => 'Sale',
@@ -46,4 +62,10 @@ return [
     'construction_monolithic' => 'Monolithic',
     'construction_panel'      => 'Panel',
     'construction_stone'      => 'Stone',
+
+    // Furniture types
+    'furniture_furnished'    => 'Furnished',
+    'furniture_partial'      => 'Partially Furnished',
+    'furniture_unavailable'  => 'Unfurnished',
+    'furniture_byagreement'  => 'By Agreement',
 ];

@@ -4,16 +4,36 @@ return [
     // Page title
     'title' => 'Недвижимость',
 
+    // Filter sidebar
+    'filters'=>'Фильтры','all_types'=>'Все типы','any_currency'=>'Любая валюта',
+    'min_rooms'=>'Мин. комнат','max_rooms'=>'Макс. комнат','area'=>'Площадь',
+    'min'=>'Мин','max'=>'Макс','any'=>'Любой','bedrooms'=>'Спален','reset'=>'Сбросить','newest'=>'Сначала новые','largest'=>'Сначала большие',
+    'properties'=>'объектов','on_map'=>'найдено на карте','found_on_map'=>'Найдено объектов на карте:','no_coords'=>'Нет объектов с координатами.',
+    'type'=>'Тип','deal'=>'Тип сделки','rooms'=>'Комнаты','area_total'=>'Общ. площадь',
+    'area_living'=>'Жил. площадь','area_kitchen'=>'Кухня','floor'=>'Этаж',
+    'year_built'=>'Год постройки','renovation'=>'Ремонт','construction'=>'Тип конструкции',
+    'furniture'=>'Мебель','city'=>'Город','district'=>'Район','description'=>'Описание',
+    'details'=>'Характеристики','amenities'=>'Удобства','features'=>'Особенности',
+    'appliances'=>'Техника','utilities'=>'Коммуникации','location'=>'Расположение',
+    'similar_properties'=>'Похожие объекты','comments'=>'Комментарии',
+    'no_comments'=>'Комментариев пока нет.','anonymous'=>'Аноним',
+    'phone'=>'Телефон','address'=>'Адрес','code'=>'Код',
+    'per_day'=>'/ день','per_month'=>'/ месяц',
+    'send_enquiry'=>'Отправить запрос','enquiry_sent'=>'Ваш запрос отправлен! Мы свяжемся с вами.','enquiry_error'=>'Что-то пошло не так. Попробуйте ещё раз или свяжитесь с нами по телефону.',
+    'your_name'=>'Ваше имя','your_email'=>'Ваш email','your_phone'=>'Ваш телефон',
+    'your_message'=>'Ваше сообщение','send'=>'Отправить',
+
     // Search & Sort
-    'showing_result' => 'Показано результатов',
+    'showing_result' => 'Показано',
     'of' => 'из',
     'sort_by' => 'Сортировать',
     'default' => 'По умолчанию',
     'a_z' => 'А-Я',
+    'price'       => 'Цена',
     'price_range' => 'Диапазон Цен',
     'low_to_high' => 'От низкой к высокой',
     'high_to_low' => 'От высокой к низкой',
-    'featured' => 'Избранное',
+    'featured' => 'По популярности',
 
     // Property Status
     'for_sale' => 'Продажа',
@@ -48,7 +68,7 @@ return [
     'listed_on' => 'Размещено',
     'category' => 'Категория',
     'load_more' => 'Загрузить Ещё',
-    'show_less' => 'Свернуть',
+    'show_less' => 'Показать меньше',
 
     // Categories
     'suite' => 'Люкс',
@@ -81,4 +101,41 @@ return [
     'status_rented'   => 'Сдан',
     'status_reserved' => 'Зарезервирован',
     'status_inactive' => 'Неактивный',
+
+    // Features
+    'feature_elevator'          => 'Лифт',
+    'feature_parking'           => 'Парковка',
+    'feature_balcony'           => 'Балкон',
+    'feature_garage'            => 'Гараж',
+    'feature_pool'              => 'Бассейн',
+    'feature_garden'            => 'Сад',
+    'feature_basement'          => 'Подвал',
+    'feature_gym'               => 'Тренажёрный зал',
+    'feature_security'          => 'Охрана',
+    'feature_panoramicwindows'  => 'Панорамные окна',
+    'feature_sauna'             => 'Сауна',
+    'feature_fireplace'         => 'Камин',
+    'feature_gazebo'            => 'Беседка',
+    'feature_barbecuearea'      => 'Зона барбекю',
+    'feature_sportscourt'       => 'Спортивная площадка',
+    'feature_loadingdock'       => 'Погрузочная площадка',
+
+    // Appliances
+    'appliance_washer'          => 'Стиральная машина',
+    'appliance_dryer'           => 'Сушильная машина',
+    'appliance_fridge'          => 'Холодильник',
+    'appliance_stove'           => 'Плита',
+    'appliance_microwave'       => 'Микроволновая печь',
+    'appliance_coffeemaker'     => 'Кофемашина',
+    'appliance_waterheater'     => 'Водонагреватель',
+    'appliance_hairdryer'       => 'Фен',
+    'appliance_iron'            => 'Утюг',
+    'appliance_dishwasher'      => 'Посудомоечная машина',
+    'appliance_vacuumcleaner'   => 'Пылесос',
+
+    // Utilities
+    'utility_electricity'       => 'Электричество',
+    'utility_water'             => 'Вода',
+    'utility_gas'               => 'Газ',
+    'utility_sewage'            => 'Канализация',
 ];

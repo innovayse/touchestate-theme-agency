@@ -147,56 +147,116 @@ Route::get('/api/central-district', function (\Illuminate\Http\Request $request)
 
 
 Route::get('/api/nearby', function (\Illuminate\Http\Request $request) {
-    // Nearby POI lookup via Yandex "Search for Organizations" API (server-side: hides key, avoids CORS).
-    // Used by the property page "Location details" card for non-transport categories (e.g. education).
     $lat      = (float) $request->query('lat', 0);
     $lon      = (float) $request->query('lon', 0);
     $category = $request->query('category', '');
     $locale   = $request->query('lang', 'ru');
     if (!$lat || !$lon) return response()->json(['results' => []]);
 
-    // category → localized search text
-    $rubrics = [
-        'education' => ['ru' => 'школа',  'en' => 'school',     'hy' => 'դպրոց'],
-        'transport' => ['ru' => 'метро',  'en' => 'metro',      'hy' => 'մետրո'],
-        'food'      => ['ru' => 'магазин','en' => 'supermarket','hy' => 'խանութ'],
-        'hotel'     => ['ru' => 'отель',  'en' => 'hotel',      'hy' => 'հյուրանոց'],
+    // Overpass QL tag filters per category (OpenStreetMap, free, no key)
+    $tagSets = [
+        'transport' => [
+            '["railway"="station"]["station"="subway"]',
+            '["railway"="subway_entrance"]',
+            '["railway"="station"]["station"="light_rail"]',
+            '["amenity"="bus_station"]',
+        ],
+        'education' => [
+            '["amenity"="university"]',
+            '["amenity"="college"]',
+            '["amenity"="school"]',
+            '["amenity"="kindergarten"]',
+        ],
+        'food' => [
+            '["shop"="supermarket"]',
+            '["shop"="mall"]',
+            '["amenity"="marketplace"]',
+            '["shop"="grocery"]',
+        ],
+        'fitness' => [
+            '["leisure"="fitness_centre"]',
+            '["leisure"="sports_centre"]',
+            '["leisure"="stadium"]',
+            '["leisure"="swimming_pool"]',
+        ],
     ];
-    $text = $rubrics[$category][$locale] ?? ($rubrics[$category]['en'] ?? $category);
-    if (!$text) return response()->json(['results' => []]);
 
-    $yLang = match ($locale) {
-        'en' => 'en_US',
-        'hy' => 'hy_AM',
-        default => 'ru_RU',
+    $tags = $tagSets[$category] ?? [];
+    if (empty($tags)) return response()->json(['results' => []]);
+
+    // Round to 3 decimal places (~110m grid) for cache key — avoids misses from GPS noise
+    $latKey   = round($lat, 3);
+    $lonKey   = round($lon, 3);
+    $cacheKey = "nearby:{$latKey}:{$lonKey}:{$category}";
+
+    $raw = \Illuminate\Support\Facades\Cache::get($cacheKey);
+
+    if ($raw === null) {
+        $radius    = 500;
+        $nodeLines = implode("\n  ", array_map(
+            fn($t) => "node{$t}(around:{$radius},{$lat},{$lon});",
+            $tags
+        ));
+        $query = "[out:json][timeout:10];\n(\n  {$nodeLines}\n);\nout body;";
+
+        try {
+            $ch = curl_init('https://overpass-api.de/api/interpreter');
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST           => true,
+                CURLOPT_POSTFIELDS     => 'data=' . urlencode($query),
+                CURLOPT_TIMEOUT        => 12,
+                CURLOPT_CONNECTTIMEOUT => 5,
+                CURLOPT_USERAGENT      => 'TouchEstateDemo/1.0',
+            ]);
+            $body = curl_exec($ch);
+            $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($code !== 200 || !$body) return response()->json(['results' => []]);
+
+            $data     = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+            $elements = $data['elements'] ?? [];
+
+            $raw = [];
+            foreach ($elements as $el) {
+                if (!isset($el['lat'])) continue;
+                $raw[] = ['tags' => $el['tags'] ?? [], 'lat' => (float) $el['lat'], 'lon' => (float) $el['lon']];
+            }
+
+            // Cache results: 24h for non-empty, 1h for empty (real absence of POI, not a transient error)
+            // Transient errors (non-200, exception) skip caching entirely via early return above
+            \Illuminate\Support\Facades\Cache::put($cacheKey, $raw, empty($raw) ? 3600 : 86400);
+        } catch (\Throwable) {
+            return response()->json(['results' => []]);
+        }
+    }
+
+    if (empty($raw)) return response()->json(['results' => []]);
+
+    // Apply locale-aware name selection at response time (raw tags are locale-neutral in cache)
+    $namePriority = match($locale) {
+        'hy'    => ['name:hy', 'name', 'name:ru', 'name:en'],
+        'en'    => ['name:en', 'name:ru', 'name'],
+        default => ['name:ru', 'name:en', 'name'],
     };
 
-    try {
-        $resp = Http::withoutVerifying()->timeout(6)
-            ->get('https://search-maps.yandex.ru/v1/', [
-                'apikey'  => config('services.yandex.places_key'),
-                'text'    => $text,
-                'lang'    => $yLang,
-                'll'      => "{$lon},{$lat}",
-                'spn'     => '0.06,0.04',
-                'rspn'    => 1,
-                'type'    => 'biz',
-                'results' => 15,
-            ]);
-
-        $features = $resp->json('features', []);
-        $results  = [];
-        foreach ($features as $f) {
-            $coords = $f['geometry']['coordinates'] ?? null; // [lon, lat]
-            $name   = $f['properties']['name'] ?? '';
-            if (!$coords || !$name) continue;
-            $results[] = ['name' => $name, 'lon' => (float) $coords[0], 'lat' => (float) $coords[1]];
+    $seen   = [];
+    $unique = [];
+    foreach ($raw as $r) {
+        $name = null;
+        foreach ($namePriority as $key) {
+            if (!empty($r['tags'][$key])) { $name = $r['tags'][$key]; break; }
         }
-
-        return response()->json(['results' => $results]);
-    } catch (\Throwable $e) {
-        return response()->json(['results' => []]);
+        if (!$name) continue;
+        $nameKey = mb_strtolower($name);
+        if (!isset($seen[$nameKey])) {
+            $seen[$nameKey] = true;
+            $unique[] = ['name' => $name, 'lat' => $r['lat'], 'lon' => $r['lon']];
+        }
     }
+
+    return response()->json(['results' => array_slice($unique, 0, 7)]);
 });
 
 
@@ -205,6 +265,7 @@ Route::get('/api/nearby', function (\Illuminate\Http\Request $request) {
 // ─────────────────────────────────────────────
 Route::get('/api/contacts', [ContactController::class, 'index']);
 Route::get('/api/contacts/{id}', [ContactController::class, 'show']);
+Route::post('/api/contact', [ContactController::class, 'inquiry']);
 
 
 // ─────────────────────────────────────────────
@@ -222,12 +283,13 @@ Route::post('/api/property/{slug}/view',    [PropertyController::class, 'recordV
 Route::post('/api/property/{slug}/enquire', [PropertyController::class, 'enquire']);
 
 // Map
-Route::get('/map', [PropertyController::class, 'map']);
+Route::get('/map',      [PropertyController::class, 'map']);
+Route::get('/map/data', [PropertyController::class, 'mapData']);
 
 // All simple static pages (default to Armenian locale)
 $defaultRoutes = [
     'contact-us', // 'about-us' temporarily disabled (page kept); 'our-team' removed
-    'faq', 'privacy-policy', 'terms-condition', 'testimonial',
+    'faq', 'privacy-policy', 'terms-condition', /* 'testimonial', */
     'cart', 'checkout',
     'maintenance', 'error-404', 'error-500',
 ];
@@ -253,7 +315,9 @@ Route::group(
         Route::get('/property/{slug}/extras', [PropertyController::class, 'extras'])->name('property.extras'); // skeleton-first: similar + comments
 
         // Map
-        Route::get('/map', [PropertyController::class, 'map'])->name('map');
+        Route::get('/map',        [PropertyController::class, 'map'])->name('map');
+        Route::get('/map/data',   [PropertyController::class, 'mapData'])->name('map.data');
+        Route::get('/map/coords', [PropertyController::class, 'mapCoords'])->name('map.coords');
 
         // Favorites
         Route::get('/favorites', [FavoritesController::class, 'index'])->name('favorites');
@@ -269,7 +333,7 @@ Route::group(
         Route::get('/faq',             fn () => view('faq'))->name('faq');
         Route::get('/privacy-policy',  fn () => view('privacy-policy'))->name('privacy-policy');
         Route::get('/terms-condition', fn () => view('terms-condition'))->name('terms-condition');
-        Route::get('/testimonial',     fn () => view('testimonial'))->name('testimonial');
+        // Route::get('/testimonial',     fn () => view('testimonial'))->name('testimonial');
         Route::get('/cart',            fn () => view('cart'))->name('cart');
         Route::get('/checkout',        fn () => view('checkout'))->name('checkout');
 

@@ -1,17 +1,29 @@
 <?php
 
 return [
+    'comparing'    => 'Сравнение',
+    'max_4'        => 'макс. 4',
+    'empty'        => 'Нет объектов для сравнения',
+    'hint'         => 'Добавьте объекты со страницы листинга, чтобы сравнить их рядом.',
     'title'        => 'Сравнение объектов',
     'empty_title'  => 'Объекты не выбраны',
     'empty_text'   => 'Добавьте объекты, чтобы сравнить их рядом.',
     'browse'       => 'Смотреть объекты',
     'clear_all'    => 'Очистить всё',
+    'swipe_hint'   => 'Листайте для сравнения',
     'remove'       => 'Убрать',
     'max_reached'  => 'Максимум :max объектов',
     'open_property' => 'Открыть объект',
+    // Tabs
+    'tab_main'       => 'Характеристики',
+    'tab_location'   => 'Расположение',
+    'tab_amenities'  => 'Удобства и мебель',
+    'show_diffs'     => 'Показать отличия',
+    'show_all'       => 'Показать всё',
 
     // Table row labels
     'price'            => 'Цена',
+    'price_per_sqm'    => 'Цена за м²',
     'transaction_type' => 'Тип сделки',
     'property_type'    => 'Тип объекта',
     'area'             => 'Общая площадь',
@@ -23,14 +35,13 @@ return [
     'renovation'       => 'Отделка',
     'construction'     => 'Тип постройки',
     'address'          => 'Адрес',
+    'city'             => 'Город',
     'district'         => 'Район',
-
-    // Transaction type labels
-    'sale'       => 'Продажа',
-    'rent'       => 'Аренда',
-    'rent_daily' => 'Посуточная аренда',
-
-    // Renovation types
+    'views'            => 'Просмотры',
+    'status'           => 'Статус',
+    'sale'             => 'Продажа',
+    'rent'             => 'Аренда',
+    'rent_daily'       => 'Посуточная аренда',
     'renovation_capital'      => 'Капитальный',
     'renovation_designer'     => 'Дизайнерский',
     'renovation_euro'         => 'Евро',
@@ -38,12 +49,16 @@ return [
     'renovation_partial'      => 'Частичный',
     'renovation_old'          => 'Старый',
     'renovation_unrenovated'  => 'Без ремонта',
-
-    // Construction types
     'construction_wood'       => 'Деревянный',
     'construction_strip'      => 'Ленточный',
     'construction_brick'      => 'Кирпичный',
     'construction_monolithic' => 'Монолитный',
     'construction_panel'      => 'Панельный',
     'construction_stone'      => 'Каменный',
+
+    // Furniture types
+    'furniture_furnished'    => 'С мебелью',
+    'furniture_partial'      => 'Частично меблирована',
+    'furniture_unavailable'  => 'Без мебели',
+    'furniture_byagreement'  => 'По договорённости',
 ];

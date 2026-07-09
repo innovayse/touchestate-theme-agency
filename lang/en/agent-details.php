@@ -47,7 +47,7 @@ return [
     'starts_from' => 'Starts From',
     'beds' => 'Beds',
     'baths' => 'Baths',
-    'sqft' => 'Sqft',
+    'sqft' => 'Sq ft',
 
     // Form placeholders
     'your_name' => 'Your Name',

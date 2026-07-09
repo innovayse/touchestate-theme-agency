@@ -24,7 +24,7 @@ return [
     'featured_badge' => 'Featured',
     'bedroom' => 'Bedroom',
     'bath' => 'Bath',
-    'sq_ft' => 'Sq Ft',
+    'sq_ft' => 'Sq ft',
     'listed_on' => 'Listed on',
     'category' => 'Category',
     'load_more' => 'Load More',

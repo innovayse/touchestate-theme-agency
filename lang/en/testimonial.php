@@ -1,7 +1,16 @@
 <?php
 
 return [
-    'title'     => 'Testimonials',
+    'badge'       => 'Client Reviews',
+    'title'       => 'What Our',
+    'highlight'   => 'Clients Say',
+    'description' => 'Real experiences from people who found their home through us.',
+    'name_1' => 'Anna K.', 'role_1' => 'Buyer, Yerevan', 'initial_1' => 'A',
+    'name_2' => 'Sargis M.', 'role_2' => 'Renter, Yerevan', 'initial_2' => 'S',
+    'name_3' => 'Narine H.', 'role_3' => 'Seller, Vanadzor', 'initial_3' => 'N',
+    'name_4' => 'Arman B.', 'role_4' => 'Investor', 'initial_4' => 'A',
+    'name_5' => 'Lilit G.', 'role_5' => 'Buyer, Gyumri', 'initial_5' => 'L',
+    'name_6' => 'David T.', 'role_6' => 'Renter, Yerevan', 'initial_6' => 'D',
     'review_1'  => "We ended up with our dream home in less than two months! I can't recommend them enough.",
     'review_2'  => 'They explained every step clearly and found me the perfect home within my budget.',
     'review_3'  => 'Selling our family home was an emotional journey, but Ethel Laughlin made it easier!',

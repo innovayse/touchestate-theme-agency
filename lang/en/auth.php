@@ -2,7 +2,7 @@
 
 return [
     'heading_signin'       => 'Hey There! Welcome Back',
-    'heading_signup'       => 'Sign Up! For New Account',
+    'heading_signup'       => 'Sign up for a new account',
     'heading_forgot'       => 'Forgot Password',
     'heading_reset'        => 'Reset Password',
     'email'                => 'Email',
@@ -15,7 +15,7 @@ return [
     'forgot_password_link' => 'Forgot Password?',
     'sign_in'              => 'Sign In',
     'sign_up'              => 'Sign Up',
-    'or'                   => 'OR',
+    'or'                   => 'or',
     'no_account'           => "Don't have an account yet?",
     'already_account'      => 'Already have an account?',
     'register'             => 'Register',

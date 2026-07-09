@@ -17,8 +17,8 @@ return [
     'search_buy_property' => 'Купить недвижимость',
     'search_rent_property' => 'Арендовать недвижимость',
     'search_location' => 'Местоположение',
-    'search_min_price' => 'Мин. цена',
-    'search_max_price' => 'Макс. цена',
+    'search_min_price' => 'Мин.',
+    'search_max_price' => 'Макс.',
     'search_currency_symbol' => '₽',
 
     // About Us Section
@@ -29,8 +29,9 @@ return [
     'about_contact' => 'Свяжитесь с нами',
 
     // Counters
-    'counter_deals' => 'Успешных сделок',
+    'counter_deals' => 'Довольных клиентов',
     'counter_active' => 'Актуальных объектов',
+    'counter_experience' => 'Лет опыта',
 
     // Property Type Section
     'property_type_title' => 'Рекомендуемые',

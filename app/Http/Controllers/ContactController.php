@@ -42,4 +42,29 @@ class ContactController extends Controller
 
         return response()->json($contact);
     }
+
+    /**
+     * Submit a general contact form inquiry (no property required)
+     */
+    public function inquiry(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'name'    => 'required|string|max:100',
+            'email'   => 'required|email|max:150',
+            'phone'   => 'nullable|string|max:30',
+            'message' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            $this->client->contacts()->inquiry([
+                'name'    => $data['name'],
+                'email'   => $data['email'],
+                'phone'   => $data['phone'] ?? '',
+                'message' => $data['message'] ?? '',
+            ]);
+            return response()->json(['ok' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
 }

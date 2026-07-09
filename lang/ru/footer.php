@@ -5,6 +5,7 @@ return [
     'useful_links' => 'Полезные ссылки',
     'listings' => 'Объявления',
     'faq' => 'Вопросы и ответы',
+    'testimonials' => 'Отзывы',
     'privacy_policy' => 'Политика конфиденциальности',
     'terms_conditions' => 'Условия использования',
     'contact_us' => 'Свяжитесь с нами',

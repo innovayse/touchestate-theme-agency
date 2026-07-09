@@ -5,6 +5,7 @@ return [
     'useful_links' => 'Useful Links',
     'listings' => 'Listings',
     'faq' => 'FAQ',
+    'testimonials' => 'Testimonials',
     'privacy_policy' => 'Privacy Policy',
     'terms_conditions' => 'Terms & Conditions',
     'contact_us' => 'Contact Us',

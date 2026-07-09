@@ -15,12 +15,25 @@ class PropertyController extends Controller
 
     private function validateFilters(): void
     {
+        // Parse combined sortByFull (e.g. "viewCount_desc") into sortBy + sortOrder
+        if (request()->filled('sortByFull')) {
+            $full = request('sortByFull');
+            $pos  = strrpos($full, '_');
+            if ($pos !== false) {
+                request()->merge([
+                    'sortBy'    => substr($full, 0, $pos),
+                    'sortOrder' => substr($full, $pos + 1),
+                ]);
+            }
+        }
+
         request()->validate([
             // status is always Active on public endpoint — reject if someone tries to override
             'status'           => 'prohibited',
 
-            // Enum singles
-            'propertyType'     => ['nullable', Rule::in(['Apartment','House','Studio','Villa','Townhouse','Penthouse','Room','Complex','Land','Commercial','Office','Warehouse','Garage','Pavilion','EventVenue','Dacha','Cottage'])],
+            // Enum singles / arrays
+            'propertyType'     => ['nullable', 'array'],
+            'propertyType.*'   => ['string', Rule::in(['Apartment','House','Studio','Villa','Townhouse','Penthouse','Room','Complex','Land','Commercial','Office','Warehouse','Garage','Pavilion','EventVenue','Dacha','Cottage'])],
             'transactionType'  => ['nullable', Rule::in(['Sale','Rent','RentDaily'])],
             'renovationType'   => ['nullable', Rule::in(['Capital','Designer','Euro','Cosmetic','Partial','Old','Unrenovated'])],
             'constructionType' => ['nullable', Rule::in(['Wood','Strip','Brick','Monolithic','Panel','Stone'])],
@@ -105,12 +118,18 @@ class PropertyController extends Controller
         }
 
         // Basic filters
-        foreach (['propertyType', 'transactionType', 'city', 'district', 'currency',
+        foreach (['transactionType', 'city', 'district', 'currency',
                   'renovationType', 'constructionType', 'furnitureType', 'petsPolicy', 'childrenPolicy',
                   'balconyType', 'terraceType'] as $key) {
             if (request()->filled($key)) {
                 $params[$key] = request($key);
             }
+        }
+
+        // propertyType can be a single value or array (multi-select pill buttons)
+        if (request()->filled('propertyType')) {
+            $pt = (array) request('propertyType');
+            $params['propertyType'] = count($pt) === 1 ? $pt[0] : $pt;
         }
 
         // Numeric range filters
@@ -209,40 +228,120 @@ class PropertyController extends Controller
 
     public function map()
     {
+        $yandexKey = config('services.yandex.maps_key', env('YANDEX_MAPS_API_KEY', ''));
+        return view('map', compact('yandexKey'));
+    }
+
+    public function mapData(): \Illuminate\Http\JsonResponse
+    {
+        $locale = app()->getLocale();
         try {
-            $result = $this->client->properties()->list([
+            $result   = Cache::remember('te_map_list', 1800, fn () => $this->client->properties()->list([
                 'pageNumber' => 1,
                 'pageSize'   => 100,
                 'status'     => 'Active',
-            ]);
-            $items = $this->enrichWithCoordinates($result['items'] ?? []);
-            $properties = array_merge($result, ['items' => $items]);
-        } catch (\Exception $e) {
-            $properties = ['items' => [], 'totalCount' => 0, 'hasNextPage' => false];
-        }
+            ]));
+            $allItems = $result['items'] ?? [];
 
-        return view('map', compact('properties'));
+            $withCoords = [];
+            $pending    = [];
+            $needEnrich = false;
+
+            foreach ($allItems as $item) {
+                $slug       = $item['slug'] ?? null;
+                $coordCache = $slug ? Cache::get('prop_coords:' . $slug) : null;
+                $apiLat     = is_numeric($item['latitude']  ?? null) ? (float) $item['latitude']  : null;
+                $apiLng     = is_numeric($item['longitude'] ?? null) ? (float) $item['longitude'] : null;
+
+                if ($coordCache !== null && $coordCache['lat'] !== null) {
+                    $lat = $coordCache['lat'];
+                    $lng = $coordCache['lng'];
+                } elseif ($apiLat !== null && $apiLng !== null) {
+                    $lat = $apiLat;
+                    $lng = $apiLng;
+                    if ($slug && $coordCache === null) {
+                        Cache::put('prop_coords:' . $slug, ['lat' => $lat, 'lng' => $lng, 'precise' => true, 'api_checked' => true], now()->addDay());
+                    }
+                } else {
+                    $lat = null;
+                    $lng = null;
+                    if ($coordCache === null) {
+                        $needEnrich = true;
+                    }
+                }
+
+                $meta = [
+                    'slug'  => $slug,
+                    'title' => $item['title'] ?? '',
+                    'price' => isset($item['price']) ? number_format((float) $item['price']) . ' ' . ($item['currency'] ?? '') : '',
+                    'url'   => url('/' . $locale . '/property/' . ($slug ?? '')),
+                    'img'   => $item['primaryImageUrl'] ?? '',
+                    'city'  => ($item['city'] ?? '') . (!empty($item['district']) ? ', ' . $item['district'] : ''),
+                ];
+
+                if ($lat !== null && $lng !== null) {
+                    $withCoords[] = array_merge($meta, ['lat' => $lat, 'lng' => $lng]);
+                } else {
+                    $pending[] = $meta;
+                }
+            }
+
+            // If unchecked items exist and enrichment isn't already running, spawn it as a
+            // separate process so the web server stays responsive (php artisan serve is
+            // single-threaded — terminating callbacks block; exec with & does not).
+            $artisan = base_path('artisan');
+
+            if ($needEnrich && !Cache::has('map_enrich_running')) {
+                Cache::put('map_enrich_running', true, now()->addMinutes(10));
+                exec(PHP_BINARY . ' ' . escapeshellarg($artisan) . ' map:enrich > /dev/null 2>&1 &');
+            }
+
+            // Pre-warm property page caches so clicks open instantly
+            if (!Cache::has('map_prewarm_running')) {
+                $uncachedProps = collect($allItems)->filter(
+                    fn($i) => !empty($i['slug']) && !Cache::has('te_prop:' . $i['slug'])
+                )->count();
+                if ($uncachedProps > 0) {
+                    Cache::put('map_prewarm_running', true, now()->addMinutes(15));
+                    exec(PHP_BINARY . ' ' . escapeshellarg($artisan) . ' map:prewarm > /dev/null 2>&1 &');
+                }
+            }
+
+            return response()->json(['items' => $withCoords, 'pending' => $pending]);
+        } catch (\Exception $e) {
+            return response()->json(['items' => [], 'pending' => []]);
+        }
+    }
+
+    // Endpoint for JS polling — returns coords for slugs that are now cached
+    public function mapCoords(\Illuminate\Http\Request $request): \Illuminate\Http\JsonResponse
+    {
+        $slugs  = (array) $request->input('slugs', []);
+        $result = [];
+        foreach ($slugs as $slug) {
+            $cached = \Cache::get('prop_coords:' . $slug);
+            if ($cached && $cached['lat'] !== null && ($cached['precise'] ?? false)) {
+                $result[$slug] = $cached;
+            }
+        }
+        return response()->json($result);
     }
 
     /**
      * Fetch latitude/longitude for each property via parallel curl_multi requests, with caching.
      */
-    private function enrichWithCoordinates(array $items): array
+    public function enrichWithCoordinates(array $items, bool $respectRateLimit = false): array
     {
-        // Step 1: Separate cached from uncached
+        // Step 1: Separate already-cached from items needing detail API lookup
         $uncached = []; // slug → index in $items
         foreach ($items as $i => &$item) {
             $slug = $item['slug'] ?? null;
-            if (!$slug) {
-                continue;
-            }
+            if (!$slug) continue;
 
-            $cacheKey = 'prop_coords:' . $slug;
-            $coords = Cache::get($cacheKey);
-
-            if ($coords !== null) {
-                $item['latitude'] = $coords['lat'];
-                $item['longitude'] = $coords['lng'];
+            $cached = Cache::get('prop_coords:' . $slug);
+            if ($cached !== null && $cached['lat'] !== null) {
+                $item['latitude']  = $cached['lat'];
+                $item['longitude'] = $cached['lng'];
             } else {
                 $uncached[$slug] = $i;
             }
@@ -253,51 +352,34 @@ class PropertyController extends Controller
             return $items;
         }
 
-        // Step 2: Build signed curl handles for all uncached slugs
+        // Step 2: Fetch full property details in parallel via curl_multi (max 25 concurrent)
         $signer    = new SignatureV4Signer();
         $baseUrl   = rtrim(config('touchestate.base_url', env('TOUCHESTATE_BASE_URL', '')), '/');
         $publicKey = config('touchestate.public_key', env('TOUCHESTATE_PUBLIC_KEY', ''));
         $secretKey = config('touchestate.secret_key', env('TOUCHESTATE_SECRET_KEY', ''));
+        $urlParts  = parse_url($baseUrl);
+        $host      = $urlParts['host'] ?? 'localhost';
+        $port      = $urlParts['port'] ?? null;
+        $scheme    = $urlParts['scheme'] ?? 'https';
+        $hostHeader = ($port !== null && $port !== (($scheme === 'https') ? 443 : 80))
+            ? sprintf('%s:%d', $host, $port) : $host;
 
-        $urlParts    = parse_url($baseUrl);
-        $host        = $urlParts['host'] ?? 'localhost';
-        $port        = $urlParts['port'] ?? null;
-        $scheme      = $urlParts['scheme'] ?? 'https';
-        $defaultPort = ($scheme === 'https') ? 443 : 80;
-        $hostHeader  = ($port !== null && $port !== $defaultPort)
-            ? sprintf('%s:%d', $host, $port)
-            : $host;
-
-        $handles = []; // slug → curl handle
-
+        $handles = [];
         foreach (array_keys($uncached) as $slug) {
             $path      = '/api/external/properties/' . $slug;
-            $uri       = $baseUrl . $path;
             $timestamp = gmdate('Ymd\THis\Z');
             $bodyHash  = $signer->sha256Hex('');
-
-            $headers = [
-                'host'      => $hostHeader,
-                'x-te-date' => $timestamp,
-            ];
-
-            $signedHeaderNames = array_keys($headers);
-            sort($signedHeaderNames);
-            $signedHeaders = implode(';', $signedHeaderNames);
-
-            $signature = $signer->calculateSignature(
-                'GET', $path, '', $headers, $signedHeaders,
-                $bodyHash, $timestamp, $secretKey
-            );
-
-            $dateStamp       = substr($timestamp, 0, 8);
-            $credentialScope = $signer->getCredentialScope($dateStamp);
-            $authorization   = sprintf(
+            $headers   = ['host' => $hostHeader, 'x-te-date' => $timestamp];
+            $keys = array_keys($headers);
+            sort($keys);
+            $signedHeaders = implode(';', $keys);
+            $signature = $signer->calculateSignature('GET', $path, '', $headers, $signedHeaders, $bodyHash, $timestamp, $secretKey);
+            $dateStamp = substr($timestamp, 0, 8);
+            $authorization = sprintf(
                 'TE-HMAC-SHA256 Credential=%s/%s, SignedHeaders=%s, Signature=%s',
-                $publicKey, $credentialScope, $signedHeaders, $signature
+                $publicKey, $signer->getCredentialScope($dateStamp), $signedHeaders, $signature
             );
-
-            $ch = curl_init($uri);
+            $ch = curl_init($baseUrl . $path);
             curl_setopt_array($ch, [
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_TIMEOUT        => 15,
@@ -308,67 +390,108 @@ class PropertyController extends Controller
                     'Authorization: ' . $authorization,
                 ],
             ]);
-
             $handles[$slug] = $ch;
         }
 
-        // Step 3: Execute in parallel with curl_multi (max 25 concurrent)
-        $maxConcurrent = 25;
-        $slugs   = array_keys($handles);
-        $results = []; // slug → json string or null
-
-        for ($offset = 0; $offset < count($slugs); $offset += $maxConcurrent) {
-            $batch = array_slice($slugs, $offset, $maxConcurrent);
+        $slugs = array_keys($handles);
+        for ($offset = 0; $offset < count($slugs); $offset += 25) {
+            $batch = array_slice($slugs, $offset, 25);
             $mh    = curl_multi_init();
-
-            foreach ($batch as $slug) {
-                curl_multi_add_handle($mh, $handles[$slug]);
-            }
-
+            foreach ($batch as $s) curl_multi_add_handle($mh, $handles[$s]);
             $running = null;
-            do {
-                curl_multi_exec($mh, $running);
-                if ($running > 0) {
-                    curl_multi_select($mh, 1.0);
-                }
-            } while ($running > 0);
-
-            foreach ($batch as $slug) {
-                $ch   = $handles[$slug];
+            do { curl_multi_exec($mh, $running); if ($running > 0) curl_multi_select($mh, 1.0); } while ($running > 0);
+            foreach ($batch as $s) {
+                $ch   = $handles[$s];
                 $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 $body = ($code >= 200 && $code < 300) ? curl_multi_getcontent($ch) : null;
-                $results[$slug] = $body;
                 curl_multi_remove_handle($mh, $ch);
                 curl_close($ch);
-            }
 
+                $detail = null;
+                $coords = ['lat' => null, 'lng' => null, 'precise' => false];
+                if ($body !== null) {
+                    try {
+                        $detail = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+                        $apiLat = $detail['latitude']  ?? null;
+                        $apiLng = $detail['longitude'] ?? null;
+                        if ($apiLat !== null && $apiLng !== null) {
+                            $coords = ['lat' => (float)$apiLat, 'lng' => (float)$apiLng, 'precise' => true];
+                        }
+                    } catch (\JsonException) {}
+                }
+
+                // Geocode from full address (street, district, city) if no API coords
+                if ($coords['lat'] === null && $detail !== null) {
+                    if ($respectRateLimit) usleep(1_100_000);
+                    $coords = $this->geocodeAddress($detail);
+                }
+
+                Cache::put('prop_coords:' . $s, $coords, now()->addDay());
+                $idx = $uncached[$s];
+                $items[$idx]['latitude']  = $coords['lat'];
+                $items[$idx]['longitude'] = $coords['lng'];
+            }
             curl_multi_close($mh);
         }
 
-        // Step 4: Parse responses, cache, and merge into items
-        foreach ($results as $slug => $body) {
-            $coords = ['lat' => null, 'lng' => null];
+        return $items;
+    }
 
-            if ($body !== null) {
-                try {
-                    $detail = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
-                    $coords = [
-                        'lat' => $detail['latitude'] ?? null,
-                        'lng' => $detail['longitude'] ?? null,
-                    ];
-                } catch (\JsonException $e) {
-                    // keep null coords
-                }
-            }
+    public function geocodeAddress(array $detail): array
+    {
+        $city     = $detail['city']           ?? null;
+        $district = $detail['district']       ?? null;
+        $street   = $detail['street']         ?? null;
+        $building = $detail['buildingNumber'] ?? null;
+        $country  = $detail['country']        ?? null;
 
-            Cache::put('prop_coords:' . $slug, $coords, now()->addHour());
-
-            $idx = $uncached[$slug];
-            $items[$idx]['latitude']  = $coords['lat'];
-            $items[$idx]['longitude'] = $coords['lng'];
+        if (!$city && !$district && !$country && !$street) {
+            return ['lat' => null, 'lng' => null, 'precise' => false];
         }
 
-        return $items;
+        $haystack    = ($street ?? '') . ($city ?? '') . ($district ?? '') . ($country ?? '');
+        $isArmenian  = (bool) preg_match('/[\x{0530}-\x{058F}]/u', $haystack);
+        $extraParams = $isArmenian ? ['countrycodes' => 'am'] : [];
+
+        // Street-level: $building + $street + $city, or $street + $city
+        $streetFull = trim(($street ?? '') . ($building ? ' ' . $building : '')) ?: null;
+
+        // [query, precise] — ordered from most to least specific
+        $attempts = [];
+        if ($streetFull && $city)   $attempts[] = [implode(', ', [$streetFull, $city]),   true];
+        if ($street     && $city)   $attempts[] = [implode(', ', [$street,     $city]),   true];
+        if ($district   && $city)   $attempts[] = [implode(', ', [$district,   $city]),   false];
+        if ($city       && $country) $attempts[] = [implode(', ', [$city,      $country]), false];
+        if ($city)                  $attempts[] = [$city,                                  false];
+        if ($district)              $attempts[] = [$district,                              false];
+
+        foreach ($attempts as [$query, $isPrecise]) {
+            try {
+                $ch = curl_init('https://nominatim.openstreetmap.org/search?' . http_build_query(
+                    array_merge(['q' => $query, 'format' => 'json', 'limit' => 1], $extraParams)
+                ));
+                curl_setopt_array($ch, [
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_TIMEOUT        => 8,
+                    CURLOPT_CONNECTTIMEOUT => 4,
+                    CURLOPT_USERAGENT      => 'TouchEstateDemo/1.0',
+                ]);
+                $body = curl_exec($ch);
+                $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+
+                if ($code === 200 && $body) {
+                    $data = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+                    if (!empty($data[0]['lat']) && !empty($data[0]['lon'])) {
+                        return ['lat' => (float) $data[0]['lat'], 'lng' => (float) $data[0]['lon'], 'precise' => $isPrecise];
+                    }
+                }
+            } catch (\Throwable) {
+                // try next attempt
+            }
+        }
+
+        return ['lat' => null, 'lng' => null, 'precise' => false];
     }
 
     public function show(string $slug)
@@ -399,9 +522,25 @@ class PropertyController extends Controller
             abort(404);
         }
 
+        // Coords for property-single map. If the API provides GPS coords, cache them for the
+        // map page too. If not, pass null — the blade geocodes client-side via ymaps.geocode().
+        $cached = Cache::get('prop_coords:' . $slug);
+        if ($cached === null) {
+            $apiLat = is_numeric($property['latitude']  ?? null) ? (float) $property['latitude']  : null;
+            $apiLng = is_numeric($property['longitude'] ?? null) ? (float) $property['longitude'] : null;
+            if ($apiLat !== null && $apiLng !== null) {
+                $cached = ['lat' => $apiLat, 'lng' => $apiLng, 'precise' => true, 'api_checked' => true];
+                Cache::put('prop_coords:' . $slug, $cached, now()->addDay());
+            } else {
+                $cached = ['lat' => null, 'lng' => null];
+            }
+        }
+        $lat = $cached['lat'] ?? null;
+        $lng = $cached['lng'] ?? null;
+
         // Skeleton-first: similar + comments are loaded async via extras() after the shell
         // renders, so the page (with SEO head + core) appears instantly.
-        return view('property-single', compact('property'));
+        return view('property-single', compact('property', 'lat', 'lng'));
     }
 
     /**
@@ -434,11 +573,11 @@ class PropertyController extends Controller
         // Similar = our own Active listings (cached globally 1h — identical for every page),
         // scored/filtered per-property in PHP.
         try {
-            $items = Cache::remember('te_active_50', 3600, function () {
-                return $this->client->properties()->list(['pageSize' => 50, 'status' => 'Active'])['items'] ?? [];
+            $items = Cache::remember('te_all_50', 3600, function () {
+                return $this->client->properties()->list(['pageSize' => 50])['items'] ?? [];
             });
-            $similar = collect($items)
-                ->reject(fn ($p) => ($p['slug'] ?? null) === $slug)
+            $sorted = collect($items)
+                ->filter(fn($p) => ($p['slug'] ?? null) !== $slug)
                 ->sortByDesc(function ($p) use ($property) {
                     $score = 0;
                     if (($p['transactionType'] ?? null) === ($property['transactionType'] ?? null)) $score += 2;
@@ -446,9 +585,9 @@ class PropertyController extends Controller
                     if (($p['city'] ?? null)            === ($property['city'] ?? null))            $score += 1;
                     return $score;
                 })
-                ->take(6)
                 ->values()
                 ->all();
+            $similar = array_slice($sorted, 0, 6);
         } catch (\Exception $e) {
             $similar = [];
         }
@@ -465,6 +604,15 @@ class PropertyController extends Controller
             $comments = ['items' => []];
         }
 
+        // Demo fallback commented out — show only real API comments
+        // if (empty($comments['items'])) {
+        //     $comments = ['items' => [
+        //         ['authorName' => 'Anna S.',    'rating' => 5, 'body' => 'Beautiful property, very spacious and well-maintained. Highly recommend!', 'createdAt' => now()->subDays(3)->toISOString()],
+        //         ['authorName' => 'Michael R.', 'rating' => 4, 'body' => 'Great location and nice view. The agent was very professional and helpful.', 'createdAt' => now()->subDays(10)->toISOString()],
+        //         ['authorName' => 'Lena K.',    'rating' => 5, 'body' => 'Excellent experience from start to finish. Everything as described.', 'createdAt' => now()->subDays(18)->toISOString()],
+        //     ]];
+        // }
+
         return response()->json([
             'similar'  => view('partials.property-single-similar', compact('similar'))->render(),
             'comments' => view('partials.property-single-comments', compact('comments'))->render(),
@@ -476,8 +624,8 @@ class PropertyController extends Controller
         $data = request()->validate([
             'name'    => 'required|string|max:100',
             'email'   => 'required|email|max:150',
-            'phone'   => ['nullable', 'string', 'max:30', 'regex:/^\+?[1-9]\d{6,14}$/'],
-            'message' => 'nullable|string|max:1000',
+            'phone'   => ['nullable', 'string', 'max:30'],
+            'message' => 'required|string|max:1000',
         ]);
 
         try {
