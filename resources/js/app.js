@@ -7,6 +7,8 @@ Alpine.plugin(collapse);
 
 // Show progress bar immediately on click (default is 500ms delay)
 Turbo.config.drive.progressBarDelay = 0;
+// Disable Turbo's built-in hover prefetch — we use IntersectionObserver prefetch instead
+Turbo.config.drive.prefetch = false;
 
 // Fav/compare toggle — used on property cards and property-single hero
 Alpine.data('propertyToggle', (slug) => ({
@@ -25,25 +27,23 @@ Alpine.data('propertyToggle', (slug) => ({
         try { this.isFav = JSON.parse(localStorage.getItem('te_favorites') || '[]').includes(this.slug); } catch(e) { this.isFav = false; }
         try { this.isCmp = JSON.parse(localStorage.getItem('te_compare') || '[]').includes(this.slug); } catch(e) { this.isCmp = false; }
     },
+    _toggleStorageItem(storageKey, itemSlug) {
+        let list = []; try { list = JSON.parse(localStorage.getItem(storageKey) || '[]'); } catch(e) {}
+        const idx = list.indexOf(itemSlug);
+        if (idx >= 0) list.splice(idx, 1); else list.push(itemSlug);
+        localStorage.setItem(storageKey, JSON.stringify(list));
+        window.dispatchEvent(new Event('te-storage'));
+        return idx < 0; // true = added, false = removed
+    },
     toggleFav(e) {
         if (e) { e.preventDefault(); e.stopPropagation(); }
-        let list = []; try { list = JSON.parse(localStorage.getItem('te_favorites') || '[]'); } catch(e) {}
-        const idx = list.indexOf(this.slug);
-        if (idx >= 0) list.splice(idx, 1); else list.push(this.slug);
-        localStorage.setItem('te_favorites', JSON.stringify(list));
-        this.isFav = !this.isFav;
+        this.isFav = this._toggleStorageItem('te_favorites', this.slug);
         this.popFav = true; setTimeout(() => this.popFav = false, 300);
-        window.dispatchEvent(new Event('te-storage'));
     },
     toggleCmp(e) {
         if (e) { e.preventDefault(); e.stopPropagation(); }
-        let list = []; try { list = JSON.parse(localStorage.getItem('te_compare') || '[]'); } catch(e) {}
-        const idx = list.indexOf(this.slug);
-        if (idx >= 0) list.splice(idx, 1); else list.push(this.slug);
-        localStorage.setItem('te_compare', JSON.stringify(list));
-        this.isCmp = !this.isCmp;
+        this.isCmp = this._toggleStorageItem('te_compare', this.slug);
         this.popCmp = true; setTimeout(() => this.popCmp = false, 300);
-        window.dispatchEvent(new Event('te-storage'));
     },
 }));
 
@@ -64,20 +64,17 @@ Alpine.data('listLoader', (loadUrl, storageKey, options = {}) => ({
     destroy() {
         if (this._removeHandler) window.removeEventListener(options.removeEvent, this._removeHandler);
     },
-    async load() {
-        this.loading = true;
-        if (!this.slugs.length) { this.loading = false; this.html = ''; this.count = 0; return; }
-        try {
-            const r = await fetch(loadUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
-                body: JSON.stringify({ slugs: this.slugs }),
-            });
-            const j = await r.json();
-            this.html = j.html || '';
-            this.count = j.count || 0;
-        } catch(e) {}
-        this.loading = false;
+    async _fetchSlugs(slugs) {
+        const r = await fetch(loadUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+            body: JSON.stringify({ slugs }),
+        });
+        return r.json();
+    },
+    _applyResult(j) {
+        this.html = j.html || '';
+        this.count = j.count || 0;
         if (options.reExecScripts) {
             this.$nextTick(() => {
                 const el = this.$el.querySelector('[x-html]');
@@ -91,31 +88,21 @@ Alpine.data('listLoader', (loadUrl, storageKey, options = {}) => ({
             });
         }
     },
+    async load() {
+        this.loading = true;
+        if (!this.slugs.length) { this.loading = false; this.html = ''; this.count = 0; return; }
+        try {
+            const j = await this._fetchSlugs(this.slugs);
+            this._applyResult(j);
+        } catch(e) {}
+        this.loading = false;
+    },
     removeSlug(slug) {
         this.slugs = this.slugs.filter(s => s !== slug);
         localStorage.setItem(storageKey, JSON.stringify(this.slugs));
         window.dispatchEvent(new CustomEvent('te-storage'));
         if (!this.slugs.length) { this.html = ''; this.count = 0; return; }
-        fetch(loadUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
-            body: JSON.stringify({ slugs: this.slugs }),
-        }).then(r => r.json()).then(j => {
-            this.html = j.html || '';
-            this.count = j.count || 0;
-            if (options.reExecScripts) {
-                this.$nextTick(() => {
-                    const el = this.$el.querySelector('[x-html]');
-                    if (!el) return;
-                    el.querySelectorAll('script').forEach(old => {
-                        const s = document.createElement('script');
-                        s.textContent = old.textContent;
-                        document.head.appendChild(s);
-                        document.head.removeChild(s);
-                    });
-                });
-            }
-        }).catch(() => {});
+        this._fetchSlugs(this.slugs).then(j => this._applyResult(j)).catch(() => {});
     },
     clearAll() {
         localStorage.removeItem(storageKey);
