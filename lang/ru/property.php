@@ -40,7 +40,6 @@ return [
     'dec' => 'Дек',
 
     // Property Card
-    'starts_from' => 'От',
     'reviews' => 'Отзывов',
     'bedroom' => 'Спален',
     'bath' => 'Ванных',

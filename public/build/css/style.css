@@ -1481,6 +1481,9 @@ header .header-items .topbar-profile .dropdown-menu .user-profile span {
   padding: 0;
   font-size: 16px;
   flex-shrink: 0;
+  background: var(--white);
+  border: 1px solid var(--gray-100);
+  border-radius: 10px;
 }
 
 /* Mobile language switcher — sits next to the burger in the top bar */
@@ -15036,6 +15039,9 @@ html[data-theme="dark"] .ps-page .bool-pill {
 }
 
 /* 4. Agent card */
+/* Round the agent card + its contact modal to match the site's cards (base .card is 5px) */
+.card.agent-card,
+#contactModal .modal-content { border-radius: 12px; }
 .ps-page .agent-card-body { padding: 24px 20px; }
 .ps-page .agent-ws-logo { max-height: 44px; max-width: 130px; object-fit: contain; }
 .ps-page .agent-ws-initial {
@@ -15365,7 +15371,8 @@ html[data-theme="dark"] .ps-page .bool-pill {
 .map-listing { border-radius: 14px; overflow: hidden; }
 
 @media (max-width: 767px) {
-    #grid-controls { flex-direction: column; align-items: stretch; }
+    #grid-controls { flex-direction: row; align-items: stretch; }
+    #grid-controls .btn { flex: 1; justify-content: center; }
 }
 
 /* ============================================================

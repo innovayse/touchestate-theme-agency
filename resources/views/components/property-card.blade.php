@@ -100,7 +100,6 @@
                     <span class="fs-14 text-muted">{{ $prop['viewCount'] ?? 0 }}</span>
                 </div>
                 <div class="text-end">
-                    <div class="fs-12 text-muted">{{ __('property.starts_from') }}</div>
                     <div class="text-primary fw-semibold">
                         <x-price :amount="$prop['price'] ?? 0" :currency="$prop['currency'] ?? null" />
                         @if($txType === 'rentdaily')

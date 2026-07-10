@@ -44,7 +44,6 @@ return [
     'for_rent' => 'В аренду',
 
     // Property details
-    'starts_from' => 'Начиная с',
     'beds' => 'Спален',
     'baths' => 'Ванных',
     'sqft' => 'Кв. фут.',

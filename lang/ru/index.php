@@ -69,7 +69,6 @@ return [
     'popular_rent_monthly' => 'Помесячно',
     'popular_rent_daily' => 'Посуточно',
     'popular_views' => 'просм.',
-    'popular_starts_from' => 'Начиная от',
 
     // Exclusive Benefits Section
     'benefits_eyebrow' => 'ПОЧЕМУ МЫ',

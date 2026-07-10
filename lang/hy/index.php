@@ -69,7 +69,6 @@ return [
     'popular_rent_monthly' => 'Ամսական վարձ',
     'popular_rent_daily' => 'Օրական վարձ',
     'popular_views' => 'Դիտարկվելում',
-    'popular_starts_from' => 'Սկսած',
 
     // Exclusive Benefits Section
     'benefits_eyebrow' => 'ԻՆՉՈՒ ԸՆՏՐԵԼ ՄԵԶ',

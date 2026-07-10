@@ -44,7 +44,6 @@ return [
     'for_rent' => 'Վարձույթի',
 
     // Property details
-    'starts_from' => 'Սկսած',
     'beds' => 'Անկողիններ',
     'baths' => 'Լոգարաններ',
     'sqft' => 'Քառ. ֆուտ',

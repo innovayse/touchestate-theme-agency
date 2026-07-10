@@ -40,7 +40,6 @@ return [
     'dec' => 'Դեկ',
 
     // Property Card
-    'starts_from' => 'Սկսած',
     'reviews' => 'Կարծիքներ',
     'bedroom' => 'Ննջասենյակ',
     'bath' => 'Լոգասենյակ',

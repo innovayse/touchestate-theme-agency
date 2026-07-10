@@ -107,6 +107,8 @@ return [
     'email' => 'Электронная Почта :',
     'whatsapp' => 'Whatsapp',
     'chat_now' => 'Чат Сейчас',
+    'contact' => 'Связаться',
+    'contact_title' => 'Контакты',
 
     // Enquire Form
     'enquire_us' => 'Свяжитесь с Нами',
