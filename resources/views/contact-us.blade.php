@@ -49,18 +49,7 @@
         {{-- Messengers --}}
         @if($waNumber || $viberNumber || $tgLink)
             <div class="mt-8 flex flex-wrap justify-center gap-4">
-                @if($waNumber)
-                    <a href="https://wa.me/{{ $waNumber }}" target="_blank" rel="noopener" class="btn-outline">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.017 2C6.51 2 2.04 6.47 2.04 11.975c0 1.757.46 3.47 1.33 4.978L2 22l5.2-1.36A10.01 10.01 0 0 0 12.017 22c5.506 0 9.977-4.47 9.977-9.975 0-2.664-1.04-5.17-2.92-7.05C17.19 3.09 14.68 2 12.017 2z"/></svg>
-                        {{ __('contact-us.whatsapp') }}
-                    </a>
-                @endif
-                @if($viberNumber)
-                    <a href="viber://chat?number=%2B{{ $viberNumber }}" class="btn-outline">{{ __('contact-us.viber') }}</a>
-                @endif
-                @if($tgLink)
-                    <a href="{{ $tgLink }}" target="_blank" rel="noopener" class="btn-outline">{{ __('contact-us.telegram') }}</a>
-                @endif
+                @include('partials.social-links', ['variant' => 'button'])
             </div>
         @endif
 
@@ -138,18 +127,7 @@
                     <div class="mt-8">
                         <h3 class="font-display text-base font-semibold text-ink">{{ __('contact.social_media') }}</h3>
                         <div class="mt-3 flex gap-3">
-                            @if(!empty($workspace['socials']['instagram']))
-                                <a href="{{ $workspace['socials']['instagram'] }}" target="_blank" rel="noopener"
-                                   class="grid h-10 w-10 place-items-center rounded-full border border-sand bg-white text-ink transition hover:border-brand-400 hover:text-brand-600">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
-                                </a>
-                            @endif
-                            @if(!empty($workspace['socials']['facebook']))
-                                <a href="{{ $workspace['socials']['facebook'] }}" target="_blank" rel="noopener"
-                                   class="grid h-10 w-10 place-items-center rounded-full border border-sand bg-white text-ink transition hover:border-brand-400 hover:text-brand-600">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-                                </a>
-                            @endif
+                            @include('partials.social-links', ['variant' => 'icon', 'waNumber' => null, 'viberNumber' => null, 'tgLink' => null])
                         </div>
                     </div>
                 @endif

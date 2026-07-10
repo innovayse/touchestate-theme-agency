@@ -575,16 +575,7 @@ class PropertyController extends Controller
                 $property['slug'] = $slug;
 
                 // Build fullAddress from components (retrieve() doesn't return it)
-                $addrParts = array_filter([
-                    $property['street'] ?? null,
-                    $property['buildingNumber'] ?? null,
-                    $property['district'] ?? null,
-                    $property['city'] ?? null,
-                    $property['country'] ?? null,
-                ]);
-                if ($addrParts) {
-                    $property['fullAddress'] = implode(', ', $addrParts);
-                }
+                $property['fullAddress'] = $this->buildPropertyAddress($property) ?: null;
                 return $property;
             });
         } catch (\Exception $e) {
@@ -623,16 +614,7 @@ class PropertyController extends Controller
             $property = Cache::remember('te_prop:' . $slug, 3600, function () use ($slug) {
                 $property = $this->client->properties()->retrieve($slug);
                 $property['slug'] = $slug;
-                $addrParts = array_filter([
-                    $property['street'] ?? null,
-                    $property['buildingNumber'] ?? null,
-                    $property['district'] ?? null,
-                    $property['city'] ?? null,
-                    $property['country'] ?? null,
-                ]);
-                if ($addrParts) {
-                    $property['fullAddress'] = implode(', ', $addrParts);
-                }
+                $property['fullAddress'] = $this->buildPropertyAddress($property) ?: null;
                 return $property;
             });
         } catch (\Exception $e) {
@@ -672,15 +654,6 @@ class PropertyController extends Controller
         } catch (\Exception $e) {
             $comments = ['items' => []];
         }
-
-        // Demo fallback commented out — show only real API comments
-        // if (empty($comments['items'])) {
-        //     $comments = ['items' => [
-        //         ['authorName' => 'Anna S.',    'rating' => 5, 'body' => 'Beautiful property, very spacious and well-maintained. Highly recommend!', 'createdAt' => now()->subDays(3)->toISOString()],
-        //         ['authorName' => 'Michael R.', 'rating' => 4, 'body' => 'Great location and nice view. The agent was very professional and helpful.', 'createdAt' => now()->subDays(10)->toISOString()],
-        //         ['authorName' => 'Lena K.',    'rating' => 5, 'body' => 'Excellent experience from start to finish. Everything as described.', 'createdAt' => now()->subDays(18)->toISOString()],
-        //     ]];
-        // }
 
         return response()->json([
             'similar'  => view('partials.property-single-similar', compact('similar'))->render(),

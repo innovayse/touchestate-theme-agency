@@ -319,13 +319,12 @@
                             <div class="text-right">
                                 <div class="flex items-center gap-1 sm:justify-end">
                                     <span class="font-display text-3xl font-bold text-brand-700"
-                                          x-data
                                           x-text="$store.fx.format({{ $rawPrice }}, '{{ $rawCurrency }}')">{{ $price }} {{ $currency }}</span>
                                     @if(!empty($property['transactionType']) && strtolower($property['transactionType']) !== 'sale')
                                         <span class="text-sm text-neutral-500">{{ strtolower($property['transactionType']) === 'rentdaily' ? __('property.per_day') : __('property.per_month') }}</span>
                                     @endif
                                 </div>
-                                <div x-data class="flex flex-wrap justify-end gap-3 mt-1 text-sm text-neutral-400">
+                                <div class="flex flex-wrap justify-end gap-3 mt-1 text-sm text-neutral-400">
                                     <template x-for="c in $store.fx.conversions({{ $rawPrice }}, '{{ $rawCurrency }}')" :key="c.currency">
                                         <span x-text="c.label"></span>
                                     </template>
@@ -410,7 +409,6 @@
                                 <div class="rounded-xl border border-sand bg-panel px-3 py-2.5 sm:px-4 sm:py-3">
                                     <div class="text-[11px] leading-tight text-neutral-500 sm:text-xs">{{ __('property-single.price_per_sqm') }}</div>
                                     <div class="mt-0.5 truncate text-sm font-semibold text-ink"
-                                         x-data
                                          x-text="$store.fx.format({{ $rawPricePerSqm }}, '{{ $rawCurrency }}')">{{ number_format($rawPricePerSqm) }} {{ $currency }}</div>
                                 </div>
                             @endif
@@ -418,7 +416,6 @@
                                 <div class="rounded-xl border border-sand bg-panel px-3 py-2.5 sm:px-4 sm:py-3">
                                     <div class="text-[11px] leading-tight text-neutral-500 sm:text-xs">{{ __('property-single.deposit') }}</div>
                                     <div class="mt-0.5 truncate text-sm font-semibold text-ink"
-                                         x-data
                                          x-text="$store.fx.format({{ $rawDeposit }}, '{{ $rawCurrency }}')">{{ number_format($rawDeposit) }} {{ $currency }}</div>
                                 </div>
                             @endif
@@ -730,33 +727,6 @@
                     @endif
 
 
-                    {{-- Enquiry form (temporarily disabled) --}}
-                    @if(false)
-                    <div class="rounded-3xl border border-sand bg-panel p-6">
-                        <h3 class="font-display text-lg font-semibold text-ink">{{ __('property.send_enquiry') }}</h3>
-
-                        <div x-show="enquirySent" class="mt-4 rounded-xl bg-green-50 p-4 text-sm text-green-700">
-                            {{ __('property.enquiry_sent') }}
-                        </div>
-                        <div x-show="enquiryError" x-text="enquiryError" class="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-700"></div>
-
-                        <form x-show="!enquirySent" class="mt-4 space-y-3" @submit.prevent="sendEnquiry($el)">
-                            @csrf
-                            <input type="text" name="name" required placeholder="{{ __('property.your_name') }}"
-                                   class="field">
-                            <input type="email" name="email" required placeholder="{{ __('property.your_email') }}"
-                                   class="field">
-                            <input type="tel" name="phone" placeholder="{{ __('property.your_phone') }}"
-                                   class="field">
-                            <textarea name="message" rows="3" placeholder="{{ __('property.your_message') }}"
-                                      class="field resize-none" required></textarea>
-                            <button type="submit" class="btn-brand w-full" :disabled="enquiryLoading">
-                                <span x-show="!enquiryLoading">{{ __('property.send') }}</span>
-                                <span x-show="enquiryLoading">…</span>
-                            </button>
-                        </form>
-                    </div>
-                    @endif
 
                 </div>
             </aside>
@@ -932,8 +902,7 @@ fetch('{{ $extrasUrl }}')
 
 @push('modals')
 {{-- Contact agent modal — rendered at body level to avoid stacking context issues --}}
-<div x-data
-     x-show="$store.contactModal.open"
+<div x-show="$store.contactModal.open"
      x-transition:enter="transition ease-out duration-200"
      x-transition:enter-start="opacity-0"
      x-transition:enter-end="opacity-100"

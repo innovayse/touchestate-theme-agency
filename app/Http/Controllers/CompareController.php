@@ -36,25 +36,8 @@ class CompareController extends Controller
                 $prop = $this->client->properties()->retrieve($slug);
                 $prop['slug'] = $slug;
 
-                $prop['primaryImageUrl'] = null;
-                foreach ($prop['media'] ?? [] as $m) {
-                    if ($m['isPrimary'] ?? false) {
-                        $prop['primaryImageUrl'] = $m['url'] ?? null;
-                        break;
-                    }
-                }
-                if (!$prop['primaryImageUrl'] && !empty($prop['media'])) {
-                    $prop['primaryImageUrl'] = $prop['media'][0]['url'] ?? null;
-                }
-
-                $addrParts = array_filter([
-                    $prop['street']         ?? null,
-                    $prop['buildingNumber'] ?? null,
-                    $prop['district']       ?? null,
-                    $prop['city']           ?? null,
-                    $prop['country']        ?? null,
-                ]);
-                $prop['fullAddress'] = $addrParts ? implode(', ', $addrParts) : null;
+                $prop['primaryImageUrl'] = $this->extractPrimaryImageUrl($prop);
+                $prop['fullAddress'] = $this->buildPropertyAddress($prop) ?: null;
 
                 $properties[] = $prop;
                 $validSlugs[]  = $slug;

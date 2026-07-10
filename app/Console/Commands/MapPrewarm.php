@@ -4,14 +4,13 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
-use App\Http\Controllers\PropertyController;
 
 class MapPrewarm extends Command
 {
     protected $signature   = 'map:prewarm';
     protected $description = 'Pre-warm te_prop:{slug} cache for all map properties';
 
-    public function handle(PropertyController $controller): int
+    public function handle(): int
     {
         $result = Cache::get('te_map_list');
         if (!$result) {
@@ -33,7 +32,7 @@ class MapPrewarm extends Command
             }
 
             try {
-                Cache::remember('te_prop:' . $slug, 3600, function () use ($controller, $slug) {
+                Cache::remember('te_prop:' . $slug, 3600, function () use ($slug) {
                     $client   = app(\TouchEstate\Sdk\TouchEstateClient::class);
                     $property = $client->properties()->retrieve($slug);
                     $property['slug'] = $slug;
