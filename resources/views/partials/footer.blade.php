@@ -1,9 +1,10 @@
 @php
     $locale  = app()->getLocale();
     $brand   = $workspace['name'] ?? 'GOLDHOUSE';
-    $waNumber    = !empty($workspace['messengers']['whatsApp']) ? preg_replace('/\D+/', '', $workspace['messengers']['whatsApp']) : null;
-    $viberNumber = !empty($workspace['messengers']['viber'])    ? preg_replace('/\D+/', '', $workspace['messengers']['viber'])    : null;
-    $tgLink      = $workspace['messengers']['telegram'] ?? null;
+    $messengers  = $workspace['messengers'] ?? [];
+    $waNumber    = !empty($messengers['whatsApp']) ? preg_replace('/\D+/', '', $messengers['whatsApp']) : null;
+    $viberNumber = !empty($messengers['viber'])    ? preg_replace('/\D+/', '', $messengers['viber'])    : null;
+    $tgLink      = $messengers['telegram'] ?? null;
 @endphp
 
 <footer class="relative mt-20 bg-ink text-white/70">

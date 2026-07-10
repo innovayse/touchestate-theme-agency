@@ -42,6 +42,8 @@
 
                 <form id="filter-form" action="{{ url('/'.$locale.'/property') }}" method="GET"
                       novalidate
+                      x-data
+                      @submit="document.getElementById('selectedCurrencyInput').value = $store.fx.currency"
                       class="mt-3 flex flex-col overflow-hidden transition-[max-height,opacity] duration-200 ease-in-out lg:mt-0"
                       :style="open ? 'max-height:calc(100vh - 5rem);opacity:1;pointer-events:auto' : 'max-height:0;opacity:0;pointer-events:none'"
                       style="max-height:0;opacity:0;pointer-events:none">
@@ -100,10 +102,8 @@
                                        class="field">
                             </div>
                         </div>
-                        <x-custom-select name="currency" class="mt-3"
-                            :selected="request('currency', '')"
-                            :placeholder="__('property.any_currency')"
-                            :options="['USD'=>'USD','EUR'=>'EUR','AMD'=>'AMD','RUB'=>'RUB']" />
+                        <p class="mt-2 text-xs text-neutral-400" x-data x-text="'{{ __('property.prices_in') }} ' + $store.fx.currency">{{ __('property.prices_in') }} USD</p>
+                        <input type="hidden" name="selectedCurrency" id="selectedCurrencyInput" value="{{ request('selectedCurrency', 'USD') }}">
                     </div>
 
                     {{-- Rooms --}}

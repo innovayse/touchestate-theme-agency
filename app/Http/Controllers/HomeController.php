@@ -22,7 +22,7 @@ class HomeController extends Controller
                 return $this->client->properties()->list([
                     'pageSize'  => 100,
                     'sortBy'    => 'viewCount',
-                    'sortOrder' => true,
+                    'sortOrder' => 'desc',
                     'status'    => 'Active',
                 ])['items'] ?? [];
             });

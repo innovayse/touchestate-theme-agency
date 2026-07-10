@@ -8,6 +8,7 @@ return [
     'filters'      => 'Filters',
     'all_types'    => 'All Types',
     'any_currency' => 'Any Currency',
+    'prices_in'    => 'Prices in',
     'min_rooms'    => 'Min Rooms',
     'max_rooms'    => 'Max Rooms',
     'area'         => 'Area',

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Services\CbaRatesService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -29,5 +30,7 @@ class AppServiceProvider extends ServiceProvider
             }
             $view->with('workspace', $workspace);
         });
+
+        View::share('cbaRates', app(CbaRatesService::class)->getRates());
     }
 }

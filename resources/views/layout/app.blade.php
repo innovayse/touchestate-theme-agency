@@ -15,6 +15,7 @@
     <meta name="turbo-prefetch-cache-time" content="30000">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
+    <script>window.__FX_RATES__ = @json($cbaRates);</script>
 </head>
 <body class="min-h-screen antialiased">
     @include('partials.header')

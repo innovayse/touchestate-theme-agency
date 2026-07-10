@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Services\CbaRatesService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 use TouchEstate\Sdk\Signer\SignatureV4Signer;
@@ -208,19 +209,85 @@ class PropertyController extends Controller
         return $params;
     }
 
+    private function crossCurrencySearch(array $baseFilters, array $queries): array
+    {
+        $cacheKey = 'te_xfx:' . md5(serialize($queries) . serialize($baseFilters));
+        return Cache::remember($cacheKey, 900, function () use ($baseFilters, $queries) {
+            $seen    = [];
+            $results = ['items' => [], 'totalCount' => 0, 'hasNextPage' => false];
+
+            foreach (array_keys($queries) as $cur) {
+                $filters             = $baseFilters;
+                $filters['currency'] = $cur;
+                $filters['minPrice'] = (int) round($queries[$cur]['min']);
+                if ($queries[$cur]['max'] < PHP_INT_MAX) {
+                    $filters['maxPrice'] = (int) round($queries[$cur]['max']);
+                }
+
+                try {
+                    $res = $this->client->properties()->list($filters);
+                    foreach ($res['items'] ?? [] as $item) {
+                        $slug = $item['slug'] ?? null;
+                        if ($slug && !isset($seen[$slug])) {
+                            $seen[$slug]        = true;
+                            $results['items'][] = $item;
+                        }
+                    }
+                    if (!empty($res['totalCount'])) {
+                        $results['totalCount'] = max($results['totalCount'], (int) $res['totalCount']);
+                    }
+                    if (!empty($res['hasNextPage'])) {
+                        $results['hasNextPage'] = true;
+                    }
+                } catch (\Throwable) {
+                    // skip failed currency request
+                }
+            }
+
+            return $results;
+        });
+    }
+
     public function index()
     {
         $this->validateFilters();
 
-        // Cache each unique filter/page combination 1h (no admin panel). Repeat listings
-        // (and the AJAX filter/load-more fetches) become instant.
         $filters = $this->buildFilters();
-        try {
-            $properties = Cache::remember('te_list:' . md5(serialize($filters)), 3600, function () use ($filters) {
-                return $this->client->properties()->list($filters);
-            });
-        } catch (\Exception $e) {
-            $properties = ['items' => [], 'totalCount' => 0, 'hasNextPage' => false];
+
+        if (request()->filled('minPrice') || request()->filled('maxPrice')) {
+            $selectedCurrency = in_array(request('selectedCurrency'), ['USD', 'EUR', 'AMD', 'RUB'])
+                ? request('selectedCurrency') : 'USD';
+            $minPrice = request()->filled('minPrice') ? (float) request('minPrice') : 0;
+            $maxPrice = request()->filled('maxPrice') ? (float) request('maxPrice') : PHP_INT_MAX;
+
+            $rates      = app(CbaRatesService::class)->getRates();
+            $currencies = ['USD', 'EUR', 'AMD', 'RUB'];
+            $queries    = [];
+            foreach ($currencies as $cur) {
+                $queries[$cur] = [
+                    'min' => $minPrice * ($rates[$selectedCurrency] ?? 1) / ($rates[$cur] ?? 1),
+                    'max' => $maxPrice < PHP_INT_MAX
+                        ? $maxPrice * ($rates[$selectedCurrency] ?? 1) / ($rates[$cur] ?? 1)
+                        : PHP_INT_MAX,
+                ];
+            }
+
+            $baseFilters = $filters;
+            unset($baseFilters['minPrice'], $baseFilters['maxPrice'], $baseFilters['currency']);
+
+            try {
+                $properties = $this->crossCurrencySearch($baseFilters, $queries);
+            } catch (\Exception $e) {
+                $properties = ['items' => [], 'totalCount' => 0, 'hasNextPage' => false];
+            }
+        } else {
+            try {
+                $properties = Cache::remember('te_list:' . md5(serialize($filters)), 3600, function () use ($filters) {
+                    return $this->client->properties()->list($filters);
+                });
+            } catch (\Exception $e) {
+                $properties = ['items' => [], 'totalCount' => 0, 'hasNextPage' => false];
+            }
         }
 
         return view('property', compact('properties'));
@@ -271,12 +338,14 @@ class PropertyController extends Controller
                 }
 
                 $meta = [
-                    'slug'  => $slug,
-                    'title' => $item['title'] ?? '',
-                    'price' => isset($item['price']) ? number_format((float) $item['price']) . ' ' . ($item['currency'] ?? '') : '',
-                    'url'   => url('/' . $locale . '/property/' . ($slug ?? '')),
-                    'img'   => $item['primaryImageUrl'] ?? '',
-                    'city'  => ($item['city'] ?? '') . (!empty($item['district']) ? ', ' . $item['district'] : ''),
+                    'slug'        => $slug,
+                    'title'       => $item['title'] ?? '',
+                    'price'       => isset($item['price']) ? number_format((float) $item['price']) . ' ' . ($item['currency'] ?? '') : '',
+                    'rawPrice'    => isset($item['price']) ? (float) $item['price'] : null,
+                    'rawCurrency' => $item['currency'] ?? 'AMD',
+                    'url'         => url('/' . $locale . '/property/' . ($slug ?? '')),
+                    'img'         => $item['primaryImageUrl'] ?? '',
+                    'city'        => ($item['city'] ?? '') . (!empty($item['district']) ? ', ' . $item['district'] : ''),
                 ];
 
                 if ($lat !== null && $lng !== null) {

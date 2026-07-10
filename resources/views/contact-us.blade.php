@@ -3,9 +3,10 @@
 
 @php
     $locale      = app()->getLocale();
-    $waNumber    = !empty($workspace['messengers']['whatsApp']) ? preg_replace('/\D+/', '', $workspace['messengers']['whatsApp']) : null;
-    $viberNumber = !empty($workspace['messengers']['viber'])    ? preg_replace('/\D+/', '', $workspace['messengers']['viber'])    : null;
-    $tgLink      = $workspace['messengers']['telegram'] ?? null;
+    $messengers  = $workspace['messengers'] ?? [];
+    $waNumber    = !empty($messengers['whatsApp']) ? preg_replace('/\D+/', '', $messengers['whatsApp']) : null;
+    $viberNumber = !empty($messengers['viber'])    ? preg_replace('/\D+/', '', $messengers['viber'])    : null;
+    $tgLink      = $messengers['telegram'] ?? null;
     $enquireUrl  = url('/api/property/general/enquire');
 @endphp
 

@@ -14,8 +14,10 @@
     if ($ptLabel === $ptKey) {
         $ptLabel = $prop['propertyType'] ?? '';
     }
-    $price = isset($prop['price']) ? number_format((float) $prop['price']) : null;
-    $currency = $prop['currency'] ?? '';
+    $price       = isset($prop['price']) ? number_format((float) $prop['price']) : null;
+    $currency    = $prop['currency'] ?? '';
+    $rawPrice    = isset($prop['price']) ? (float) $prop['price'] : null;
+    $rawCurrency = $prop['currency'] ?? 'AMD';
     $slug = $prop['slug'] ?? '';
 @endphp
 
@@ -91,8 +93,10 @@
         </div>
 
         <div class="mt-auto pt-5">
-            @if($price)
-                <div class="font-display text-xl font-bold text-brand-700">{{ $price }} {{ $currency }}</div>
+            @if($rawPrice)
+                <div class="font-display text-xl font-bold text-brand-700"
+                     x-data
+                     x-text="$store.fx.format({{ $rawPrice }}, '{{ $rawCurrency }}')">{{ $price }} {{ $currency }}</div>
             @endif
             <div class="mt-2 text-sm font-semibold text-ink transition group-hover:text-brand-600">
                 {{ __('property.view_details') }} →

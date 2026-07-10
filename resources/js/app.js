@@ -301,6 +301,50 @@ Alpine.data('nearbyMap', (lat, lng, locale) => ({
     },
 }));
 
+Alpine.store('fx', {
+    rates: (window.__FX_RATES__ && window.__FX_RATES__.USD) ? window.__FX_RATES__ : { USD: 390, EUR: 420, RUB: 4.3, AMD: 1 },
+    currency: localStorage.getItem('te_currency') || 'USD',
+
+    setCurrency(cur) {
+        this.currency = cur;
+        localStorage.setItem('te_currency', cur);
+    },
+
+    convert(amount, from) {
+        if (!amount) return null;
+        const amd = amount * (this.rates[from] ?? 1);
+        return amd / (this.rates[this.currency] ?? 1);
+    },
+
+    format(amount, from) {
+        const converted = this.convert(amount, from);
+        if (converted === null) return '';
+        return this.formatValue(converted, this.currency);
+    },
+
+    formatValue(value, cur) {
+        const symbols = { USD: '$', EUR: '€', RUB: '₽', AMD: '֏' };
+        const sym = symbols[cur] ?? cur;
+        if (cur === 'AMD' && value >= 1_000_000) {
+            return sym + ' ' + (value / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+        }
+        return sym + ' ' + new Intl.NumberFormat().format(Math.round(value));
+    },
+
+    conversions(amount, originalCurrency) {
+        const all = ['USD', 'EUR', 'AMD', 'RUB'];
+        return all
+            .filter(c => c !== this.currency)
+            .map(c => ({
+                currency: c,
+                label: this.formatValue(
+                    amount * (this.rates[originalCurrency] ?? 1) / (this.rates[c] ?? 1),
+                    c
+                ),
+            }));
+    },
+});
+
 Alpine.store('contactModal', { open: false });
 
 // ── Property-single prefetch ──────────────────────────────────────────────

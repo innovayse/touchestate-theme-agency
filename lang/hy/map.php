@@ -155,7 +155,7 @@ return [
     'feature_sauna'           => 'Սաունա',
     'feature_fireplace'       => 'Մեխակ',
     'feature_gazebo'          => 'Վրանակ',
-    'feature_barbecuearea'    => 'Շամպուր կայան',
+    'feature_barbecuearea'    => 'Խորովածի տարածք',
     'feature_sportscourt'     => 'Սպորտային մարզադաշտ',
     'feature_loadingdock'     => 'Բեռնավորման մոլբերտ',
 

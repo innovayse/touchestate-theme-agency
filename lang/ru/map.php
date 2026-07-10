@@ -155,7 +155,7 @@ return [
     'feature_sauna'           => 'Сауна',
     'feature_fireplace'       => 'Камин',
     'feature_gazebo'          => 'Беседка',
-    'feature_barbecuearea'    => 'Зона барбекю',
+    'feature_barbecuearea'    => 'Зона шашлыка',
     'feature_sportscourt'     => 'Спортплощадка',
     'feature_loadingdock'     => 'Погрузочная площадка',
 

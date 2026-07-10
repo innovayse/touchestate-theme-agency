@@ -19,6 +19,7 @@ class CompareController extends Controller
     public function load(Request $request)
     {
         $slugs = array_values(array_unique(array_filter((array) $request->input('slugs', []))));
+        $slugs = array_slice($slugs, 0, 10);
 
         if (empty($slugs)) {
             return response()->json(['html' => '', 'count' => 0, 'slugs' => []]);

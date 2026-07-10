@@ -15,6 +15,8 @@
 
     $price       = isset($property['price']) ? number_format((float) $property['price']) : null;
     $currency    = $property['currency'] ?? '';
+    $rawPrice    = isset($property['price']) ? (float) $property['price'] : null;
+    $rawCurrency = $property['currency'] ?? 'AMD';
     $waNumber    = !empty($workspace['messengers']['whatsApp']) ? preg_replace('/\D+/', '', $workspace['messengers']['whatsApp']) : null;
     $viberNumber = !empty($workspace['messengers']['viber'])    ? preg_replace('/\D+/', '', $workspace['messengers']['viber'])    : null;
     $tgLink      = $workspace['messengers']['telegram'] ?? null;
@@ -61,40 +63,64 @@
     }
     if (!empty($property['yearBuilt']))       { $specs[__('property.year_built')]     = $property['yearBuilt']; }
     if (!empty($property['renovationType'])) {
-        $k='compare.renovation_'.strtolower($property['renovationType']); $lbl=__($k); if($lbl===$k){$lbl=$property['renovationType'];}
-        $specs[__('property.renovation')] = $lbl;
+        $k = 'property-single.renovation_' . strtolower($property['renovationType']); $lbl = __($k);
+        $specs[__('property.renovation')] = ($lbl === $k ? $property['renovationType'] : $lbl);
     }
     if (!empty($property['constructionType'])) {
-        $k='compare.construction_'.strtolower($property['constructionType']); $lbl=__($k); if($lbl===$k){$lbl=$property['constructionType'];}
-        $specs[__('property.construction')] = $lbl;
+        $k = 'property-single.construction_' . strtolower($property['constructionType']); $lbl = __($k);
+        $specs[__('property.construction')] = ($lbl === $k ? $property['constructionType'] : $lbl);
     }
     if (!empty($property['furnitureType'])) {
-        $k='compare.furniture_'.strtolower($property['furnitureType']); $lbl=__($k); if($lbl===$k){$lbl=$property['furnitureType'];}
-        $specs[__('property.furniture')] = $lbl;
+        $furnitureNorm = match(strtolower($property['furnitureType'])) {
+            'byagreement', 'by_agreement', 'by agreement' => 'by_agreement',
+            default => strtolower($property['furnitureType']),
+        };
+        $k = 'property-single.furniture_' . $furnitureNorm; $lbl = __($k);
+        $specs[__('property.furniture')] = ($lbl === $k ? $property['furnitureType'] : $lbl);
     }
     if (!empty($property['city']))            { $specs[__('property.city')]           = $property['city']; }
     if (!empty($property['district']))        { $specs[__('property.district')]       = $property['district']; }
 
     // Extra specs from API
-    if (!empty($property['pricePerSqm']))     { $specs[__('property-single.price_per_sqm')] = number_format((float)$property['pricePerSqm']) . ' ' . ($property['currency'] ?? ''); }
+    // pricePerSqm and deposit rendered with Alpine fx store below specs loop
+    $rawPricePerSqm = !empty($property['pricePerSqm']) ? (float) $property['pricePerSqm'] : null;
+    $rawDeposit     = !empty($property['deposit']) ? (float) $property['deposit'] : null;
     if (!empty($property['ceilingHeight']))   { $specs[__('property-single.ceiling_height')] = $property['ceilingHeight'] . ' ' . __('property-single.meters_short'); }
-    if (!empty($property['deposit']))         { $specs[__('property-single.deposit')] = number_format((float)$property['deposit']) . ' ' . ($property['currency'] ?? ''); }
     if (!empty($property['landArea']))        { $specs[__('property-single.land_area')] = $property['landArea'] . ' ' . __('index.sq_ft'); }
     if (!empty($property['parkingSpaces']))   { $specs[__('property-single.parking_spaces')] = $property['parkingSpaces']; }
-    if (!empty($property['zoningType']))      { $specs[__('property-single.zoning')] = $property['zoningType']; }
+    if (!empty($property['zoningType'])) {
+        $k = 'property-single.zoning_' . strtolower($property['zoningType']); $lbl = __($k);
+        $specs[__('property-single.zoning')] = ($lbl === $k ? $property['zoningType'] : $lbl);
+    }
     if (!empty($property['balconyType'])) {
-        $k = 'property-single.balcony_' . strtolower($property['balconyType']); $lbl = __($k);
+        $balconyNorm = match(strtolower($property['balconyType'])) {
+            'no balcony', 'unavailable', 'none' => 'unavailable',
+            'open' => 'open', 'closed' => 'closed', 'glazed' => 'glazed',
+            default => strtolower($property['balconyType']),
+        };
+        $k = 'property-single.balcony_' . $balconyNorm; $lbl = __($k);
         $specs[__('property-single.balcony')] = ($lbl === $k ? $property['balconyType'] : $lbl);
     }
     if (!empty($property['terraceType'])) {
-        $k = 'property-single.terrace_' . strtolower($property['terraceType']); $lbl = __($k);
+        $terraceNorm = match(strtolower($property['terraceType'])) {
+            'no terrace', 'unavailable', 'none' => 'unavailable',
+            'open' => 'open', 'closed' => 'closed', 'glazed' => 'glazed',
+            default => strtolower($property['terraceType']),
+        };
+        $k = 'property-single.terrace_' . $terraceNorm; $lbl = __($k);
         $specs[__('property-single.terrace')] = ($lbl === $k ? $property['terraceType'] : $lbl);
     }
     // Multi-select fields — rendered as tags, not in the specs grid
     $heatingTypes = [];
     if (!empty($property['heatingType'])) {
         $ht = array_filter(is_array($property['heatingType']) ? $property['heatingType'] : [$property['heatingType']]);
-        foreach ($ht as $h) { $k = 'property-single.heating_'.strtolower($h); $l = __($k); $heatingTypes[] = $l === $k ? $h : $l; }
+        foreach ($ht as $h) {
+            $hn = match(strtolower($h)) {
+                'underfloorheating', 'underfloor_heating', 'underfloor heating' => 'underfloor',
+                default => strtolower($h),
+            };
+            $k = 'property-single.heating_' . $hn; $l = __($k); $heatingTypes[] = $l === $k ? $h : $l;
+        }
     }
     $parkingTypes = [];
     if (!empty($property['parkingType'])) {
@@ -289,13 +315,20 @@
                                 </p>
                             @endif
                         </div>
-                        @if($price)
+                        @if($rawPrice)
                             <div class="text-right">
                                 <div class="flex items-center gap-1 sm:justify-end">
-                                    <span class="font-display text-3xl font-bold text-brand-700">{{ $price }} {{ $currency }}</span>
+                                    <span class="font-display text-3xl font-bold text-brand-700"
+                                          x-data
+                                          x-text="$store.fx.format({{ $rawPrice }}, '{{ $rawCurrency }}')">{{ $price }} {{ $currency }}</span>
                                     @if(!empty($property['transactionType']) && strtolower($property['transactionType']) !== 'sale')
                                         <span class="text-sm text-neutral-500">{{ strtolower($property['transactionType']) === 'rentdaily' ? __('property.per_day') : __('property.per_month') }}</span>
                                     @endif
+                                </div>
+                                <div x-data class="flex flex-wrap justify-end gap-3 mt-1 text-sm text-neutral-400">
+                                    <template x-for="c in $store.fx.conversions({{ $rawPrice }}, '{{ $rawCurrency }}')" :key="c.currency">
+                                        <span x-text="c.label"></span>
+                                    </template>
                                 </div>
                             </div>
                         @endif
@@ -373,6 +406,22 @@
                                     <div class="mt-0.5 truncate text-sm font-semibold text-ink" title="{{ $value }}">{{ $value }}</div>
                                 </div>
                             @endforeach
+                            @if($rawPricePerSqm)
+                                <div class="rounded-xl border border-sand bg-panel px-3 py-2.5 sm:px-4 sm:py-3">
+                                    <div class="text-[11px] leading-tight text-neutral-500 sm:text-xs">{{ __('property-single.price_per_sqm') }}</div>
+                                    <div class="mt-0.5 truncate text-sm font-semibold text-ink"
+                                         x-data
+                                         x-text="$store.fx.format({{ $rawPricePerSqm }}, '{{ $rawCurrency }}')">{{ number_format($rawPricePerSqm) }} {{ $currency }}</div>
+                                </div>
+                            @endif
+                            @if($rawDeposit)
+                                <div class="rounded-xl border border-sand bg-panel px-3 py-2.5 sm:px-4 sm:py-3">
+                                    <div class="text-[11px] leading-tight text-neutral-500 sm:text-xs">{{ __('property-single.deposit') }}</div>
+                                    <div class="mt-0.5 truncate text-sm font-semibold text-ink"
+                                         x-data
+                                         x-text="$store.fx.format({{ $rawDeposit }}, '{{ $rawCurrency }}')">{{ number_format($rawDeposit) }} {{ $currency }}</div>
+                                </div>
+                            @endif
                             @if(!empty($property['code']))
                                 <div class="rounded-xl border border-sand bg-panel px-3 py-2.5 sm:px-4 sm:py-3">
                                     <div class="text-[11px] leading-tight text-neutral-500 sm:text-xs">{{ __('property.code') }}</div>

@@ -242,7 +242,11 @@ function buildBalloonHtml(item) {
     const imgHtml = item.img
         ? `<img src="${item.img}" alt="" class="ymap-card__img">`
         : `<div class="ymap-card__no-img"></div>`;
-    const priceHtml = item.price ? `<p class="ymap-card__price">${item.price}</p>` : '';
+    const fxStore = window.Alpine && window.Alpine.store('fx');
+    const displayPrice = (fxStore && item.rawPrice)
+        ? fxStore.format(item.rawPrice, item.rawCurrency || 'AMD')
+        : item.price;
+    const priceHtml = displayPrice ? `<p class="ymap-card__price">${displayPrice}</p>` : '';
     return `<a class="ymap-card" href="${item.url}">${imgHtml}<div class="ymap-card__body"><p class="ymap-card__title">${item.title}</p>${priceHtml}</div></a>`;
 }
 
@@ -299,7 +303,11 @@ function addSidebarCard(item) {
     const img = item.img
         ? `<img src="${item.img}" alt="" class="h-16 w-16 shrink-0 rounded-xl object-cover">`
         : `<div class="grid h-16 w-16 shrink-0 place-items-center rounded-xl bg-sand text-brand-200"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></div>`;
-    const price = item.price ? `<p class="mt-1 font-display text-sm font-bold text-brand-700">${item.price}</p>` : '';
+    const fxStore = window.Alpine && window.Alpine.store('fx');
+    const sidebarPrice = (fxStore && item.rawPrice)
+        ? fxStore.format(item.rawPrice, item.rawCurrency || 'AMD')
+        : item.price;
+    const price = sidebarPrice ? `<p class="mt-1 font-display text-sm font-bold text-brand-700">${sidebarPrice}</p>` : '';
     const a = document.createElement('a');
     a.href      = item.url;
     a.className = 'group flex gap-3 rounded-2xl border border-sand bg-white p-3 transition hover:border-brand-400 hover:shadow-md';

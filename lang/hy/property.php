@@ -8,6 +8,7 @@ return [
     'filters'      => 'Ֆիլտրեր',
     'all_types'    => 'Բոլոր տեսակները',
     'any_currency' => 'Ցանկացած արժույթ',
+    'prices_in'    => 'Գները',
     'min_rooms'    => 'Նվ. սենյակ',
     'max_rooms'    => 'Առ. սենյակ',
     'area'         => 'Մակերես',
@@ -157,7 +158,7 @@ return [
     'feature_sauna'             => 'Սաունա',
     'feature_fireplace'         => 'Բուխարի',
     'feature_gazebo'            => 'Ամբողջ տանակ',
-    'feature_barbecuearea'      => 'Բարբեկյու տարածք',
+    'feature_barbecuearea'      => 'Խորովածի տարածք',
     'feature_sportscourt'       => 'Սպորտային հարտակ',
     'feature_loadingdock'       => 'Բեռնման կայան',
 

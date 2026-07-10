@@ -5,7 +5,7 @@ return [
     'title' => 'Недвижимость',
 
     // Filter sidebar
-    'filters'=>'Фильтры','all_types'=>'Все типы','any_currency'=>'Любая валюта',
+    'filters'=>'Фильтры','all_types'=>'Все типы','any_currency'=>'Любая валюта','prices_in'=>'Цены в',
     'min_rooms'=>'Мин. комнат','max_rooms'=>'Макс. комнат','area'=>'Площадь',
     'min'=>'Мин','max'=>'Макс','any'=>'Любой','bedrooms'=>'Спален','reset'=>'Сбросить','newest'=>'Сначала новые','largest'=>'Сначала большие',
     'properties'=>'объектов','on_map'=>'найдено на карте','found_on_map'=>'Найдено объектов на карте:','no_coords'=>'Нет объектов с координатами.',
@@ -116,7 +116,7 @@ return [
     'feature_sauna'             => 'Сауна',
     'feature_fireplace'         => 'Камин',
     'feature_gazebo'            => 'Беседка',
-    'feature_barbecuearea'      => 'Зона барбекю',
+    'feature_barbecuearea'      => 'Зона шашлыка',
     'feature_sportscourt'       => 'Спортивная площадка',
     'feature_loadingdock'       => 'Погрузочная площадка',
 
