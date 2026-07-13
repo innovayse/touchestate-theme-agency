@@ -594,21 +594,15 @@ class PropertyController extends Controller
         // array; on API failure the exception propagates out of remember() → not cached → 404.
         try {
             $property = Cache::remember('te_prop:' . $slug, 1800, function () use ($slug) {
-                $property['slug'] = $slug;
+                $p = $this->client->properties()->retrieve($slug);
 
-                // Build fullAddress from components (retrieve() doesn't return it)
-                $addrParts = array_filter([
-                    $property['street']         ?? null,
-                    $property['buildingNumber'] ?? null,
-                    $property['district']       ?? null,
-                    $property['city']           ?? null,
-                    $property['country']        ?? null,
-                ]);
-                if ($addrParts) {
-                    $property['fullAddress'] = implode(', ', $addrParts);
+                // Keep ghost stubs (no id/title) out of the shared cache — throwing both
+                // aborts to 404 here and prevents FavoritesController reading a blank object.
+                if (!property_is_showable($p)) {
+                    throw new \UnexpectedValueException('Empty property for slug ' . $slug);
                 }
 
-                return $property;
+                return normalize_property($p, $slug);
             });
         } catch (\Exception $e) {
             abort(404);
@@ -628,20 +622,13 @@ class PropertyController extends Controller
     {
         try {
             $property = Cache::remember('te_prop:' . $slug, 1800, function () use ($slug) {
-                $property         = $this->client->properties()->retrieve($slug);
-                $property['slug'] = $slug;
-                $addrParts        = array_filter([
-                    $property['street']         ?? null,
-                    $property['buildingNumber'] ?? null,
-                    $property['district']       ?? null,
-                    $property['city']           ?? null,
-                    $property['country']        ?? null,
-                ]);
-                if ($addrParts) {
-                    $property['fullAddress'] = implode(', ', $addrParts);
+                $p = $this->client->properties()->retrieve($slug);
+
+                if (!property_is_showable($p)) {
+                    throw new \UnexpectedValueException('Empty property for slug ' . $slug);
                 }
 
-                return $property;
+                return normalize_property($p, $slug);
             });
         } catch (\Exception $e) {
             $property = ['slug' => $slug];

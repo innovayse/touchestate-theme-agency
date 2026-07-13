@@ -35,31 +35,13 @@ class CompareController extends Controller
                 continue;
             }
             try {
-                $prop         = $this->client->properties()->retrieve($slug);
-                $prop['slug'] = $slug;
-
-                $prop['primaryImageUrl'] = null;
-                foreach ($prop['media'] ?? [] as $m) {
-                    if ($m['isPrimary'] ?? false) {
-                        $prop['primaryImageUrl'] = $m['url'] ?? null;
-                        break;
-                    }
-                }
-                if (!$prop['primaryImageUrl'] && !empty($prop['media'])) {
-                    $prop['primaryImageUrl'] = $prop['media'][0]['url'] ?? null;
+                $prop = $this->client->properties()->retrieve($slug);
+                if (!property_is_showable($prop)) {
+                    continue; // ghost stub — nothing to compare
                 }
 
-                $addrParts = array_filter([
-                    $prop['street']         ?? null,
-                    $prop['buildingNumber'] ?? null,
-                    $prop['district']       ?? null,
-                    $prop['city']           ?? null,
-                    $prop['country']        ?? null,
-                ]);
-                $prop['fullAddress'] = $addrParts ? implode(', ', $addrParts) : null;
-
-                $properties[]  = $prop;
-                $validSlugs[]  = $slug;
+                $properties[] = normalize_property($prop, $slug);
+                $validSlugs[] = $slug;
             } catch (\Exception) {
                 // property deleted or not found — skip silently
             }

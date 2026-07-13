@@ -107,6 +107,8 @@ return [
     'email' => 'Էլ. փոստ՝',
     'whatsapp' => 'WhatsApp',
     'chat_now' => 'Զրուցել հիմա',
+    'contact' => 'Կապ հաստատել',
+    'contact_title' => 'Կոնտակտներ',
 
     // Enquire Form
     'enquire_us' => 'Կապվեք մեզ հետ',

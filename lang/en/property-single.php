@@ -107,6 +107,8 @@ return [
     'email' => 'Email :',
     'whatsapp' => 'Whatsapp',
     'chat_now' => 'Chat Now',
+    'contact' => 'Contact',
+    'contact_title' => 'Contact',
 
     // Enquire Form
     'enquire_us' => 'Enquire Us',

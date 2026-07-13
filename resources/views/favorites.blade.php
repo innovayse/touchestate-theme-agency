@@ -39,6 +39,15 @@
                     </a>
                 </div>
 
+                <!-- Load error state (favorites exist in storage but couldn't be fetched) -->
+                <div id="favorites-error" class="text-center py-5" style="display:none">
+                    <i class="material-icons-outlined" style="font-size:72px;color:#ccc">error_outline</i>
+                    <h5 class="mt-3 text-muted">{{ __('header.favorites_error') }}</h5>
+                    <button type="button" id="favorites-retry" class="btn btn-primary mt-3">
+                        {{ __('header.favorites_retry') }}
+                    </button>
+                </div>
+
                 <!-- Skeleton (shown while loading) -->
                 <div class="row mb-4" id="prop-grid-skeleton">
                     @for($i = 0; $i < 6; $i++)
@@ -84,6 +93,7 @@
         var skeletonGrid = document.getElementById('prop-grid-skeleton');
         var grid         = document.getElementById('prop-grid');
         var emptyState   = document.getElementById('favorites-empty');
+        var errorState   = document.getElementById('favorites-error');
         var counter      = document.getElementById('result-loaded');
 
         var loaded = 0; // cards currently shown
@@ -91,6 +101,33 @@
         function getFavs() {
             try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
             catch (e) { return []; }
+        }
+
+        // Retry simply reloads — re-runs the whole load flow (cache is warmer by then).
+        var retryBtn = document.getElementById('favorites-retry');
+        if (retryBtn) retryBtn.addEventListener('click', function () { window.location.reload(); });
+
+        // Terminal state when nothing rendered: if favorites still exist in storage we just
+        // couldn't load them (error + retry) — NOT the "no favorites" empty state, which
+        // would contradict the header badge count.
+        function showEmptyOrError() {
+            if (grid) grid.style.display = 'none';
+            var el = getFavs().length > 0 ? errorState : emptyState;
+            if (el) el.style.display = 'block';
+        }
+
+        // Sync localStorage without clobbering favorites added while the request was in
+        // flight: keep every slug the server kept, plus any slug we did NOT send (added
+        // meanwhile). Drop only slugs we sent that the server didn't return (genuine 404/
+        // ghost). data.slugs includes transient `pending`, so those survive.
+        function syncKeptFavs(sent, kept) {
+            var keptSet = {};
+            (kept || []).forEach(function (s) { keptSet[s] = true; });
+            var next = getFavs().filter(function (s) {
+                return keptSet[s] || sent.indexOf(s) === -1;
+            });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+            if (typeof window.updateHeaderFav === 'function') window.updateHeaderFav();
         }
 
         var favs = getFavs();
@@ -156,6 +193,7 @@
                 if (emptyState) emptyState.style.display = 'none';
                 requestAnimationFrame(function () { grid.style.opacity = '1'; });
             }
+            if (errorState) errorState.style.display = 'none';
             if (typeof window.applyFavIcons === 'function') window.applyFavIcons();
             // Cards also carry a compare button — reflect its pressed state for slugs already
             // in te_compare (these cards are inserted after DOMContentLoaded, so the initial
@@ -167,17 +205,16 @@
         requestFavs(favs).then(function (data) {
             if (skeletonGrid) skeletonGrid.style.display = 'none';
 
-            // Sync localStorage with what the API kept: deleted/404 slugs are dropped, but
-            // transient-failed ones stay (they come back in `pending`, not removed).
+            // Sync localStorage: drop only slugs the server didn't keep; preserve anything
+            // added during the request and the transient `pending` ones (still in data.slugs).
             if (data.slugs !== undefined) {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(data.slugs));
-                if (typeof window.updateHeaderFav === 'function') window.updateHeaderFav();
+                syncKeptFavs(favs, data.slugs);
             }
 
             var pending = data.pending || [];
 
             if (data.count === 0 && pending.length === 0) {
-                if (emptyState) emptyState.style.display = 'block';
+                showEmptyOrError();
                 return;
             }
 
@@ -195,13 +232,13 @@
                             showCards(retry.count);
                         }
                     }).catch(function () {}).then(function () {
-                        if (loaded === 0 && emptyState) emptyState.style.display = 'block';
+                        if (loaded === 0) showEmptyOrError();
                     });
                 }, 800);
             }
         }).catch(function () {
             if (skeletonGrid) skeletonGrid.style.display = 'none';
-            if (emptyState) emptyState.style.display = 'block';
+            showEmptyOrError();
         });
     });
 </script>

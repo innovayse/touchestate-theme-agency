@@ -54,41 +54,16 @@ class FavoritesController extends Controller
                     $p = $this->retrieveWithRetry($slug);
 
                     // Empty/ghost stub: an unknown or incomplete listing the API answers with a
-                    // blank object instead of a 404. A showable listing has both id and title.
-                    // A distinct exception type marks this as "drop" (vs a transient API error);
-                    // throwing also keeps the empty result OUT of the cache.
-                    if (!is_array($p) || empty($p['id']) || empty($p['title'])) {
+                    // blank object instead of a 404. A distinct exception type marks this as
+                    // "drop" (vs a transient API error); throwing also keeps the empty result
+                    // OUT of the shared te_prop cache.
+                    if (!property_is_showable($p)) {
                         throw new \UnexpectedValueException('Empty property for slug ' . $slug);
                     }
 
-                    $p['slug'] = $slug;
-
-                    // retrieve() returns a `media` array but no ready primaryImageUrl (only
-                    // list() provides that). Compute it here — same as compare — otherwise the
-                    // property-card renders its no-image placeholder.
-                    $p['primaryImageUrl'] = null;
-                    foreach ($p['media'] ?? [] as $m) {
-                        if ($m['isPrimary'] ?? false) {
-                            $p['primaryImageUrl'] = $m['url'] ?? null;
-                            break;
-                        }
-                    }
-                    if (!$p['primaryImageUrl'] && !empty($p['media'])) {
-                        $p['primaryImageUrl'] = $p['media'][0]['url'] ?? null;
-                    }
-
-                    $addrParts = array_filter([
-                        $p['street']         ?? null,
-                        $p['buildingNumber'] ?? null,
-                        $p['district']       ?? null,
-                        $p['city']           ?? null,
-                        $p['country']        ?? null,
-                    ]);
-                    if ($addrParts) {
-                        $p['fullAddress'] = implode(', ', $addrParts);
-                    }
-
-                    return $p;
+                    // Derive slug/primaryImageUrl/fullAddress — same shape the property page
+                    // and compare cache, so the shared te_prop:{slug} entry is consistent.
+                    return normalize_property($p, $slug);
                 });
             } catch (InvalidRequestException | \UnexpectedValueException) {
                 // Genuine 404 / gone, or empty ghost stub → drop the slug from favorites.
@@ -104,7 +79,7 @@ class FavoritesController extends Controller
             }
 
             // Guard against a previously-cached empty result (from before this check existed).
-            if (!is_array($prop) || empty($prop['id']) || empty($prop['title'])) {
+            if (!property_is_showable($prop)) {
                 Cache::forget('te_prop:' . $slug);
                 continue;
             }

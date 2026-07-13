@@ -69,7 +69,6 @@ return [
     'popular_rent_monthly' => 'Monthly Rent',
     'popular_rent_daily' => 'Daily Rent',
     'popular_views' => 'views',
-    'popular_starts_from' => 'Starts From',
 
     // Exclusive Benefits Section
     'benefits_eyebrow' => 'WHY CHOOSE US',

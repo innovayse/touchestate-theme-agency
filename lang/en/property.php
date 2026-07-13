@@ -40,7 +40,6 @@ return [
     'dec' => 'Dec',
 
     // Property Card
-    'starts_from' => 'Starts From',
     'reviews' => 'Reviews',
     'bedroom' => 'Bedroom',
     'bath' => 'Bath',

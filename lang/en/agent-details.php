@@ -44,7 +44,6 @@ return [
     'for_rent' => 'For Rent',
 
     // Property details
-    'starts_from' => 'Starts From',
     'beds' => 'Beds',
     'baths' => 'Baths',
     'sqft' => 'Sqft',
