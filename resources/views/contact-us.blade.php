@@ -205,6 +205,7 @@
 
             map.geoObjects.add(placemark);
             map.behaviors.disable('scrollZoom');
+            if (window.enableMapPinchZoom) window.enableMapPinchZoom(map, document.getElementById('contact-map'));
         }); });
         </script>
 

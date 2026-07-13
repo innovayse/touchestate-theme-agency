@@ -468,6 +468,7 @@ function initialize() {
     }, {
       minZoom: 3
     });
+    if (window.enableMapPinchZoom) window.enableMapPinchZoom(map, document.getElementById('map'));
 
     clusterer = new ymaps.Clusterer({
       clusterIconLayout: ClusterIconLayout,
@@ -728,6 +729,7 @@ function initializeWithApiLocations(apiLocations) {
     }, {
       minZoom: 3
     });
+    if (window.enableMapPinchZoom) window.enableMapPinchZoom(map, document.getElementById('map'));
 
     // Clusterer: groups nearby markers, shows count badge
     clusterer = new ymaps.Clusterer({

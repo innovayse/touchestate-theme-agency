@@ -379,8 +379,8 @@
                         <div class="col-xl-4 d-flex d-xl-block flex-wrap gap-3">
                             <div class="breadcrumb-icons d-flex align-items-center justify-content-xl-end justify-content-start gap-2 mb-xl-4 mb-2 mt-xl-0 mt-4">
                                 <a href="javascript:void(0);" class="compare-btn" data-slug="{{ $property['slug'] ?? '' }}" aria-label="{{ __('header.compare') }}" title="{{ __('header.compare') }}"><x-icon name="balance" size="20"/></a>
-                                <a href="javascript:void(0);" class="favourite" data-slug="{{ $property['slug'] ?? '' }}" aria-label="{{ __('property-single.favorite') }}"><x-icon name="favorite_border" class="rounded"/></a>
-                                <a href="javascript:void(0);" class="share-btn" id="sharePropertyBtn"><x-icon name="share" class="rounded"/></a>
+                                <a href="javascript:void(0);" class="favourite" data-slug="{{ $property['slug'] ?? '' }}" aria-label="{{ __('property-single.favorite') }}"><x-icon name="favorite_border" size="20"/></a>
+                                <a href="javascript:void(0);" class="share-btn" id="sharePropertyBtn"><x-icon name="share" size="20"/></a>
                             </div>
                             <div class="d-flex align-items-center gap-3 justify-content-xl-end justify-content-start">
                                 <h4 class="mb-0 text-primary text-xl-end text-start">
@@ -1437,6 +1437,7 @@
     function initMap() {
         ymaps.ready(function () {
             mainMap = new ymaps.Map(mapEl, { center: [lat, lng], zoom: 16, controls: ['zoomControl'] });
+            if (window.enableMapPinchZoom) window.enableMapPinchZoom(mainMap, mapEl);
             mainMap.geoObjects.add(homePlacemark());
             poiLayer = new ymaps.GeoObjectCollection();
             mainMap.geoObjects.add(poiLayer);
@@ -1464,6 +1465,7 @@
         fsMapEl.innerHTML = '';
         setTimeout(function () {
             fsMap = new ymaps.Map(fsMapEl, { center: [lat, lng], zoom: 16, controls: ['zoomControl'] });
+            if (window.enableMapPinchZoom) window.enableMapPinchZoom(fsMap, fsMapEl);
             fsMap.geoObjects.add(homePlacemark());
             fsPoiLayer = new ymaps.GeoObjectCollection();
             fsMap.geoObjects.add(fsPoiLayer);

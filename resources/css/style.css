@@ -4920,13 +4920,13 @@ select.form-control-sm:not([size]):not([multiple]) {
 }
 
 .custom-breadcrumb-bar {
-  padding: 110px 0px 77px;
+  padding: 150px 0px 77px;
   background: transparent;
 }
 
 @media (max-width: 991.98px) {
   .custom-breadcrumb-bar {
-    padding: 80px 0px 50px;
+    padding: 110px 0px 50px;
   }
 }
 
@@ -14285,6 +14285,12 @@ html[data-theme="dark"] [class*="ymaps-"][class*="zoom__button"] {
   color: #fff !important;
 }
 
+/* Match the heart to the sibling compare/share icons (white on the teal button) instead of
+   the dull global grey; favorited state shows as a filled white heart via the sprite swap. */
+.breadcrumb-bar .breadcrumb-icons .favourite .i-icon {
+  color: #fff !important;
+}
+
 /* Keep the "in compare" blue state winning over the scoped teal above */
 .breadcrumb-bar .breadcrumb-icons .compare-btn.is-compared {
   background: #1565c0 !important;
@@ -15370,6 +15376,9 @@ html[data-theme="dark"] .ps-page .bool-pill {
 
 .map-listing { border-radius: 14px; overflow: hidden; }
 
+/* Let Yandex Maps handle pinch-zoom/drag on touch, instead of the browser zooming the whole page */
+#map, #propertyJsMap, #mapFullscreenJsMap, #contact-map { touch-action: none; }
+
 @media (max-width: 767px) {
     #grid-controls { flex-direction: row; align-items: stretch; }
     #grid-controls .btn { flex: 1; justify-content: center; }
@@ -15412,7 +15421,7 @@ header .header-items .topbar-currency .topbar-link,
 .price-alt-currencies {
   font-size: 13px;
   line-height: 1.5;
-  color: #8a8f98;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .price-alt-currencies .price-alt-currency {
