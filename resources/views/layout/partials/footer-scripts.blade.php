@@ -69,6 +69,24 @@
     @endphp
     <!-- Yandex Map JS -->
     <script src="https://api-maps.yandex.ru/2.1/?apikey={{ config('services.yandex.maps_key') }}&lang={{ $ymapsLang }}" type="text/javascript"></script>
+    <script>
+    // Laptop trackpad pinch fires ctrl+wheel, which the browser treats as PAGE zoom and
+    // Yandex does not intercept. Forward it to the map so pinch zooms the map, not the page.
+    window.enableMapPinchZoom = function (map, el) {
+        if (!map || !el || el.__pinchZoom) return;
+        el.__pinchZoom = true;
+        var last = 0;
+        el.addEventListener('wheel', function (e) {
+            if (!e.ctrlKey) return;                 // only pinch; plain scroll stays page scroll
+            e.preventDefault();
+            var now = e.timeStamp || 0;
+            if (now - last < 90) return;            // throttle: one pinch step = one zoom level
+            last = now;
+            var dir = e.deltaY < 0 ? 1 : -1;        // spread = zoom in, pinch together = zoom out
+            map.setZoom(map.getZoom() + dir, { duration: 100, checkZoomRange: true });
+        }, { passive: false });
+    };
+    </script>
 @endif
 @if (Route::is(['map']) || request()->is('map') || request()->is('*/map'))
     <script src="{{URL::asset('build/js/map-grid.js')}}"></script>
