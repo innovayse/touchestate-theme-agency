@@ -1,13 +1,18 @@
 @extends('layout.app')
-@section('title', ucwords(str_replace('-', ' ', $slug)))
+@section('title', '...')
 
 @php $locale = app()->getLocale(); @endphp
 
 @section('content')
-<x-breadcrumb :title="ucwords(str_replace('-', ' ', $slug))" />
-
 {{-- Skeleton shell: shown while content loads async --}}
-<div id="prop-shell-skeleton" class="animate-pulse py-12">
+<div id="prop-shell-skeleton" class="animate-pulse">
+<section class="bg-ink pt-28 pb-12">
+    <div class="container-x text-center">
+        <div class="mx-auto h-9 w-72 rounded-full bg-white/20"></div>
+        <div class="mx-auto mt-3 h-4 w-48 rounded-full bg-white/10"></div>
+    </div>
+</section>
+<div class="py-12">
     <div class="container-x">
         <div class="grid gap-10 lg:grid-cols-2">
             {{-- Image placeholder --}}
@@ -38,6 +43,7 @@
         </div>
     </div>
 </div>
+</div>{{-- /prop-shell-skeleton --}}
 
 {{-- Real content: injected by JS --}}
 <div id="prop-shell-content" style="display:none"></div>

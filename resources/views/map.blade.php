@@ -167,9 +167,9 @@ const HOUSE_ICON_HOVER = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
 )}`;
 
 // ── Price-label pin constants ──────────────────────────────────────────
-const PRICE_ZOOM_THRESHOLD = 15;
-const PRICE_PIN_W  = 96;   // fixed SVG width (fits longest price string)
-const PRICE_PIN_H  = 62;   // 42 house + 20 label below
+const PRICE_ZOOM_THRESHOLD = 16;
+const PRICE_PIN_W   = 120;  // fixed SVG width (fits longest price string)
+const PRICE_PIN_H   = 68;   // 42 house + 26 label below
 const HOUSE_INNER_W = 32;
 const HOUSE_INNER_H = 42;
 
@@ -189,9 +189,9 @@ function makePriceSvg(priceText) {
         // House centered horizontally
         `<g transform="translate(${hx},0)">${HOUSE_PATHS}</g>` +
         // Price bubble
-        `<rect x="1" y="${HOUSE_INNER_H + 3}" width="${PRICE_PIN_W - 2}" height="16" rx="8" fill="#a6644f"/>` +
-        `<text x="${PRICE_PIN_W / 2}" y="${HOUSE_INNER_H + 14}" text-anchor="middle" fill="#fff" ` +
-            `font-size="10" font-weight="700" font-family="Arial,Helvetica,sans-serif">${safe}</text>` +
+        `<rect x="1" y="${HOUSE_INNER_H + 3}" width="${PRICE_PIN_W - 2}" height="20" rx="10" fill="#a6644f"/>` +
+        `<text x="${PRICE_PIN_W / 2}" y="${HOUSE_INNER_H + 17}" text-anchor="middle" fill="#fff" ` +
+            `font-size="12" font-weight="700" font-family="Arial,Helvetica,sans-serif">${safe}</text>` +
         `</svg>`
     )}`;
 }
@@ -286,8 +286,8 @@ function openBalloon(map, pm) {
             const pinX     = pagePx[0] - mapRect.left;
             // If balloon would overflow right edge → open to the left of the pin
             const offset = (pinX + CARD_W > mapEl.offsetWidth - 8)
-                ? [-(CARD_W - 3), -52]
-                : [3, -52];
+                ? [-(CARD_W + 16), -52]
+                : [20, -52];
             pm.options.set('balloonOffset', offset);
         } catch (e) { /* fallback to default offset */ }
     }
@@ -309,7 +309,7 @@ function buildBalloonHtml(item) {
 function makePlacemark(item) {
     const pm = new ymaps.Placemark(
         [item.lat, item.lng],
-        { bUrl: item.url, bHtml: buildBalloonHtml(item) },
+        { bUrl: item.url, bHtml: buildBalloonHtml(item), city: item.city || '' },
         {
             iconLayout:            'default#image',
             iconImageHref:         HOUSE_ICON,
@@ -325,12 +325,18 @@ function makePlacemark(item) {
     return pm;
 }
 
-function bindPinEvents(map, pm) {
+function bindPinEvents(map, pm, item) {
     if (IS_DESKTOP) {
         pm.events.add('mouseenter', () => {
-            pm.options.set('iconImageHref',   HOUSE_ICON_HOVER);
-            pm.options.set('iconImageSize',   [38, 50]);
-            pm.options.set('iconImageOffset', [-19, -50]);
+            // When price labels are on the icon is 120px wide; switching to a 38px hover
+            // icon makes the cursor land outside the new hitbox → immediate mouseleave →
+            // icon restores → cursor is inside again → infinite flicker loop.
+            // So only swap the icon when price labels are off.
+            if (!priceLabelsOn) {
+                pm.options.set('iconImageHref',   HOUSE_ICON_HOVER);
+                pm.options.set('iconImageSize',   [38, 50]);
+                pm.options.set('iconImageOffset', [-19, -50]);
+            }
             clearTimeout(balloonCloseTimer);
             clearTimeout(hoverOpenTimer);
             const delay = _seenPins.has(pm) ? 0 : 300;
@@ -341,9 +347,7 @@ function bindPinEvents(map, pm) {
         });
         pm.events.add('mouseleave', () => {
             clearTimeout(hoverOpenTimer);
-            pm.options.set('iconImageHref',   HOUSE_ICON);
-            pm.options.set('iconImageSize',   [32, 42]);
-            pm.options.set('iconImageOffset', [-16, -42]);
+            applyPinIcon(pm, item, priceLabelsOn);
             balloonCloseTimer = setTimeout(() => pm.balloon.close(), 150);
         });
     } else {
@@ -357,15 +361,10 @@ function bindPinEvents(map, pm) {
 function makeClusterer(map) {
     // Custom cluster icon — branded circle with count
     const ClusterLayout = ymaps.templateLayoutFactory.createClass(
-        '<div style="' +
-            'width:44px;height:44px;border-radius:50%;' +
-            'background:#a6644f;color:#fff;' +
-            'display:flex;align-items:center;justify-content:center;' +
-            'font-size:14px;font-weight:700;font-family:inherit;' +
-            'box-shadow:0 3px 12px rgba(0,0,0,0.28);' +
-            'border:3px solid #fff;cursor:pointer;' +
-            'transform:translate(-50%,-50%);' +
-        '">@{{ properties.geoObjects.length }}</div>'
+        '<div style="width:44px;height:44px;border-radius:50%;background:#a6644f;color:#fff;' +
+        'display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;' +
+        'font-family:inherit;box-shadow:0 3px 12px rgba(0,0,0,0.28);border:3px solid #fff;cursor:pointer;' +
+        'transform:translate(-50%,-50%);">@{{ properties.geoObjects.length }}</div>'
     );
 
     const clusterer = new ymaps.Clusterer({
@@ -395,7 +394,7 @@ function makeClusterer(map) {
 
 function addPin(map, item, clusterer) {
     const pm = makePlacemark(item);
-    bindPinEvents(map, pm);
+    bindPinEvents(map, pm, item);
     clusterer.add(pm);
     allPins.push({ pm, item });
 }
@@ -463,6 +462,26 @@ function initMapWithData(ymap, items, pending) {
     const clusterer = makeClusterer(map);
     map.geoObjects.add(clusterer);
 
+    // Rebuild sidebar to show only pins visible in current viewport
+    function refreshSidebar() {
+        const cardsEl = document.getElementById('map-sidebar-cards');
+        if (!cardsEl) return;
+        const bounds = map.getBounds(); // [[minLat,minLng],[maxLat,maxLng]]
+        const visible = allPins.filter(({ item }) =>
+            item.lat >= bounds[0][0] && item.lat <= bounds[1][0] &&
+            item.lng >= bounds[0][1] && item.lng <= bounds[1][1]
+        );
+        cardsEl.innerHTML = '';
+        if (visible.length === 0) {
+            cardsEl.innerHTML = `<div class="rounded-2xl border border-dashed border-sand bg-panel py-12 text-center text-sm text-neutral-500">{{ __('index.coming_soon') }}</div>`;
+        } else {
+            visible.forEach(({ item }) => addSidebarCard(item));
+        }
+        updateCount(visible.length);
+    }
+
+    let sidebarDebounce = null;
+
     // Save viewport on every pan/zoom + toggle price labels by zoom level
     map.events.add('boundschange', () => {
         saveViewport(map);
@@ -471,6 +490,8 @@ function initMapWithData(ymap, items, pending) {
             priceLabelsOn = showPrices;
             refreshPriceIcons();
         }
+        clearTimeout(sidebarDebounce);
+        sidebarDebounce = setTimeout(refreshSidebar, 300);
     });
 
     // Watch currency changes via Alpine fx store — refresh price labels if visible
@@ -493,21 +514,17 @@ function initMapWithData(ymap, items, pending) {
         });
     }
 
-    let totalCount = items.length;
-    updateCount(totalCount);
-    items.forEach(item => { addPin(map, item, clusterer); addSidebarCard(item); });
+    items.forEach(item => { addPin(map, item, clusterer); });
 
-    if (cardsEl) {
-        if (items.length === 0 && pending.length === 0) {
-            cardsEl.innerHTML = `<div class="rounded-2xl border border-dashed border-sand bg-panel py-12 text-center text-sm text-neutral-500">{{ __('index.coming_soon') }}</div>`;
-        }
-        cardsEl.classList.remove('hidden');
-    }
+    if (cardsEl) cardsEl.classList.remove('hidden');
 
     // Only auto-fit bounds on first visit (no saved viewport)
     if (!viewport && items.length > 1) {
         map.setBounds(clusterer.getBounds(), { checkZoomRange: true, zoomMargin: 50 });
     }
+
+    // Initial sidebar fill — after bounds are set
+    refreshSidebar();
 
     // Poll for pending items that are being geocoded in background
     if (pending.length > 0) {
@@ -530,12 +547,11 @@ function initMapWithData(ymap, items, pending) {
                     if (resolved[slug]) {
                         const item = { ...pendingBySlug[slug], lat: resolved[slug].lat, lng: resolved[slug].lng };
                         addPin(map, item, clusterer);
-                        addSidebarCard(item);
-                        totalCount++;
-                        updateCount(totalCount);
-                        if (totalCount === 1) {
+                        if (totalCount === 0) {
                             map.setCenter([item.lat, item.lng], 12);
                         }
+                        totalCount++;
+                        refreshSidebar();
                     } else {
                         newSlugs.push(slug);
                     }
