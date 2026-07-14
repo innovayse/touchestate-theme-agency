@@ -166,6 +166,62 @@ const HOUSE_ICON_HOVER = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
 '</svg>'
 )}`;
 
+// ── Price-label pin constants ──────────────────────────────────────────
+const PRICE_ZOOM_THRESHOLD = 15;
+const PRICE_PIN_W  = 96;   // fixed SVG width (fits longest price string)
+const PRICE_PIN_H  = 62;   // 42 house + 20 label below
+const HOUSE_INNER_W = 32;
+const HOUSE_INNER_H = 42;
+
+// Shared house SVG paths (reused in both plain and price SVG)
+const HOUSE_PATHS =
+    '<path d="M16 1C8.82 1 3 6.82 3 14c0 9.25 13 27 13 27S29 23.25 29 14C29 6.82 23.18 1 16 1z" fill="#a6644f" filter="url(#d)"/>' +
+    '<path d="M16 1C8.82 1 3 6.82 3 14c0 9.25 13 27 13 27S29 23.25 29 14C29 6.82 23.18 1 16 1z" fill="none" stroke="#fff" stroke-width="1" stroke-opacity="0.3"/>' +
+    '<path d="M9.5 15.5L16 9.5l6.5 6v6a.5.5 0 01-.5.5H10a.5.5 0 01-.5-.5v-6z" fill="#fff"/>' +
+    '<rect x="13.5" y="18.5" width="5" height="4" rx="0.8" fill="#a6644f"/>';
+
+function makePriceSvg(priceText) {
+    const safe = priceText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const hx   = (PRICE_PIN_W - HOUSE_INNER_W) / 2; // horizontal offset so house tip is at center
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${PRICE_PIN_W}" height="${PRICE_PIN_H}" viewBox="0 0 ${PRICE_PIN_W} ${PRICE_PIN_H}">` +
+        `<defs><filter id="d"><feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-opacity="0.3"/></filter></defs>` +
+        // House centered horizontally
+        `<g transform="translate(${hx},0)">${HOUSE_PATHS}</g>` +
+        // Price bubble
+        `<rect x="1" y="${HOUSE_INNER_H + 3}" width="${PRICE_PIN_W - 2}" height="16" rx="8" fill="#a6644f"/>` +
+        `<text x="${PRICE_PIN_W / 2}" y="${HOUSE_INNER_H + 14}" text-anchor="middle" fill="#fff" ` +
+            `font-size="10" font-weight="700" font-family="Arial,Helvetica,sans-serif">${safe}</text>` +
+        `</svg>`
+    )}`;
+}
+
+function getPriceText(item) {
+    const fx = window.Alpine?.store?.('fx');
+    if (!fx || !item.rawPrice) return item.price || '';
+    return fx.format(item.rawPrice, item.rawCurrency || 'AMD');
+}
+
+// Registry of all placemarks with their source item (for icon refresh)
+const allPins          = []; // { pm, item }
+let   priceLabelsOn    = false;
+
+function applyPinIcon(pm, item, withPrice) {
+    if (withPrice && item.rawPrice) {
+        pm.options.set('iconImageHref',   makePriceSvg(getPriceText(item)));
+        pm.options.set('iconImageSize',   [PRICE_PIN_W, PRICE_PIN_H]);
+        pm.options.set('iconImageOffset', [-(PRICE_PIN_W / 2), -HOUSE_INNER_H]);
+    } else {
+        pm.options.set('iconImageHref',   HOUSE_ICON);
+        pm.options.set('iconImageSize',   [32, 42]);
+        pm.options.set('iconImageOffset', [-16, -42]);
+    }
+}
+
+function refreshPriceIcons() {
+    allPins.forEach(({ pm, item }) => applyPinIcon(pm, item, priceLabelsOn));
+}
+
 let balloonCloseTimer = null;
 let BalloonLayout     = null;
 
@@ -341,6 +397,7 @@ function addPin(map, item, clusterer) {
     const pm = makePlacemark(item);
     bindPinEvents(map, pm);
     clusterer.add(pm);
+    allPins.push({ pm, item });
 }
 
 function addSidebarCard(item) {
@@ -406,8 +463,28 @@ function initMapWithData(ymap, items, pending) {
     const clusterer = makeClusterer(map);
     map.geoObjects.add(clusterer);
 
-    // Save viewport on every pan/zoom so tiles for visited areas stay in browser cache
-    map.events.add('boundschange', () => saveViewport(map));
+    // Save viewport on every pan/zoom + toggle price labels by zoom level
+    map.events.add('boundschange', () => {
+        saveViewport(map);
+        const showPrices = map.getZoom() >= PRICE_ZOOM_THRESHOLD;
+        if (showPrices !== priceLabelsOn) {
+            priceLabelsOn = showPrices;
+            refreshPriceIcons();
+        }
+    });
+
+    // Watch currency changes via Alpine fx store — refresh price labels if visible
+    const watchFxCurrency = () => {
+        if (window.Alpine && typeof Alpine.effect === 'function') {
+            Alpine.effect(() => {
+                Alpine.store('fx').currency; // register as dependency
+                if (priceLabelsOn) refreshPriceIcons();
+            });
+        } else {
+            setTimeout(watchFxCurrency, 300);
+        }
+    };
+    watchFxCurrency();
 
     // Mobile: tap on map background closes any open balloon
     if (!IS_DESKTOP) {
