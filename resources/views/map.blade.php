@@ -250,7 +250,7 @@ function buildBalloonHtml(item) {
     return `<a class="ymap-card" href="${item.url}">${imgHtml}<div class="ymap-card__body"><p class="ymap-card__title">${item.title}</p>${priceHtml}</div></a>`;
 }
 
-function addPin(map, item) {
+function makePlacemark(item) {
     const pm = new ymaps.Placemark(
         [item.lat, item.lng],
         { bUrl: item.url, bHtml: buildBalloonHtml(item) },
@@ -266,7 +266,10 @@ function addPin(map, item) {
             balloonOffset:         [3, -52],
         }
     );
+    return pm;
+}
 
+function bindPinEvents(map, pm) {
     if (IS_DESKTOP) {
         pm.events.add('mouseenter', () => {
             pm.options.set('iconImageHref',   HOUSE_ICON_HOVER);
@@ -293,8 +296,50 @@ function addPin(map, item) {
             pm.balloon.isOpen() ? pm.balloon.close() : openBalloon(map, pm);
         });
     }
+}
 
-    map.geoObjects.add(pm);
+function makeClusterer(map) {
+    // Custom cluster icon — branded circle with count
+    const ClusterLayout = ymaps.templateLayoutFactory.createClass(
+        '<div style="' +
+            'width:44px;height:44px;border-radius:50%;' +
+            'background:#a6644f;color:#fff;' +
+            'display:flex;align-items:center;justify-content:center;' +
+            'font-size:14px;font-weight:700;font-family:inherit;' +
+            'box-shadow:0 3px 12px rgba(0,0,0,0.28);' +
+            'border:3px solid #fff;cursor:pointer;' +
+        '">{{ properties.geoObjects.length }}</div>'
+    );
+
+    const clusterer = new ymaps.Clusterer({
+        clusterIconLayout:        ClusterLayout,
+        clusterIconShape:         { type: 'Circle', coordinates: [0, 0], radius: 22 },
+        clusterDisableClickZoom:  false, // click → zoom in to split cluster
+        groupByCoordinates:       false,
+        clusterHideIconOnBalloonOpen: false,
+        clusterBalloonPanelMaxMapArea: 0,
+    });
+
+    // After zooming into a cluster, bind hover/click events to newly visible pins
+    clusterer.events.add('click', (e) => {
+        const target = e.get('target');
+        // If it's a cluster (not a single placemark), ymaps handles zoom-in automatically
+        // If it's a single placemark inside a cluster, open balloon
+        if (target instanceof ymaps.Placemark) {
+            e.stopPropagation();
+            if (!IS_DESKTOP) {
+                target.balloon.isOpen() ? target.balloon.close() : openBalloon(map, target);
+            }
+        }
+    });
+
+    return clusterer;
+}
+
+function addPin(map, item, clusterer) {
+    const pm = makePlacemark(item);
+    bindPinEvents(map, pm);
+    clusterer.add(pm);
 }
 
 function addSidebarCard(item) {
@@ -356,16 +401,23 @@ function initMapWithData(ymap, items, pending) {
     });
     map.options.set('balloonAutoPan', false);
 
+    // Clusterer — groups nearby pins, auto-splits on zoom-in
+    const clusterer = makeClusterer(map);
+    map.geoObjects.add(clusterer);
+
     // Save viewport on every pan/zoom so tiles for visited areas stay in browser cache
     map.events.add('boundschange', () => saveViewport(map));
 
     // Mobile: tap on map background closes any open balloon
     if (!IS_DESKTOP) {
-        map.events.add('click', () => map.geoObjects.each(o => o.balloon && o.balloon.close()));
+        map.events.add('click', () => {
+            clusterer.getGeoObjects().forEach(o => o.balloon && o.balloon.close());
+        });
     }
 
-    updateCount(items.length);
-    items.forEach(item => { addPin(map, item); addSidebarCard(item); });
+    let totalCount = items.length;
+    updateCount(totalCount);
+    items.forEach(item => { addPin(map, item, clusterer); addSidebarCard(item); });
 
     if (cardsEl) {
         if (items.length === 0 && pending.length === 0) {
@@ -376,7 +428,49 @@ function initMapWithData(ymap, items, pending) {
 
     // Only auto-fit bounds on first visit (no saved viewport)
     if (!viewport && items.length > 1) {
-        map.setBounds(map.geoObjects.getBounds(), { checkZoomRange: true, zoomMargin: 50 });
+        map.setBounds(clusterer.getBounds(), { checkZoomRange: true, zoomMargin: 50 });
+    }
+
+    // Poll for pending items that are being geocoded in background
+    if (pending.length > 0) {
+        const pendingBySlug = Object.fromEntries(pending.map(p => [p.slug, p]));
+        let remainingSlugs = pending.map(p => p.slug).filter(Boolean);
+        let attempts = 0;
+        const MAX_ATTEMPTS = 20;
+
+        const pollCoords = () => {
+            if (!remainingSlugs.length || attempts >= MAX_ATTEMPTS || !window._mapPageInstance) return;
+            attempts++;
+            const coordsParams = new URLSearchParams();
+            remainingSlugs.forEach(s => coordsParams.append('slugs[]', s));
+            fetch(COORDS_URL + '?' + coordsParams.toString())
+            .then(r => r.json())
+            .then(data => {
+                const resolved = data.coords || data || {};
+                const newSlugs = [];
+                remainingSlugs.forEach(slug => {
+                    if (resolved[slug]) {
+                        const item = { ...pendingBySlug[slug], lat: resolved[slug].lat, lng: resolved[slug].lng };
+                        addPin(map, item, clusterer);
+                        addSidebarCard(item);
+                        totalCount++;
+                        updateCount(totalCount);
+                        if (totalCount === 1) {
+                            map.setCenter([item.lat, item.lng], 12);
+                        }
+                    } else {
+                        newSlugs.push(slug);
+                    }
+                });
+                remainingSlugs = newSlugs;
+                if (remainingSlugs.length && attempts < MAX_ATTEMPTS) {
+                    setTimeout(pollCoords, 5000);
+                }
+            })
+            .catch(() => { if (attempts < MAX_ATTEMPTS) setTimeout(pollCoords, 8000); });
+        };
+
+        setTimeout(pollCoords, 4000);
     }
 
     const resetMapLayout = () => {
