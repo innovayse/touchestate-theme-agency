@@ -308,7 +308,7 @@ function makeClusterer(map) {
             'font-size:14px;font-weight:700;font-family:inherit;' +
             'box-shadow:0 3px 12px rgba(0,0,0,0.28);' +
             'border:3px solid #fff;cursor:pointer;' +
-        '">{{ properties.geoObjects.length }}</div>'
+        '">@{{ properties.geoObjects.length }}</div>'
     );
 
     const clusterer = new ymaps.Clusterer({
