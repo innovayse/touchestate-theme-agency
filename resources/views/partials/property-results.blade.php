@@ -4,6 +4,9 @@
     $total      = $properties['totalCount'] ?? count($items);
     $curPage    = (int) request('page', 1);
     $totalPages = $properties['totalPages'] ?? 1;
+    // Base URL for pagination — always /property, not /property/results
+    $basePropertyUrl = url('/'.$locale.'/property');
+    $pageParams = request()->except(['page']);
 
     $sortOptions = [
         'viewCount_desc' => __('property.featured'),
@@ -56,24 +59,27 @@
         @endforeach
     </div>
 
-    {{-- Pagination --}}
+    {{-- Pagination — links always point to /property, not /property/results --}}
     @if($totalPages > 1)
+        @php
+            $pageUrl = fn(int $p) => $basePropertyUrl . '?' . http_build_query(array_merge($pageParams, ['page' => $p]));
+        @endphp
         <nav class="mt-10 flex flex-wrap items-center justify-center gap-2">
             @if($curPage > 1)
-                <a href="{{ request()->fullUrlWithQuery(['page' => $curPage - 1]) }}"
+                <a href="{{ $pageUrl($curPage - 1) }}"
                    class="flex h-10 w-10 items-center justify-center rounded-full border border-sand bg-white text-sm text-ink transition hover:border-brand-500 hover:text-brand-600">
                     ‹
                 </a>
             @endif
             @for($p = max(1, $curPage-3); $p <= min($totalPages, $curPage+3); $p++)
-                <a href="{{ request()->fullUrlWithQuery(['page' => $p]) }}"
+                <a href="{{ $pageUrl($p) }}"
                    class="flex h-10 w-10 items-center justify-center rounded-full border text-sm transition
                           {{ $p === $curPage ? 'border-brand-600 bg-brand-600 text-white' : 'border-sand bg-white text-ink hover:border-brand-500 hover:text-brand-600' }}">
                     {{ $p }}
                 </a>
             @endfor
             @if($curPage < $totalPages)
-                <a href="{{ request()->fullUrlWithQuery(['page' => $curPage + 1]) }}"
+                <a href="{{ $pageUrl($curPage + 1) }}"
                    class="flex h-10 w-10 items-center justify-center rounded-full border border-sand bg-white text-sm text-ink transition hover:border-brand-500 hover:text-brand-600">
                     ›
                 </a>
