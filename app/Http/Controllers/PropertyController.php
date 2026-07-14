@@ -250,6 +250,15 @@ class PropertyController extends Controller
 
     public function index()
     {
+        // Shell: returns instantly with no API call.
+        // Results are loaded async via results() endpoint by JS on the page.
+        $this->validateFilters();
+        $properties = ['items' => [], 'totalCount' => 0, 'hasNextPage' => false, 'skeleton' => true];
+        return view('property', compact('properties'));
+    }
+
+    public function results()
+    {
         $this->validateFilters();
 
         $filters = $this->buildFilters();
@@ -290,7 +299,8 @@ class PropertyController extends Controller
             }
         }
 
-        return view('property', compact('properties'));
+        $html = view('partials.property-results', compact('properties'))->render();
+        return response()->json(['html' => $html]);
     }
 
     public function map()
@@ -565,42 +575,9 @@ class PropertyController extends Controller
 
     public function show(string $slug)
     {
-        set_time_limit(60);
-
-        // Cached 1h (no admin panel — property data changes rarely). Cache the fully-built
-        // array; on API failure the exception propagates out of remember() → not cached → 404.
-        try {
-            $property = Cache::remember('te_prop:' . $slug, 3600, function () use ($slug) {
-                $property = $this->client->properties()->retrieve($slug);
-                $property['slug'] = $slug;
-
-                // Build fullAddress from components (retrieve() doesn't return it)
-                $property['fullAddress'] = $this->buildPropertyAddress($property) ?: null;
-                return $property;
-            });
-        } catch (\Exception $e) {
-            abort(404);
-        }
-
-        // Coords for property-single map. If the API provides GPS coords, cache them for the
-        // map page too. If not, pass null — the blade geocodes client-side via ymaps.geocode().
-        $cached = Cache::get('prop_coords:' . $slug);
-        if ($cached === null) {
-            $apiLat = is_numeric($property['latitude']  ?? null) ? (float) $property['latitude']  : null;
-            $apiLng = is_numeric($property['longitude'] ?? null) ? (float) $property['longitude'] : null;
-            if ($apiLat !== null && $apiLng !== null) {
-                $cached = ['lat' => $apiLat, 'lng' => $apiLng, 'precise' => true, 'api_checked' => true];
-                Cache::put('prop_coords:' . $slug, $cached, now()->addDay());
-            } else {
-                $cached = ['lat' => null, 'lng' => null];
-            }
-        }
-        $lat = $cached['lat'] ?? null;
-        $lng = $cached['lng'] ?? null;
-
-        // Skeleton-first: similar + comments are loaded async via extras() after the shell
-        // renders, so the page (with SEO head + core) appears instantly.
-        return view('property-single', compact('property', 'lat', 'lng'));
+        // Shell: returns instantly with no API call.
+        // Full property content is loaded async via content() endpoint by JS on the page.
+        return view('property-single-shell', compact('slug'));
     }
 
     /**
@@ -659,6 +636,41 @@ class PropertyController extends Controller
             'similar'  => view('partials.property-single-similar', compact('similar'))->render(),
             'comments' => view('partials.property-single-comments', compact('comments'))->render(),
         ]);
+    }
+
+    /**
+     * Async main content for skeleton-first property page.
+     * Returns the full property content HTML; the shell JS injects it after page opens.
+     */
+    public function content(string $slug)
+    {
+        try {
+            $property = Cache::remember('te_prop:' . $slug, 3600, function () use ($slug) {
+                $property = $this->client->properties()->retrieve($slug);
+                $property['slug'] = $slug;
+                $property['fullAddress'] = $this->buildPropertyAddress($property) ?: null;
+                return $property;
+            });
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'not_found'], 404);
+        }
+
+        $cached = Cache::get('prop_coords:' . $slug);
+        if ($cached === null) {
+            $apiLat = is_numeric($property['latitude']  ?? null) ? (float) $property['latitude']  : null;
+            $apiLng = is_numeric($property['longitude'] ?? null) ? (float) $property['longitude'] : null;
+            if ($apiLat !== null && $apiLng !== null) {
+                $cached = ['lat' => $apiLat, 'lng' => $apiLng, 'precise' => true, 'api_checked' => true];
+                Cache::put('prop_coords:' . $slug, $cached, now()->addDay());
+            } else {
+                $cached = ['lat' => null, 'lng' => null];
+            }
+        }
+        $lat = $cached['lat'] ?? null;
+        $lng = $cached['lng'] ?? null;
+
+        $html = view('partials.property-single-content', compact('property', 'lat', 'lng'))->render();
+        return response()->json(['html' => $html, 'title' => ($property['title'] ?? '')]);
     }
 
     public function enquire(string $slug)

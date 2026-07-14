@@ -33,7 +33,7 @@
         <div class="flex flex-col gap-8 lg:flex-row">
 
             {{-- ── Sidebar filters ────────────────────────────────── --}}
-            <aside class="w-full shrink-0 lg:w-72 lg:self-start lg:sticky lg:top-6" x-data="{ open: false }" x-init="open = window.innerWidth >= 1024">
+            <aside class="w-full shrink-0 lg:w-72 lg:self-start lg:sticky lg:top-20" x-data="{ open: false }" x-init="open = window.innerWidth >= 1024">
                 <button @click="open = !open"
                         class="flex w-full items-center justify-between rounded-2xl border border-sand bg-panel px-5 py-4 text-sm font-semibold text-ink lg:hidden">
                     {{ __('property.filters') }}
@@ -240,12 +240,12 @@
                 </form>
             </aside>
 
-            {{-- ── Results ────────────────────────────────────────── --}}
-            <div class="min-w-0 flex-1" style="overflow-anchor:none"
-                 x-data="{ _r: false }" x-init="_r = true">
 
-                {{-- Skeleton: visible before Alpine init --}}
-                <div x-show="!_r" class="animate-pulse">
+            {{-- ── Results ────────────────────────────────────────── --}}
+            <div class="min-w-0 flex-1" id="property-results-wrapper" style="overflow-anchor:none">
+
+                {{-- Skeleton: shown until async results arrive --}}
+                <div id="property-results-skeleton" class="animate-pulse">
                     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
                         <div class="h-4 w-52 rounded-full bg-sand"></div>
                         <div class="h-10 w-44 rounded-2xl bg-sand"></div>
@@ -271,77 +271,31 @@
                     </div>
                 </div>
 
-                {{-- Real content: hidden until Alpine init --}}
-                <div x-show="_r" x-cloak>
-                    {{-- Top bar --}}
-                    <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-                        <p class="text-sm text-neutral-500">
-                            {{ __('property.showing_result') }}
-                            <span class="font-semibold text-ink">{{ count($items) }}</span>
-                            {{ __('property.of') }}
-                            <span class="font-semibold text-ink">{{ $total }}</span>
-                            {{ __('property.properties') }}
-                        </p>
-                        <div class="flex items-center gap-3">
-                            <form id="sort-form" action="{{ url('/'.$locale.'/property') }}" method="GET">
-                                @foreach(request()->except(['sortBy','sortOrder','page']) as $k=>$v)
-                                    @if(is_array($v))
-                                        @foreach($v as $vi)<input type="hidden" name="{{ $k }}[]" value="{{ $vi }}">@endforeach
-                                    @else
-                                        <input type="hidden" name="{{ $k }}" value="{{ $v }}">
-                                    @endif
-                                @endforeach
-                                <x-custom-select name="sortByFull"
-                                    :selected="$curSort"
-                                    :options="$sortOptions"
-                                    :autosubmit="true"
-                                    :placeholder="__('property.default')"
-                                    class="w-full sm:w-auto sm:min-w-[220px]" />
-                            </form>
-                        </div>
-                    </div>
-
-                    @if(count($items))
-                        <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                            @foreach($items as $prop)
-                                <x-property-card :prop="$prop" />
-                            @endforeach
-                        </div>
-
-                        {{-- Pagination --}}
-                        @if($totalPages > 1)
-                            <nav class="mt-10 flex flex-wrap items-center justify-center gap-2">
-                                @if($curPage > 1)
-                                    <a href="{{ request()->fullUrlWithQuery(['page' => $curPage - 1]) }}"
-                                       class="flex h-10 w-10 items-center justify-center rounded-full border border-sand bg-white text-sm text-ink transition hover:border-brand-500 hover:text-brand-600">
-                                        ‹
-                                    </a>
-                                @endif
-                                @for($p = max(1, $curPage-3); $p <= min($totalPages, $curPage+3); $p++)
-                                    <a href="{{ request()->fullUrlWithQuery(['page' => $p]) }}"
-                                       class="flex h-10 w-10 items-center justify-center rounded-full border text-sm transition
-                                              {{ $p === $curPage ? 'border-brand-600 bg-brand-600 text-white' : 'border-sand bg-white text-ink hover:border-brand-500 hover:text-brand-600' }}">
-                                        {{ $p }}
-                                    </a>
-                                @endfor
-                                @if($curPage < $totalPages)
-                                    <a href="{{ request()->fullUrlWithQuery(['page' => $curPage + 1]) }}"
-                                       class="flex h-10 w-10 items-center justify-center rounded-full border border-sand bg-white text-sm text-ink transition hover:border-brand-500 hover:text-brand-600">
-                                        ›
-                                    </a>
-                                @endif
-                            </nav>
-                        @endif
-                    @else
-                        <div class="rounded-3xl border border-dashed border-sand bg-panel py-24 text-center">
-                            <svg class="mx-auto mb-4 text-brand-200" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/></svg>
-                            <p class="font-display text-xl text-neutral-500">{{ __('index.coming_soon') }}</p>
-                            <p class="mt-1 text-sm text-neutral-400">{{ __('index.coming_soon_sub') }}</p>
-                            <a href="{{ url('/'.$locale.'/property') }}" class="btn-outline mt-6">{{ __('property.reset') }}</a>
-                        </div>
-                    @endif
-                </div>
+                {{-- Real content: injected by JS after results endpoint responds --}}
+                <div id="property-results-content" style="display:none"></div>
             </div>
+
+            <script>
+            (function () {
+                var params = new URLSearchParams(window.location.search);
+                var url = '{{ url('/'.$locale.'/property/results') }}' + (params.toString() ? '?' + params.toString() : '');
+                fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        var skeleton = document.getElementById('property-results-skeleton');
+                        var content  = document.getElementById('property-results-content');
+                        if (!skeleton || !content) return;
+                        content.innerHTML = data.html || '';
+                        content.style.display = '';
+                        skeleton.style.display = 'none';
+                        if (window.Alpine) Alpine.initTree(content);
+                    })
+                    .catch(function () {
+                        var skeleton = document.getElementById('property-results-skeleton');
+                        if (skeleton) skeleton.classList.remove('animate-pulse');
+                    });
+            })();
+            </script>
         </div>
     </div>
 </section>

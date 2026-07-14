@@ -13,10 +13,37 @@ class HomeController extends Controller
 
     public function index()
     {
-        $allItems   = [];
-        $stats      = ['propertiesListed' => 0, 'happyClients' => 0, 'citiesCovered' => 0, 'satisfactionRate' => 98];
+        // Shell: static config-based stats only — no API call, returns instantly.
+        // Dynamic sections (popular listings, property types) are loaded async via data().
+        $stats = [
+            'propertiesListed' => 0,
+            'happyClients'     => 0,
+            'citiesCovered'    => 0,
+            'satisfactionRate' => 98,
+            'successfulDeals'  => (int) config('site.stats.deals', 1000),
+            'activeProperties' => (int) config('site.stats.active', 200),
+        ];
 
-        // Cached 1h (no admin panel — listings change rarely). Fixed query, no params.
+        // Empty placeholders — filled async by JS after data() responds
+        $rentProperties = [];
+        $saleProperties = [];
+        $typeCounts     = [];
+        $typeImages     = [];
+        $cityImages     = [];
+        $cityCounts     = [];
+        $topViewedImages = [];
+        $availableTypes = [];
+
+        return view('index', compact(
+            'rentProperties', 'saleProperties', 'stats',
+            'typeCounts', 'cityCounts', 'topViewedImages', 'cityImages', 'typeImages',
+            'availableTypes',
+        ));
+    }
+
+    public function data()
+    {
+        $allItems = [];
         try {
             $allItems = Cache::remember('te_home_100', 3600, function () {
                 return $this->client->properties()->list([
@@ -28,17 +55,6 @@ class HomeController extends Controller
             });
         } catch (\Throwable) {}
 
-        try {
-            $stats = Cache::remember('te_stats', 3600, function () {
-                return $this->client->properties()->stats();
-            });
-        } catch (\Throwable) {}
-
-        // Hero marketing figures — fixed (API only counts what's been entered so far). Editable in config/site.php / .env.
-        $stats['successfulDeals']  = (int) config('site.stats.deals', 1000);
-        $stats['activeProperties'] = (int) config('site.stats.active', 200);
-
-        // Rent / Sale tabs — top 6 each
         $rentProperties = array_values(array_slice(
             array_filter($allItems, fn($p) => strtolower($p['transactionType'] ?? '') === 'rent'),
             0, 6
@@ -48,7 +64,6 @@ class HomeController extends Controller
             0, 6
         ));
 
-        // Type counts + images (up to 3 per type)
         $typeCounts = ['Apartment' => 0, 'House' => 0, 'Office' => 0, 'Villa' => 0];
         $typeImages = ['Apartment' => [], 'House' => [], 'Office' => [], 'Villa' => []];
         foreach ($allItems as $p) {
@@ -61,39 +76,24 @@ class HomeController extends Controller
             }
         }
 
-        // City counts + images (up to 4 per city)
-        $cityCounts = [];
-        $cityImages = [];
-        foreach ($allItems as $p) {
-            $city = $p['city'] ?? '';
-            if (!$city) continue;
-            $cityCounts[$city] = ($cityCounts[$city] ?? 0) + 1;
-            if (!empty($p['primaryImageUrl']) && count($cityImages[$city] ?? []) < 4) {
-                $cityImages[$city][] = $p['primaryImageUrl'];
-            }
-        }
-        arsort($cityCounts);
-
-        // Top 6 viewed images for decorative sec-bottom-imgs
-        $topViewedImages = [];
-        foreach ($allItems as $p) {
-            if (!empty($p['primaryImageUrl'])) {
-                $topViewedImages[] = ['slug' => $p['slug'], 'imageUrl' => $p['primaryImageUrl']];
-                if (count($topViewedImages) >= 6) break;
-            }
-        }
-
-        // Distinct property types present in the current listings — for the home search dropdown
-        // (only show types that actually exist right now; values come straight from the API)
         $availableTypes = array_values(array_unique(array_filter(
             array_map(fn ($p) => $p['propertyType'] ?? '', $allItems)
         )));
         sort($availableTypes);
 
-        return view('index', compact(
-            'rentProperties', 'saleProperties', 'stats',
-            'typeCounts', 'cityCounts', 'topViewedImages', 'cityImages', 'typeImages',
-            'availableTypes',
-        ));
+        $locale = app()->getLocale();
+
+        $popularHtml = view('partials.home-popular', compact(
+            'rentProperties', 'saleProperties', 'locale'
+        ))->render();
+
+        $typesHtml = view('partials.home-types', compact(
+            'typeCounts', 'typeImages', 'availableTypes', 'locale'
+        ))->render();
+
+        return response()->json([
+            'popularHtml' => $popularHtml,
+            'typesHtml'   => $typesHtml,
+        ]);
     }
 }

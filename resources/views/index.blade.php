@@ -161,60 +161,26 @@
 </section>
 
 {{-- ───────────────────── Popular listings (tabs) ───────────────────── --}}
-@php $initTab = count($saleProperties) ? 'sale' : 'rent'; @endphp
-<section class="py-8 sm:py-14" x-data="{ tab: '{{ $initTab }}', _r: false }" x-init="_r = true">
+<section class="py-8 sm:py-14" id="home-popular-section">
     <div class="container-x text-center">
         <h2 class="font-display text-2xl font-bold sm:text-4xl text-ink">{{ __('index.popular_title') }} <span class="text-brand-600">{{ __('index.popular_highlight') }}</span> {{ __('index.popular_end') }}</h2>
         <p class="mx-auto mt-3 max-w-2xl text-neutral-600">{{ __('index.popular_description') }}</p>
-
-        <div class="mt-7 inline-flex rounded-full border border-sand bg-panel p-1">
-            <button @click="tab='sale'" :class="tab==='sale' ? 'bg-brand-600 text-white' : 'text-ink'" class="rounded-full px-6 py-2 text-sm font-semibold transition">{{ __('index.popular_for_sale') }}</button>
-            <button @click="tab='rent'" :class="tab==='rent' ? 'bg-brand-600 text-white' : 'text-ink'" class="rounded-full px-6 py-2 text-sm font-semibold transition">{{ __('index.popular_for_rent') }}</button>
-        </div>
     </div>
 
-    {{-- Skeleton: visible before Alpine init --}}
-    <div class="container-x mt-12" x-show="!_r">
+    {{-- Skeleton: visible until async data arrives --}}
+    <div class="container-x mt-12" id="home-popular-skeleton">
         @include('partials.property-cards-skeleton')
     </div>
 
-    {{-- Real content: hidden until Alpine init --}}
-    @if(count($saleProperties) || count($rentProperties))
-        <div class="container-x mt-12" x-show="_r" x-cloak>
-            <div x-show="tab==='sale'" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                @forelse($saleProperties as $prop)
-                    <x-property-card :prop="$prop" />
-                @empty
-                    <p class="col-span-full text-center text-neutral-500">{{ __('index.coming_soon') }}</p>
-                @endforelse
-            </div>
-            <div x-show="tab==='rent'" x-cloak class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                @forelse($rentProperties as $prop)
-                    <x-property-card :prop="$prop" />
-                @empty
-                    <p class="col-span-full text-center text-neutral-500">{{ __('index.coming_soon') }}</p>
-                @endforelse
-            </div>
-        </div>
-    @else
-        <div class="container-x mt-12" x-show="_r" x-cloak>
-            <div class="rounded-3xl border border-dashed border-sand bg-panel py-20 text-center">
-                <p class="font-display text-xl text-neutral-500">{{ __('index.coming_soon') }}</p>
-                <p class="mt-1 text-sm text-neutral-400">{{ __('index.coming_soon_sub') }}</p>
-            </div>
-        </div>
-    @endif
-
-    <div class="mt-10 text-center" x-show="_r" x-cloak>
-        <a href="{{ url('/'.$locale.'/property') }}" class="btn-outline">{{ __('index.explore_all_listings') }}</a>
-    </div>
+    {{-- Real content: injected by JS --}}
+    <div id="home-popular-content" style="display:none"></div>
 </section>
 
 {{-- ───────────────────── How it works ───────────────────── --}}
 <section class="py-8 sm:py-14">
     <div class="container-x grid gap-6 lg:grid-cols-2 lg:items-center lg:gap-12">
         <div class="relative flex min-h-[260px] flex-col justify-between overflow-hidden rounded-3xl bg-brand-600 p-8 text-white lg:min-h-[440px]">
-            <span class="font-display text-7xl font-bold text-white/30">“</span>
+            <span class="font-display text-7xl font-bold text-white/30">"</span>
             <div>
                 <p class="font-display text-2xl font-semibold leading-snug">{{ __('index.work_title') }}</p>
                 <p class="mt-4 text-sm text-white/80">{{ __('index.work_description') }}</p>
@@ -238,36 +204,44 @@
 </section>
 
 {{-- ───────────────────── Property types ───────────────────── --}}
-@if(array_sum($typeCounts) > 0)
-<section class="bg-sand/60 py-8 sm:py-14">
+<section class="bg-sand/60 py-8 sm:py-14" id="home-types-section" style="display:none">
     <div class="container-x text-center">
         <h2 class="font-display text-2xl font-bold sm:text-4xl text-ink">{{ __('index.property_type_title') }} <span class="text-brand-600">{{ __('index.property_type_highlight') }}</span> {{ __('index.property_type_end') }}</h2>
         <p class="mx-auto mt-3 max-w-2xl text-neutral-600">{{ __('index.property_type_description') }}</p>
     </div>
-    <div class="container-x mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        @php $shownTypes = 0; @endphp
-        @foreach($typeCounts as $type => $cnt)
-            @continue($cnt === 0)
-            @break($shownTypes >= 4)
-            @php $shownTypes++; $k='property.'.strtolower($type); $lbl=__($k); if($lbl===$k){$lbl=$type;} $img=$typeImages[$type][0] ?? null; @endphp
-            <a href="{{ url('/'.$locale.'/property?propertyType='.$type) }}" class="group relative overflow-hidden rounded-2xl border border-sand bg-white">
-                <div class="h-44 overflow-hidden bg-sand">
-                    @if($img)<img src="{{ $img }}" alt="" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">@endif
-                </div>
-                <div class="p-5">
-                    <h3 class="font-display text-lg font-semibold text-ink">{{ $lbl }}</h3>
-                    <p class="text-sm text-neutral-500">{{ $cnt }} {{ __('index.property_type_available') }}</p>
-                </div>
-            </a>
-        @endforeach
-    </div>
-    <div class="container-x mt-8 text-center">
-        <a href="{{ url('/'.$locale.'/property') }}" class="btn-outline">
-            {{ __('index.property_type_view_more') }}
-        </a>
-    </div>
+    <div id="home-types-content"></div>
 </section>
-@endif
+
+<script>
+(function () {
+    var url = '{{ url('/'.$locale.'/home/data') }}';
+    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            var skeleton = document.getElementById('home-popular-skeleton');
+            var popular  = document.getElementById('home-popular-content');
+            var typesSection = document.getElementById('home-types-section');
+            var typesContent = document.getElementById('home-types-content');
+
+            if (skeleton && popular) {
+                popular.innerHTML = data.popularHtml || '';
+                popular.style.display = '';
+                skeleton.style.display = 'none';
+                if (window.Alpine) Alpine.initTree(popular);
+            }
+            if (typesContent && data.typesHtml) {
+                typesContent.innerHTML = data.typesHtml;
+                typesSection.style.display = '';
+                if (window.Alpine) Alpine.initTree(typesSection);
+            }
+        })
+        .catch(function () {
+            var skeleton = document.getElementById('home-popular-skeleton');
+            if (skeleton) skeleton.classList.remove('animate-pulse');
+        });
+})();
+</script>
+
 
 {{-- ───────────────────────── FAQ ───────────────────────── --}}
 <section class="bg-sand/60 py-8 sm:py-14">
