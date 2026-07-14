@@ -659,7 +659,7 @@
                             </div>
 
                             {{-- Nearby places --}}
-                            @if($lat && $lng)
+                            @if($hasMap)
                             <div class="mt-5">
                                 <p class="text-xs font-semibold uppercase tracking-widest text-neutral-400">{{ __('property-single.additional_info') }}</p>
 
@@ -815,7 +815,7 @@ fetch('{{ $extrasUrl }}')
             );
 
             function startMap(coords) {
-                const map = new ymaps.Map('prop-map', { center: coords, zoom: 15, controls: ['zoomControl'] });
+                const map = new ymaps.Map('prop-map', { center: coords, zoom: 15, controls: ['zoomControl', 'fullscreenControl'], behaviors: ['default', 'scrollZoom'] });
                 map.container.fitToViewport();
                 map.geoObjects.add(new ymaps.Placemark(coords, { balloonContent: BALLOON }, {
                     iconLayout: HousePin,
@@ -855,6 +855,13 @@ fetch('{{ $extrasUrl }}')
                         window._propMapCatMarkers.push(m);
                     });
                 };
+
+                map.controls.get('fullscreenControl').events.add('fullscreenenter', function() {
+                    document.documentElement.style.overflow = 'hidden';
+                });
+                map.controls.get('fullscreenControl').events.add('fullscreenexit', function() {
+                    document.documentElement.style.overflow = '';
+                });
 
                 // Store map instance so Turbo can destroy it on navigation (prevents memory leak)
                 window._propMapInstance = map;

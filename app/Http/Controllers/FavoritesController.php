@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use TouchEstate\Sdk\TouchEstateClient;
 
 class FavoritesController extends Controller
@@ -31,8 +32,11 @@ class FavoritesController extends Controller
         foreach ($slugs as $slug) {
             if (!is_string($slug) || strlen($slug) > 200) continue;
             try {
-                $prop = $this->client->properties()->retrieve($slug);
-                $prop['slug'] = $slug;
+                $prop = Cache::remember('te_prop:' . $slug, 3600, function () use ($slug) {
+                    $p = $this->client->properties()->retrieve($slug);
+                    $p['slug'] = $slug;
+                    return $p;
+                });
 
                 $prop['primaryImageUrl'] = $this->extractPrimaryImageUrl($prop);
                 $prop['fullAddress'] = $this->buildPropertyAddress($prop) ?: null;
