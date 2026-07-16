@@ -22,6 +22,10 @@
 @endphp
 
 <div x-data="propertyToggle('{{ $slug }}')"
+    data-fav-card
+    data-title="{{ $prop['title'] ?? '' }}"
+    data-address="{{ $prop['fullAddress'] ?? $prop['city'] ?? '' }}"
+    data-code="{{ $prop['code'] ?? $prop['ref'] ?? $prop['internalCode'] ?? $slug }}"
     class="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-sand bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
 
     {{-- Action buttons — positioned on outer div so overflow-hidden on image doesn't clip them --}}
@@ -49,7 +53,11 @@
     <a href="{{ url('/' . $locale . '/property/' . $slug) }}" class="relative block h-56 overflow-hidden bg-sand">
         @if(!empty($prop['primaryImageUrl']))
             <img src="{{ $prop['primaryImageUrl'] }}" alt="{{ $prop['title'] ?? '' }}"
-                class="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy">
+                class="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy"
+                onerror="this.style.display='none';this.parentElement.querySelector('.img-fallback').style.display='grid'">
+            <div class="img-fallback grid h-full place-items-center text-brand-300" style="display:none">
+                <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            </div>
         @else
             <div class="grid h-full place-items-center text-brand-300">
                 <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">

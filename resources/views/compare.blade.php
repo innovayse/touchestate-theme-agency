@@ -15,7 +15,14 @@
                 {{ __('compare.comparing') }} <span x-text="count"></span> {{ __('property.properties') }}
             </p>
             <button x-show="slugs.length > 0" @click="clearAll()"
-                    class="text-sm text-red-500 hover:underline">{{ __('favorites.clear_all') }}</button>
+                    class="shrink-0 rounded-xl border border-red-200 px-3 py-2 text-sm text-red-500 transition hover:border-red-300 hover:bg-red-50">
+                <span class="flex items-center gap-1.5">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+                    </svg>
+                    <span class="hidden sm:inline">{{ __('favorites.clear_all') }}</span>
+                </span>
+            </button>
         </div>
 
         {{-- Loading skeleton --}}

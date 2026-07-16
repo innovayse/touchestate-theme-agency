@@ -92,6 +92,9 @@ Route::group(
         Route::get('/compare', [CompareController::class, 'index'])->name('compare');
         Route::post('/compare/load', [CompareController::class, 'load'])->name('compare.load');
 
+        // Cache invalidation
+        Route::post('/property/uncache', [App\Http\Controllers\PropertyCacheController::class, 'forget'])->name('property.uncache');
+
         // Static pages
         // Route::get('/about-us',        fn () => view('about-us'))->name('about-us'); // temporarily disabled (page kept)
         Route::get('/contact-us',      fn () => view('contact-us'))->name('contact-us');

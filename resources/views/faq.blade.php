@@ -1,5 +1,5 @@
 @extends('layout.app')
-@section('title', __('footer.faq'))
+@section('title', __('footer.faq') . ' — ' . ($workspace['name'] ?? ''))
 
 @section('content')
 <x-breadcrumb :title="__('footer.faq')" />

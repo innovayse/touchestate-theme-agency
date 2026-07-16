@@ -39,6 +39,11 @@ Alpine.data('propertyToggle', (slug) => ({
         if (e) { e.preventDefault(); e.stopPropagation(); }
         this.isFav = this._toggleStorageItem('te_favorites', this.slug);
         this.popFav = true; setTimeout(() => this.popFav = false, 300);
+        if (this.isFav) {
+            const prefix = window.location.pathname.slice(0, 3);
+            const lang = ['/en', '/ru', '/hy'].includes(prefix) ? prefix : '';
+            fetch(lang + '/property/' + this.slug, { priority: 'low' }).catch(() => {});
+        }
     },
     toggleCmp(e) {
         if (e) { e.preventDefault(); e.stopPropagation(); }
@@ -48,22 +53,69 @@ Alpine.data('propertyToggle', (slug) => ({
 }));
 
 // Favorites / Compare page — loads rendered HTML from POST endpoint
-Alpine.data('listLoader', (loadUrl, storageKey, options = {}) => ({
+Alpine.data('listLoader', (loadUrl, storageKey, options = {}) => {
+    // ── fav-mode: DOM elements live OUTSIDE Alpine reactive scope ───────────
+    // Storing DOM nodes inside Alpine reactive state causes Alpine to wrap them
+    // in deep Proxy objects. Calling style.setProperty() on a proxied
+    // CSSStyleDeclaration throws "TypeError: Illegal invocation" because the
+    // method receives a Proxy as `this` instead of the real CSSStyleDeclaration.
+    // Solution: keep DOM refs in a plain closure variable, never in `this.*`.
+    let _favEls = [];          // raw DOM elements, index-aligned with this._cards
+    let _matchingIndices = []; // last computed filter result, reused by goPage
+
+    return {
     slugs: [],
     html: '',
     count: 0,
     loading: true,
+
+    // ── fav-mode reactive state (metadata only, no DOM nodes) ───────────────
+    query: '',
+    _queryTimer: null,
+    // [{title, address, code, visible}] — visible drives pagination+filter
+    _cards: [],
+    filteredCount: 0,
+    page: 1,
+    _perPage: 9,
+    totalPages: 1,
+    showDropdown: false,
+    suggestions: [],
+    recentSearches: [],
+
     init() {
         try { this.slugs = JSON.parse(localStorage.getItem(storageKey) || '[]'); } catch(e) { this.slugs = []; }
         if (options.removeEvent) {
             this._removeHandler = e => this.removeSlug(e.detail.slug);
             window.addEventListener(options.removeEvent, this._removeHandler);
         }
+        if (options.favMode) {
+            try {
+                const raw = JSON.parse(localStorage.getItem('te_fav_searches') || '[]');
+                // Migrate old format (plain strings) to objects
+                this.recentSearches = raw.map(r => typeof r === 'string' ? { q: r, code: '' } : r);
+            } catch(e) {}
+            // Re-index cards whenever rendered HTML changes
+            this.$watch('html', () => { this.$nextTick(() => this._indexCards()); });
+            // Responsive per-page
+            this._mq = window.matchMedia('(max-width: 767px)');
+            this._onMqChange = () => {
+                this._perPage = this._mq.matches
+                    ? (options.perPageMobile || 6)
+                    : (options.perPageDesktop || 9);
+                this.page = 1;
+                if (_favEls.length) this._applyPagination();
+            };
+            this._mq.addEventListener('change', this._onMqChange);
+            this._onMqChange();
+        }
         this.load();
     },
     destroy() {
         if (this._removeHandler) window.removeEventListener(options.removeEvent, this._removeHandler);
+        if (options.favMode && this._mq) this._mq.removeEventListener('change', this._onMqChange);
+        _favEls = []; _matchingIndices = [];
     },
+
     async _fetchSlugs(slugs) {
         const r = await fetch(loadUrl, {
             method: 'POST',
@@ -75,6 +127,8 @@ Alpine.data('listLoader', (loadUrl, storageKey, options = {}) => ({
     _applyResult(j) {
         this.html = j.html || '';
         this.count = j.count || 0;
+        // Avoid "no results" flash before _indexCards runs
+        if (options.favMode) this.filteredCount = this.count;
         if (options.reExecScripts) {
             this.$nextTick(() => {
                 const el = this.$el.querySelector('[x-html]');
@@ -90,25 +144,214 @@ Alpine.data('listLoader', (loadUrl, storageKey, options = {}) => ({
     },
     async load() {
         this.loading = true;
-        if (!this.slugs.length) { this.loading = false; this.html = ''; this.count = 0; return; }
+        if (!this.slugs.length) { this.loading = false; this.html = ''; this.count = 0; this.filteredCount = 0; return; }
         try {
             const j = await this._fetchSlugs(this.slugs);
             this._applyResult(j);
         } catch(e) {}
         this.loading = false;
     },
+    _uncache(slug) {
+        const prefix = window.location.pathname.slice(0, 3);
+        const csrf = document.querySelector('meta[name=csrf-token]')?.content || '';
+        fetch(prefix + '/property/uncache', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+            body: JSON.stringify({ slug }),
+        }).catch(() => {});
+    },
     removeSlug(slug) {
+        this._uncache(slug);
         this.slugs = this.slugs.filter(s => s !== slug);
         localStorage.setItem(storageKey, JSON.stringify(this.slugs));
         window.dispatchEvent(new CustomEvent('te-storage'));
-        if (!this.slugs.length) { this.html = ''; this.count = 0; return; }
+        if (!this.slugs.length) { this.html = ''; this.count = 0; this.filteredCount = 0; return; }
         this._fetchSlugs(this.slugs).then(j => this._applyResult(j)).catch(() => {});
     },
     clearAll() {
+        this.slugs.forEach(slug => this._uncache(slug));
         localStorage.removeItem(storageKey);
         this.slugs = []; this.html = ''; this.count = 0;
+        if (options.favMode) {
+            _favEls = []; _matchingIndices = []; this._cards = [];
+            this.filteredCount = 0; this.totalPages = 1; this.page = 1;
+            this.query = ''; this.suggestions = []; this.showDropdown = false;
+        }
+        window.dispatchEvent(new Event('te-storage'));
     },
-}));
+
+    // ── fav-mode: card indexing ─────────────────────────────────────────────
+    _indexCards() {
+        _favEls = Array.from(this.$el.querySelectorAll('[data-fav-card]'));
+        this._cards = _favEls.map(el => ({
+            title: el.dataset.title || '',
+            address: el.dataset.address || '',
+            code: el.dataset.code || '',
+            visible: true, // true = passes filter AND is on current page
+        }));
+        if (this.query.trim()) {
+            this._applyFilter();
+        } else {
+            this.filteredCount = this._cards.length;
+            this.totalPages = Math.max(1, Math.ceil(this._cards.length / this._perPage));
+            this._applyPagination();
+        }
+    },
+
+    // ── fav-mode: fuzzy search ──────────────────────────────────────────────
+    // Strips punctuation incl. Unicode, keeps all script letters + digits
+    _norm(s) { return s.toLowerCase().replace(/[^\p{L}\p{N}]/gu, ''); },
+
+    _fuzzyScore(text, query) {
+        const t = this._norm(text);
+        const q = this._norm(query);
+        if (!q) return 1;
+        let qi = 0, score = 0, lastMatch = -1;
+        for (let ti = 0; ti < t.length && qi < q.length; ti++) {
+            if (t[ti] === q[qi]) {
+                score += 1 + (lastMatch === ti - 1 ? 2 : 0); // bonus for consecutive
+                score += Math.max(0, 5 - ti);                 // bonus for early position
+                lastMatch = ti;
+                qi++;
+            }
+        }
+        return qi < q.length ? 0 : score;
+    },
+
+    _escHtml(s) {
+        return String(s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    },
+
+    _applyFilter() {
+        const q = this.query.trim();
+        const matchFlags = this._cards.map(c => {
+            if (!q) return true;
+            return Math.max(
+                this._fuzzyScore(c.title, q),
+                this._fuzzyScore(c.address, q),
+                this._fuzzyScore(c.code, q),
+            ) > 0;
+        });
+        _matchingIndices = matchFlags.reduce((acc, m, i) => { if (m) acc.push(i); return acc; }, []);
+        this.filteredCount = _matchingIndices.length;
+        this.totalPages = Math.max(1, Math.ceil(_matchingIndices.length / this._perPage));
+        this.page = 1;
+        this._applyPaginationWith(_matchingIndices);
+        this._buildSuggestions(q);
+    },
+
+    _applyPagination() {
+        _matchingIndices = this._cards.map((_, i) => i);
+        this._applyPaginationWith(_matchingIndices);
+    },
+
+    _applyPaginationWith(matchingIndices) {
+        const start = (this.page - 1) * this._perPage;
+        const visibleSet = new Set(matchingIndices.slice(start, start + this._perPage));
+        // Operate directly on raw DOM elements — never through Alpine Proxy
+        _favEls.forEach((el, i) => {
+            if (visibleSet.has(i)) {
+                el.style.removeProperty('display');
+            } else {
+                el.style.setProperty('display', 'none', 'important');
+            }
+        });
+    },
+
+    goPage(p) {
+        if (p < 1 || p > this.totalPages) return;
+        this.page = p;
+        this._applyPaginationWith(_matchingIndices);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+
+    // ── fav-mode: search input events ───────────────────────────────────────
+    onQueryInput() {
+        clearTimeout(this._queryTimer);
+        this._queryTimer = setTimeout(() => this._applyFilter(), 120);
+    },
+
+    commitSearch() {
+        const q = this.query.trim();
+        if (q) {
+            // Try to grab code from top suggestion if it matches this query
+            const topCode = this.suggestions.length > 0 ? this.suggestions[0].code : '';
+            this._saveRecentSearch(q, topCode);
+        }
+        this.closeDropdown();
+        this._applyFilter();
+    },
+
+    clearSearch() {
+        this.query = '';
+        this.closeDropdown();
+        this._applyFilter();
+    },
+
+    // ── fav-mode: dropdown ──────────────────────────────────────────────────
+    openDropdown() {
+        if (!options.favMode) return;
+        this.showDropdown = true;
+        if (!this.query.trim()) this.suggestions = [];
+    },
+
+    closeDropdown() { this.showDropdown = false; },
+
+    pickSuggestion(value, code) {
+        this.query = value;
+        this._saveRecentSearch(value, code);
+        this.closeDropdown();
+        this._applyFilter();
+    },
+
+    pickRecent(r) {
+        this.query = r.q;
+        this.closeDropdown();
+        this._applyFilter();
+    },
+
+    _buildSuggestions(q) {
+        if (!q) { this.suggestions = []; return; }
+        this.suggestions = this._cards
+            .map((c, i) => ({
+                i,
+                score: Math.max(
+                    this._fuzzyScore(c.title, q),
+                    this._fuzzyScore(c.code, q),
+                ),
+                title: c.title,
+                code: c.code,
+                address: c.address,
+            }))
+            .filter(x => x.score > 0)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 15)
+            .map(x => {
+                const titleScore = this._fuzzyScore(x.title, q);
+                const codeScore  = this._fuzzyScore(x.code, q);
+                // If code matched better (or title didn't match), use code as search term
+                const raw = (codeScore > titleScore && codeScore > 0) ? x.code : (x.title || x.code);
+                const shortTitle = x.title.length > 45 ? x.title.slice(0, 44) + '…' : x.title;
+                return {
+                    raw,
+                    titleHtml: this._escHtml(shortTitle || x.code),
+                    code: x.code,
+                    address: x.address,
+                };
+            });
+    },
+
+    // ── fav-mode: recent searches ───────────────────────────────────────────
+    _saveRecentSearch(q, code) {
+        const entry = { q, code: code || '' };
+        const deduped = [entry, ...this.recentSearches.filter(r => r.q.toLowerCase() !== q.toLowerCase())].slice(0, 3);
+        this.recentSearches = deduped;
+        localStorage.setItem('te_fav_searches', JSON.stringify(deduped));
+    },
+    };
+});
 
 // Async contact / enquiry form
 Alpine.data('contactForm', (submitUrl, errorMsg) => ({

@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Services\ParallelPropertyFetcher;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use TouchEstate\Sdk\TouchEstateClient;
 
 class CompareController extends Controller
 {
-    public function __construct(private TouchEstateClient $client) {}
+    public function __construct(private ParallelPropertyFetcher $fetcher) {}
 
     public function index()
     {
@@ -19,35 +18,31 @@ class CompareController extends Controller
 
     public function load(Request $request)
     {
+        // Release session lock immediately so other browser requests
+        // (CSS, JS, favicon) are not blocked during API calls.
+        session()->save();
+
         $slugs = array_values(array_unique(array_filter((array) $request->input('slugs', []))));
         $slugs = array_slice($slugs, 0, 10);
+        $slugs = array_values(array_filter($slugs, fn($s) => is_string($s) && strlen($s) <= 200));
 
         if (empty($slugs)) {
             return response()->json(['html' => '', 'count' => 0, 'slugs' => []]);
         }
 
+        $fetched    = $this->fetcher->fetchMany($slugs);
         $properties = [];
         $validSlugs = [];
 
         foreach ($slugs as $slug) {
-            if (!is_string($slug) || strlen($slug) > 200) {
+            if (!isset($fetched[$slug])) {
                 continue;
             }
-            try {
-                $prop = Cache::remember('te_prop:' . $slug, 3600, function () use ($slug) {
-                    $p = $this->client->properties()->retrieve($slug);
-                    $p['slug'] = $slug;
-                    return $p;
-                });
-
-                $prop['primaryImageUrl'] = $this->extractPrimaryImageUrl($prop);
-                $prop['fullAddress'] = $this->buildPropertyAddress($prop) ?: null;
-
-                $properties[] = $prop;
-                $validSlugs[]  = $slug;
-            } catch (\Exception) {
-                // property deleted or not found — skip silently
-            }
+            $prop                    = $fetched[$slug];
+            $prop['primaryImageUrl'] = $this->extractPrimaryImageUrl($prop);
+            $prop['fullAddress']     = $this->buildPropertyAddress($prop) ?: null;
+            $properties[]            = $prop;
+            $validSlugs[]            = $slug;
         }
 
         $highlights = $this->computeHighlights($properties);

@@ -253,13 +253,18 @@
                     <span class="cmp-lbl-text text-[10px] font-bold uppercase tracking-widest text-neutral-400">{{ __('compare.comparing') }}</span>
                 </th>
                 @foreach($properties as $p)
-                    @php $slug = $p['slug'] ?? ''; @endphp
+                    @php
+                        $slug = $p['slug'] ?? '';
+                        $imgs = array_values(array_column($p['media'] ?? [], 'url'));
+                        if (empty($imgs) && !empty($p['primaryImageUrl'])) $imgs = [$p['primaryImageUrl']];
+                    @endphp
                     <td class="w-[280px] border-b-2 border-r border-sand p-2 align-top">
-                        <a href="{{ url('/' . $locale . '/property/' . $slug) }}"
-                           class="block h-[200px] relative overflow-hidden rounded-[14px]">
+                        <button type="button"
+                                onclick="cmpLightbox({{ json_encode($imgs) }}, 0)"
+                                class="block h-[200px] w-full relative overflow-hidden rounded-[14px] cursor-zoom-in">
                             @if(!empty($p['primaryImageUrl']))
                                 <img src="{{ $p['primaryImageUrl'] }}" alt="{{ $p['title'] ?? '' }}"
-                                    class="absolute inset-0 w-full h-full object-cover">
+                                    class="absolute inset-0 w-full h-full object-cover transition duration-200 hover:scale-105">
                             @else
                                 <div class="absolute inset-0 bg-sand grid place-items-center text-brand-300">
                                     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -270,14 +275,11 @@
                                     </svg>
                                 </div>
                             @endif
-                            <div
-                                class="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/[.72] via-black/10 to-transparent">
-                            </div>
+                            <div class="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/[.72] via-black/10 to-transparent"></div>
                             <div class="absolute inset-0 flex flex-col justify-end p-[14px] pointer-events-none">
-                                <h3 class="text-[0.8rem] font-semibold text-white leading-[1.3] line-clamp-2">
-                                    {{ $p['title'] ?? '' }}</h3>
+                                <h3 class="text-[0.8rem] font-semibold text-white leading-[1.3] line-clamp-2">{{ $p['title'] ?? '' }}</h3>
                             </div>
-                        </a>
+                        </button>
                     </td>
                 @endforeach
             </tr>
@@ -456,4 +458,156 @@
             if (btn) btn.classList.toggle('text-brand-600', diffsOn);
         };
     })();
+
+    // ── Image lightbox ──────────────────────────────────────────────────────
+    window.cmpLightbox = function (urls, startIdx) {
+        if (!urls || !urls.length) return;
+        var _urls = urls, _idx = startIdx || 0;
+        var isMobile = window.innerWidth <= 1024;
+
+        var el = document.getElementById('cmp-lightbox');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'cmp-lightbox';
+            el.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;';
+
+            var btnStyle = 'color:#fff;background:rgba(255,255,255,.18);backdrop-filter:blur(8px);border:1.5px solid rgba(255,255,255,.3);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0;';
+
+            el.innerHTML =
+                // close
+                '<button id="cmp-lb-close" style="position:absolute;top:16px;right:16px;' + btnStyle + 'width:44px;height:44px;font-size:24px;z-index:2">×</button>' +
+                // image wrapper (holds img + pinch zoom)
+                '<div id="cmp-lb-wrap" style="flex:1;display:flex;align-items:center;justify-content:center;width:100%;overflow:hidden;padding:60px 0 52px;">' +
+                  '<img id="cmp-lightbox-img" style="max-width:100%;max-height:100%;border-radius:10px;object-fit:contain;box-shadow:0 8px 48px rgba(0,0,0,.7);touch-action:none;transform-origin:center;" alt="">' +
+                '</div>' +
+                // bottom bar: prev · counter · next
+                '<div id="cmp-lb-bar" style="position:absolute;bottom:16px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:16px;">' +
+                  '<button id="cmp-lb-prev" style="' + btnStyle + 'width:44px;height:44px;font-size:26px;">‹</button>' +
+                  '<div id="cmp-lb-counter" style="color:#fff;font-size:13px;background:rgba(0,0,0,.45);padding:4px 14px;border-radius:20px;min-width:54px;text-align:center;"></div>' +
+                  '<button id="cmp-lb-next" style="' + btnStyle + 'width:44px;height:44px;font-size:26px;">›</button>' +
+                '</div>';
+            document.body.appendChild(el);
+        }
+
+        var img      = document.getElementById('cmp-lightbox-img');
+        var btnPrev  = document.getElementById('cmp-lb-prev');
+        var btnNext  = document.getElementById('cmp-lb-next');
+        var counter  = document.getElementById('cmp-lb-counter');
+        var btnClose = document.getElementById('cmp-lb-close');
+        var bar      = document.getElementById('cmp-lb-bar');
+
+        // Preload all images so switching is instant
+        urls.forEach(function(u) { var i = new Image(); i.src = u; });
+
+        // reset pinch scale
+        img.style.transform = 'scale(1)';
+
+        var render = function (initial) {
+            var multi = _urls.length > 1;
+            bar.style.display = multi ? 'flex' : 'none';
+            if (multi) counter.textContent = (_idx + 1) + ' / ' + _urls.length;
+            if (initial) {
+                img.style.transition = 'none';
+                img.style.opacity = '1';
+                img.style.transform = 'scale(1)';
+                img.src = _urls[_idx];
+                return;
+            }
+            img.style.transition = 'opacity .18s ease';
+            img.style.opacity = '0';
+            setTimeout(function() {
+                img.style.transform = 'scale(1)';
+                img.src = _urls[_idx];
+                img.style.opacity = '1';
+            }, 150);
+        };
+
+        var close = function () {
+            el.style.display = 'none';
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            document.removeEventListener('keydown', onKey);
+        };
+
+        var onKey = function (e) {
+            if (e.key === 'Escape')      { close(); return; }
+            if (e.key === 'ArrowLeft')   { _idx = (_idx - 1 + _urls.length) % _urls.length; render(false); }
+            if (e.key === 'ArrowRight')  { _idx = (_idx + 1) % _urls.length; render(false); }
+        };
+
+        el.onclick      = function (e) { if (e.target === el || e.target.id === 'cmp-lb-wrap') close(); };
+        btnClose.onclick = function (e) { e.stopPropagation(); close(); };
+        btnPrev.onclick  = function (e) { e.stopPropagation(); _idx = (_idx - 1 + _urls.length) % _urls.length; render(false); };
+        btnNext.onclick  = function (e) { e.stopPropagation(); _idx = (_idx + 1) % _urls.length; render(false); };
+
+        [btnPrev, btnNext, btnClose].forEach(function(b) {
+            b.onmouseover = function() { this.style.background = 'rgba(255,255,255,.32)'; };
+            b.onmouseout  = function() { this.style.background = 'rgba(255,255,255,.18)'; };
+        });
+
+        // ── Touch: swipe to navigate + pinch to zoom ───────────────────────
+        // Handlers on the wrap div (not img) so touch-action:none can work
+        var wrap = document.getElementById('cmp-lb-wrap');
+        wrap.style.touchAction = 'none'; // let JS handle all touches
+
+        var _scale = 1, _pinchStart = 0, _swipeStartX = 0, _swipeStartY = 0, _swipeActive = false;
+
+        wrap.ontouchstart = function (e) {
+            _scale = _scale || 1;
+            if (e.touches.length === 2) {
+                _swipeActive = false;
+                _pinchStart = Math.hypot(
+                    e.touches[1].clientX - e.touches[0].clientX,
+                    e.touches[1].clientY - e.touches[0].clientY
+                );
+                e.preventDefault();
+            } else if (e.touches.length === 1 && _scale <= 1.05) {
+                _swipeStartX = e.touches[0].clientX;
+                _swipeStartY = e.touches[0].clientY;
+                _swipeActive = true;
+            }
+        };
+        wrap.ontouchmove = function (e) {
+            if (e.touches.length === 2 && _pinchStart > 0) {
+                var dist = Math.hypot(
+                    e.touches[1].clientX - e.touches[0].clientX,
+                    e.touches[1].clientY - e.touches[0].clientY
+                );
+                _scale = Math.min(4, Math.max(1, _scale * (dist / _pinchStart)));
+                _pinchStart = dist;
+                img.style.transition = 'none';
+                img.style.transform = 'scale(' + _scale + ')';
+                e.preventDefault();
+            } else if (_swipeActive && e.touches.length === 1) {
+                // prevent vertical scroll inside lightbox while swiping
+                var dy = Math.abs(e.touches[0].clientY - _swipeStartY);
+                var dx = Math.abs(e.touches[0].clientX - _swipeStartX);
+                if (dx > dy) e.preventDefault();
+            }
+        };
+        wrap.ontouchend = function (e) {
+            if (_swipeActive && e.changedTouches.length === 1 && _scale <= 1.05) {
+                var dx = e.changedTouches[0].clientX - _swipeStartX;
+                if (Math.abs(dx) > 48) {
+                    _idx = dx < 0
+                        ? (_idx + 1) % _urls.length
+                        : (_idx - 1 + _urls.length) % _urls.length;
+                    render(false);
+                }
+            }
+            if (e.touches.length < 2) {
+                _pinchStart = 0;
+                img.style.transition = 'opacity .18s ease, transform .2s ease';
+                if (_scale < 1) { _scale = 1; img.style.transform = 'scale(1)'; }
+            }
+            _swipeActive = false;
+        };
+
+        _urls = urls; _idx = startIdx || 0;
+        render(true);
+        el.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        document.addEventListener('keydown', onKey);
+    };
 </script>

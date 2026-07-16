@@ -1,6 +1,6 @@
 @php $initTab = count($saleProperties) ? 'sale' : 'rent'; @endphp
 <div x-data="{ tab: '{{ $initTab }}' }">
-    <div class="mt-7 inline-flex rounded-full border border-sand bg-panel p-1 mx-auto block w-fit">
+    <div class="mt-7 flex rounded-full border border-sand bg-panel p-1 mx-auto w-fit">
         <button @click="tab='sale'" :class="tab==='sale' ? 'bg-brand-600 text-white' : 'text-ink'" class="rounded-full px-6 py-2 text-sm font-semibold transition">{{ __('index.popular_for_sale') }}</button>
         <button @click="tab='rent'" :class="tab==='rent' ? 'bg-brand-600 text-white' : 'text-ink'" class="rounded-full px-6 py-2 text-sm font-semibold transition">{{ __('index.popular_for_rent') }}</button>
     </div>

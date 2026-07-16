@@ -1,5 +1,5 @@
 @extends('layout.app')
-@section('title', __('header.property'))
+@section('title', __('header.property') . ' — ' . ($workspace['name'] ?? ''))
 
 @php
     $locale = app()->getLocale();
