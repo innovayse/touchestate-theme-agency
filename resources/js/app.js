@@ -10,6 +10,28 @@ Turbo.config.drive.progressBarDelay = 0;
 // Disable Turbo's built-in hover prefetch — we use IntersectionObserver prefetch instead
 Turbo.config.drive.prefetch = false;
 
+// ── sessionStorage cache helpers ─────────────────────────────────
+// Bump _CV to 'te_v2_' when card or compare table templates change — old
+// cache is automatically ignored without any explicit invalidation code.
+const _CV  = 'te_v1_';
+const _TTL = 1_800_000; // 30 minutes in ms
+
+function _ssGet(key) {
+    try {
+        const item = JSON.parse(sessionStorage.getItem(_CV + key));
+        if (item && Date.now() - item.ts < _TTL) return item.val;
+    } catch {}
+    return null;
+}
+
+function _ssSet(key, val) {
+    try { sessionStorage.setItem(_CV + key, JSON.stringify({ val, ts: Date.now() })); } catch {}
+}
+
+function _ssDel(key) {
+    try { sessionStorage.removeItem(_CV + key); } catch {}
+}
+
 // Fav/compare toggle — used on property cards and property-single hero
 Alpine.data('propertyToggle', (slug) => ({
     slug,
@@ -122,10 +144,43 @@ Alpine.data('listLoader', (loadUrl, storageKey, options = {}) => {
     },
 
     async _fetchSlugs(slugs) {
+        if (options.favMode) {
+            // Per-slug cache: only fetch slugs missing from sessionStorage
+            const cachedCards = {};
+            const toFetch     = [];
+            for (const slug of slugs) {
+                const hit = _ssGet('card:' + slug);
+                if (hit !== null) cachedCards[slug] = hit;
+                else              toFetch.push(slug);
+            }
+
+            const freshCards = {};
+            if (toFetch.length) {
+                const r = await fetch(loadUrl, {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+                    body:    JSON.stringify({ slugs: toFetch }),
+                });
+                const j = await r.json();
+                for (const item of (j.items || [])) {
+                    _ssSet('card:' + item.slug, item.html);
+                    freshCards[item.slug] = item.html;
+                }
+            }
+
+            // Assemble in original slug order; drop slugs with no data (404s)
+            const cards      = slugs.map(s => cachedCards[s] || freshCards[s]).filter(Boolean);
+            const validSlugs = slugs.filter(s => cachedCards[s] || freshCards[s]);
+            const html = '<div class="grid gap-2.5 sm:gap-5 sm:grid-cols-2 lg:grid-cols-3">'
+                         + cards.join('') + '</div>';
+            return { html, count: cards.length, slugs: validSlugs };
+        }
+
+        // Compare (and any future non-fav mode): plain POST, server assembles HTML
         const r = await fetch(loadUrl, {
-            method: 'POST',
+            method:  'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
-            body: JSON.stringify({ slugs }),
+            body:    JSON.stringify({ slugs }),
         });
         return r.json();
     },
@@ -167,6 +222,7 @@ Alpine.data('listLoader', (loadUrl, storageKey, options = {}) => {
     },
     removeSlug(slug) {
         this._uncache(slug);
+        if (options.favMode) _ssDel('card:' + slug);
         this.slugs = this.slugs.filter(s => s !== slug);
         localStorage.setItem(storageKey, JSON.stringify(this.slugs));
         window.dispatchEvent(new CustomEvent('te-storage'));
@@ -174,7 +230,10 @@ Alpine.data('listLoader', (loadUrl, storageKey, options = {}) => {
         this._fetchSlugs(this.slugs).then(j => this._applyResult(j)).catch(() => {});
     },
     clearAll() {
-        this.slugs.forEach(slug => this._uncache(slug));
+        this.slugs.forEach(slug => {
+            this._uncache(slug);
+            if (options.favMode) _ssDel('card:' + slug);
+        });
         localStorage.removeItem(storageKey);
         this.slugs = []; this.html = ''; this.count = 0;
         if (options.favMode) {
