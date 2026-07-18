@@ -18,8 +18,7 @@ class FavoritesController extends Controller
 
     public function load(Request $request): \Illuminate\Http\JsonResponse
     {
-        // Release session lock immediately so other browser requests
-        // (CSS, JS, favicon) are not blocked during API calls.
+        // Release session lock so other browser requests don't queue behind API calls.
         session()->save();
 
         $slugs = array_values(array_unique(array_filter((array) $request->input('slugs', []))));
@@ -27,11 +26,11 @@ class FavoritesController extends Controller
         $slugs = array_values(array_filter($slugs, fn($s) => is_string($s) && strlen($s) <= 200));
 
         if (empty($slugs)) {
-            return response()->json(['html' => '', 'count' => 0, 'slugs' => []]);
+            return response()->json(['items' => [], 'validSlugs' => []]);
         }
 
         $fetched    = $this->fetcher->fetchMany($slugs);
-        $properties = [];
+        $items      = [];
         $validSlugs = [];
 
         foreach ($slugs as $slug) {
@@ -41,12 +40,11 @@ class FavoritesController extends Controller
             $prop                    = $fetched[$slug];
             $prop['primaryImageUrl'] = $this->extractPrimaryImageUrl($prop);
             $prop['fullAddress']     = $this->buildPropertyAddress($prop) ?: null;
-            $properties[]            = $prop;
-            $validSlugs[]            = $slug;
+
+            $items[]      = ['slug' => $slug, 'html' => view('components.property-card', ['prop' => $prop])->render()];
+            $validSlugs[] = $slug;
         }
 
-        $html = view('partials.favorites-grid', compact('properties'))->render();
-
-        return response()->json(['html' => $html, 'count' => count($properties), 'slugs' => $validSlugs]);
+        return response()->json(['items' => $items, 'validSlugs' => $validSlugs]);
     }
 }
