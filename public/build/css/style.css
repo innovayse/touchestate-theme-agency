@@ -15379,6 +15379,73 @@ html[data-theme="dark"] .ps-page .bool-pill {
 /* Let Yandex Maps handle pinch-zoom/drag on touch, instead of the browser zooming the whole page */
 #map, #propertyJsMap, #mapFullscreenJsMap, #contact-map { touch-action: none; }
 
+/* Favorites grid pagination buttons */
+#favorites-pagination { gap: 6px; }
+.fav-pg-btn {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--gray-100);
+  border-radius: 10px;
+  background: var(--white);
+  color: var(--gray-900);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: color .18s ease, background .18s ease, border-color .18s ease;
+}
+.fav-pg-btn.fav-pg-nav { padding: 0; }
+.fav-pg-btn .material-icons-outlined { font-size: 20px; }
+.fav-pg-btn:hover:not(:disabled):not(.active) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.fav-pg-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.fav-pg-btn:disabled { opacity: 0.4; cursor: default; }
+
+/* Favorites in-page search + suggestions */
+.favorites-search-wrap { max-width: 460px; }
+.favorites-search-icon {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  font-size: 20px; color: var(--gray-700); pointer-events: none;
+}
+.favorites-search-input { padding-left: 42px; padding-right: 38px; height: 46px; border-radius: 10px; border: 1px solid var(--gray-200); }
+.favorites-search-input:focus { border-color: var(--primary); box-shadow: none; }
+.favorites-search-clear {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;
+  border: none; background: transparent; color: var(--gray-700); cursor: pointer; border-radius: 50%;
+}
+.favorites-search-clear:hover { background: var(--gray-100); }
+.favorites-suggest {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 20;
+  margin: 0; padding: 6px; list-style: none;
+  background: var(--white); border: 1px solid var(--gray-200); border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  max-height: 320px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--gray-200) transparent;
+}
+.favorites-suggest::-webkit-scrollbar { width: 8px; }
+.favorites-suggest::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 8px; }
+.favorites-suggest::-webkit-scrollbar-track { background: transparent; }
+.favorites-suggest-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 9px 12px; border-radius: 8px; cursor: pointer; transition: background 0.15s ease;
+}
+.favorites-suggest-item:hover, .favorites-suggest-item.active { background: var(--light); }
+.fs-suggest-title { color: var(--gray-900); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fs-suggest-code { color: var(--primary); font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.fav-divider { border-bottom: 1px solid var(--gray-200); margin-bottom: 4px; padding-bottom: 10px; }
+.favorites-recent-item .fs-suggest-title { display: inline-flex; align-items: center; }
+.fs-suggest-ic { font-size: 16px; margin-right: 6px; color: var(--gray-700); }
+
 @media (max-width: 767px) {
     #grid-controls { flex-direction: row; align-items: stretch; }
     #grid-controls .btn { flex: 1; justify-content: center; }

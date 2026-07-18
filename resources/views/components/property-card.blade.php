@@ -7,7 +7,7 @@
     $locale  = app()->getLocale();
 @endphp
 
-<div class="{{ $col }} d-flex mb-4" data-slug="{{ $prop['slug'] }}">
+<div class="{{ $col }} d-flex mb-4" data-slug="{{ $prop['slug'] }}" data-code="{{ $prop['code'] ?? '' }}" data-title="{{ $prop['title'] ?? '' }}" data-address="{{ $prop['fullAddress'] ?? $prop['city'] ?? '' }}">
     <div class="pc-card d-flex flex-column flex-fill"
          style="cursor:pointer;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);background:var(--white);border:1px solid var(--gray-100);"
          onclick="if(!event.target.closest('.favourite') && !event.target.closest('.compare-btn')){window.location.href='/{{ $locale }}/property/{{ $prop['slug'] }}'}">
