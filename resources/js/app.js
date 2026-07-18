@@ -206,8 +206,25 @@ Alpine.data('listLoader', (loadUrl, storageKey, options = {}) => {
         this.loading = true;
         if (!this.slugs.length) { this.loading = false; this.html = ''; this.count = 0; this.filteredCount = 0; return; }
         try {
+            // Compare blob cache: key encodes the exact slug set; sorted so order doesn't matter
+            if (!options.favMode) {
+                const cmpKey = 'cmp:' + [...this.slugs].sort().join(',');
+                const cached = _ssGet(cmpKey);
+                if (cached !== null) {
+                    this._applyResult(cached);
+                    this.loading = false;
+                    return;
+                }
+            }
+
             const j = await this._fetchSlugs(this.slugs);
             this._applyResult(j);
+
+            // Store compare result so next visit with same slugs is instant
+            if (!options.favMode) {
+                const cmpKey = 'cmp:' + [...this.slugs].sort().join(',');
+                _ssSet(cmpKey, j);
+            }
         } catch(e) {}
         this.loading = false;
     },
@@ -640,6 +657,35 @@ Alpine.store('fx', {
 });
 
 Alpine.store('contactModal', { open: false });
+
+// ── Proactive server cache warming ───────────────────────────────────────
+// On every page load fire low-priority fetches for all localStorage slugs not
+// already cached in sessionStorage. Keeps te_prop:{slug} warm on the server
+// (24h TTL) so the first visit to Compare/Favorites after a browser restart
+// is fast even though sessionStorage was cleared.
+function warmServerCache() {
+    let favSlugs = [], cmpSlugs = [];
+    try { favSlugs = JSON.parse(localStorage.getItem('te_favorites') || '[]'); } catch {}
+    try { cmpSlugs = JSON.parse(localStorage.getItem('te_compare')   || '[]'); } catch {}
+
+    const allSlugs = [...new Set([...favSlugs, ...cmpSlugs])];
+    const toWarm   = allSlugs.filter(slug => _ssGet('card:' + slug) === null);
+    if (!toWarm.length) return;
+
+    const prefix = window.location.pathname.slice(0, 3);
+    const lang   = ['/en', '/ru', '/hy'].includes(prefix) ? prefix : '';
+    toWarm.slice(0, 10).forEach(slug =>
+        fetch(lang + '/property/' + slug, { priority: 'low' }).catch(() => {})
+    );
+}
+
+document.addEventListener('turbo:load', function () {
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(warmServerCache, { timeout: 3000 });
+    } else {
+        setTimeout(warmServerCache, 200);
+    }
+});
 
 // ── Property-single prefetch ──────────────────────────────────────────────
 // When property cards scroll into view, fire <link rel="prefetch"> for each
