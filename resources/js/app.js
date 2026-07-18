@@ -49,6 +49,11 @@ Alpine.data('propertyToggle', (slug) => ({
         if (e) { e.preventDefault(); e.stopPropagation(); }
         this.isCmp = this._toggleStorageItem('te_compare', this.slug);
         this.popCmp = true; setTimeout(() => this.popCmp = false, 300);
+        if (this.isCmp) {
+            const prefix = window.location.pathname.slice(0, 3);
+            const lang = ['/en', '/ru', '/hy'].includes(prefix) ? prefix : '';
+            fetch(lang + '/property/' + this.slug, { priority: 'low' }).catch(() => {});
+        }
     },
 }));
 
@@ -622,12 +627,16 @@ Alpine.store('contactModal', { open: false });
 }());
 
 // ── Turbo Drive + Alpine.js integration ──────────────────────────
-document.addEventListener('turbo:before-render', function () {
-    // Reset contact modal so it doesn't reopen on next page
+// turbo:before-cache fires when Turbo is about to snapshot the current page.
+// We destroy Alpine here so the snapshot is clean (no live bindings).
+// turbo:before-render fires AFTER the snapshot is saved — we only clean
+// up globals here (maps, modals) so restored snapshots don't hold stale refs.
+document.addEventListener('turbo:before-cache', function () {
     Alpine.store('contactModal').open = false;
-
     Alpine.destroyTree(document.body);
+});
 
+document.addEventListener('turbo:before-render', function () {
     // Destroy Yandex Map instance to prevent memory leak
     if (window._propMapInstance) {
         try { window._propMapInstance.destroy(); } catch(e) {}

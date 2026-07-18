@@ -1,6 +1,10 @@
 @extends('layout.app')
 @section('title', __('header.map') . ' — ' . ($workspace['name'] ?? ''))
 
+@push('styles')
+<meta name="turbo-cache-control" content="no-preview">
+@endpush
+
 @section('content')
 <x-breadcrumb :title="__('header.map')" />
 
