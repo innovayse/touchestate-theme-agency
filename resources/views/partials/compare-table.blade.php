@@ -119,8 +119,13 @@ foreach ($properties as $pi => $prop) {
 {{-- ============================================================ --}}
 {{-- Desktop: comparison table (>= md)                            --}}
 {{-- ============================================================ --}}
+@php $tableWidth = 210 + count($properties) * 320; @endphp
 <div class="compare-table-wrap d-none d-md-block">
-    <table class="compare-table">
+    <table class="compare-table" style="table-layout:fixed;width:{{ $tableWidth }}px">
+        <colgroup>
+            <col style="width:210px">
+            @foreach($properties as $_) <col style="width:320px"> @endforeach
+        </colgroup>
         <thead>
             <tr>
                 <th class="compare-label-th"></th>

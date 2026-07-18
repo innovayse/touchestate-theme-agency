@@ -143,7 +143,15 @@ document.addEventListener('DOMContentLoaded', function () {
         if (result) {
             result.innerHTML = data.html;
             result.style.display = '';
-            requestAnimationFrame(function () { result.style.opacity = '1'; });
+            requestAnimationFrame(function () {
+                result.style.opacity = '1';
+                // Fix Chrome bug: sticky td doesn't inherit full row height
+                result.querySelectorAll('tr').forEach(function (tr) {
+                    var h = tr.getBoundingClientRect().height;
+                    var label = tr.querySelector('.compare-row-label, .compare-label-th');
+                    if (label) label.style.height = h + 'px';
+                });
+            });
         }
 
         // Remove single property

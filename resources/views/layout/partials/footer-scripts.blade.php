@@ -342,8 +342,6 @@
     <script>
     (function () {
         var COMPARE_KEY = 'te_compare';
-        var MAX_COMPARE = 4;
-        var __maxMsg   = @json(__('compare.max_reached', ['max' => 4]));
 
         function getSlugs() {
             try { return JSON.parse(localStorage.getItem(COMPARE_KEY)) || []; }
@@ -370,14 +368,8 @@
             document.querySelectorAll('.compare-btn').forEach(function (btn) {
                 var slug = getSlug(btn);
                 if (slug) applyCompareIcon(btn, slugs.indexOf(slug) !== -1);
-            });
-            // Lock buttons when limit reached
-            var atMax = slugs.length >= MAX_COMPARE;
-            document.querySelectorAll('.compare-btn').forEach(function (btn) {
-                var slug = getSlug(btn);
-                var isIn = slug && slugs.indexOf(slug) !== -1;
-                btn.disabled = atMax && !isIn;
-                btn.title    = btn.disabled ? __maxMsg : '';
+                btn.disabled = false;
+                btn.title = '';
             });
         }
 
@@ -416,10 +408,6 @@
             if (idx !== -1) {
                 slugs.splice(idx, 1);
             } else {
-                if (slugs.length >= MAX_COMPARE) {
-                    showCompareToast(__maxMsg);
-                    return;
-                }
                 slugs.push(slug);
             }
 
