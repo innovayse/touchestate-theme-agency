@@ -161,6 +161,33 @@
         color: var(--color-brand-600);
         background-color: var(--color-brand-50);
     }
+    #cmp-diffs-btn.is-active {
+        color: var(--color-brand-700);
+        background-color: var(--color-brand-50);
+        border-color: var(--color-brand-200) !important;
+    }
+    #cmp-toast {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%) translateY(12px);
+        background: rgba(30,30,30,.92);
+        color: #fff;
+        font-size: 13px;
+        padding: 8px 18px;
+        border-radius: 20px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity .22s, transform .22s;
+        z-index: 9000;
+        white-space: nowrap;
+        backdrop-filter: blur(6px);
+    }
+    #cmp-toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    @media (min-width: 1024px) { #cmp-toast { display: none; } }
     #cmp-diffs-label { display: none; }
     @media (min-width: 1024px) { #cmp-diffs-label { display: inline; } }
 
@@ -221,6 +248,7 @@
         <button onclick="cmpTab(2,this)"
             class="cmp-tab-btn px-4 py-3 text-sm whitespace-nowrap">{{ __('compare.tab_amenities') }}</button>
     </div>
+    <div id="cmp-toast"></div>
     <button id="cmp-diffs-btn" onclick="cmpToggleDiffs()"
         class="flex items-center gap-1.5 text-xs text-neutral-500 transition py-2 px-3 rounded-lg whitespace-nowrap shrink-0 ml-1 pl-3"
         style="border-left: 2px solid var(--color-sand)">
@@ -446,16 +474,28 @@
                 }, 10);
             }
         };
+        var _toastTimer = null;
         window.cmpToggleDiffs = function () {
             diffsOn = !diffsOn;
             document.querySelectorAll('#cmp-wrap .cmp-row[data-same="1"]').forEach(function (row) {
                 row.style.display = diffsOn ? 'none' : '';
             });
-            var txt = diffsOn ? '{{ __('compare.show_all') }}' : '{{ __('compare.show_diffs') }}';
+            var txtOn  = '{{ __('compare.show_all') }}';
+            var txtOff = '{{ __('compare.show_diffs') }}';
+            var txt = diffsOn ? txtOn : txtOff;
             var l = document.getElementById('cmp-diffs-label');
             if (l) l.textContent = txt;
             var btn = document.getElementById('cmp-diffs-btn');
-            if (btn) btn.classList.toggle('text-brand-600', diffsOn);
+            if (btn) btn.classList.toggle('is-active', diffsOn);
+            // Mobile toast (hidden on lg+)
+            var toast = document.getElementById('cmp-toast');
+            if (toast) {
+                var toastMsg = diffsOn ? '{{ __('compare.toast_diffs_on') }}' : '{{ __('compare.toast_diffs_off') }}';
+                toast.textContent = toastMsg;
+                toast.classList.add('show');
+                clearTimeout(_toastTimer);
+                _toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2200);
+            }
         };
     })();
 

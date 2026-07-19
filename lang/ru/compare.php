@@ -20,6 +20,8 @@ return [
     'tab_amenities'  => 'Удобства и мебель',
     'show_diffs'     => 'Показать отличия',
     'show_all'       => 'Показать всё',
+    'toast_diffs_on' => 'Только отличия',
+    'toast_diffs_off'=> 'Все строки',
 
     // Table row labels
     'price'            => 'Цена',

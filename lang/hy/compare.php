@@ -21,6 +21,8 @@ return [
     'tab_amenities'  => 'Հարմարություններ և կահույք',
     'show_diffs'     => 'Ցույց տալ տարբերությունները',
     'show_all'       => 'Ցույց տալ բոլորը',
+    'toast_diffs_on' => 'Միայն տարբերությունները',
+    'toast_diffs_off'=> 'Բոլոր տողերը',
 
     // Table row labels
     'price'            => 'Գին',

@@ -21,6 +21,8 @@ return [
     'tab_amenities'  => 'Amenities & Furniture',
     'show_diffs'     => 'Show differences',
     'show_all'       => 'Show all',
+    'toast_diffs_on' => 'Differences only',
+    'toast_diffs_off'=> 'All rows',
 
     // Table row labels
     'price'            => 'Price',
