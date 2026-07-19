@@ -50,7 +50,33 @@
 
                 <!-- Skeleton (shown while loading) -->
                 <div id="compare-skeleton" style="display:none">
-                    <div class="compare-skeleton-wrap">
+
+                    {{-- Mobile skeleton: swipeable cards --}}
+                    <div class="compare-skeleton-mobile d-md-none" style="display:flex;flex-direction:row;gap:16px;overflow:hidden;padding:0 16px 12px;margin:0 -12px">
+                        @for($i = 0; $i < 2; $i++)
+                        <div style="flex:0 0 calc(100% - 32px);background:var(--bs-body-bg,#fff);border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.07)">
+                            <div class="csk-block" style="width:100%;height:200px;border-radius:0"></div>
+                            <div style="padding:16px">
+                                <div class="csk-block mb-2" style="width:80%;height:15px;border-radius:4px"></div>
+                                <div class="csk-block mb-3" style="width:50%;height:13px;border-radius:4px"></div>
+                                <div class="csk-block mb-3" style="width:40%;height:22px;border-radius:6px"></div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                                    @for($r = 0; $r < 6; $r++)
+                                    <div>
+                                        <div class="csk-block mb-1" style="width:60%;height:10px;border-radius:3px"></div>
+                                        <div class="csk-block" style="width:80%;height:13px;border-radius:3px"></div>
+                                    </div>
+                                    @endfor
+                                </div>
+                                <div class="csk-block mt-3" style="width:100%;height:38px;border-radius:8px"></div>
+                                <div class="csk-block mt-2" style="width:100%;height:32px;border-radius:8px"></div>
+                            </div>
+                        </div>
+                        @endfor
+                    </div>
+
+                    {{-- Desktop skeleton: table --}}
+                    <div class="compare-skeleton-wrap d-none d-md-block">
 
                         {{-- Header cards --}}
                         <div class="compare-skeleton-header">
