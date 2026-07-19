@@ -7425,10 +7425,10 @@ span.select2-container.select2-container--default.select2-container--open {
   .stats-bar-grid {
     grid-template-columns: 1fr;
     gap: 10px;
-    justify-items: center;
+    justify-items: start;
   }
   .stats-bar-item {
-    justify-content: center;
+    justify-content: flex-start;
   }
   .stats-bar-icon {
     width: 22px;
@@ -7747,6 +7747,10 @@ span.select2-container.select2-container--default.select2-container--open {
   font-weight: 600;
   margin-bottom: 8px;
   line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .featured-main-address {
