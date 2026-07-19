@@ -162,9 +162,13 @@
         background-color: var(--color-brand-50);
     }
     #cmp-diffs-btn.is-active {
-        color: var(--color-brand-700);
-        background-color: var(--color-brand-50);
+        color: var(--color-brand-700) !important;
+        background-color: var(--color-brand-50) !important;
         border-color: var(--color-brand-200) !important;
+    }
+    #cmp-diffs-btn:not(.is-active) {
+        color: var(--color-neutral-500, #737373) !important;
+        background-color: transparent !important;
     }
     #cmp-toast {
         position: fixed;
