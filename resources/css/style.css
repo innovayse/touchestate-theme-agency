@@ -15371,10 +15371,6 @@ html[data-theme="dark"] .ps-page .bool-pill {
 }
 
 /* Mobile compare: center single card */
-.compare-mobile-list {
-  justify-content: center !important;
-  padding: 0 16px !important;
-}
 
 @media (max-width: 767.98px) {
   .compare-clear-all {
