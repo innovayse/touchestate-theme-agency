@@ -82,13 +82,13 @@ class ExchangeRateService
     }
 
     /**
-     * @param array<string, float> $rates
+     * @param  array<string, float> $rates
      * @return array<string, float>
      */
     private function store(array $rates): array
     {
         $rates['AMD'] = 1.0;
-        $json = json_encode(['rates' => $rates, 'fetched_at' => time()]);
+        $json         = json_encode(['rates' => $rates, 'fetched_at' => time()]);
         Storage::disk('local')->put(self::STORE, $json !== false ? $json : '{}');
 
         return $rates;
@@ -101,7 +101,7 @@ class ExchangeRateService
             if (!Storage::disk('local')->exists(self::STORE)) {
                 return null;
             }
-            $raw = Storage::disk('local')->get(self::STORE);
+            $raw  = Storage::disk('local')->get(self::STORE);
             $data = json_decode($raw ?? '', true);
         } catch (\Throwable $e) {
             return null;

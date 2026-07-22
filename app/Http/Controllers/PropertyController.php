@@ -297,7 +297,7 @@ class PropertyController extends Controller
      * deduplicated by id, preserving the API's own sort order. Each page is cached.
      */
     /**
-     * @param array<string, mixed> $base
+     * @param  array<string, mixed>             $base
      * @return array<int, array<string, mixed>>
      */
     private function fetchAll(array $base): array
@@ -334,7 +334,7 @@ class PropertyController extends Controller
      * rates are unavailable (caller falls back to a single-currency query).
      */
     /**
-     * @param array<string, mixed> $base
+     * @param  array<string, mixed>                  $base
      * @return array<int, array<string, mixed>>|null
      */
     private function fetchMergedAll(array $base, bool $hasMin, bool $hasMax): ?array
@@ -401,7 +401,7 @@ class PropertyController extends Controller
      * On API failure returns an empty result instead of throwing.
      */
     /**
-     * @param array<string, mixed> $filters
+     * @param  array<string, mixed> $filters
      * @return array<string, mixed>
      */
     private function cachedList(array $filters): array
@@ -421,7 +421,7 @@ class PropertyController extends Controller
      * converted into the display currency; otherwise newest-first by createdAt.
      */
     /**
-     * @param array<int, array<string, mixed>> $items
+     * @param  array<int, array<string, mixed>> $items
      * @return array<int, array<string, mixed>>
      */
     private function sortMerged(array $items): array
