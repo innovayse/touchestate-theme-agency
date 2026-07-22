@@ -995,19 +995,59 @@ window.initCustomSelects = function () {
 				});
 				item.classList.add('selected');
 				wrapper.classList.remove('open');
+				closeOptions();
 			});
 			optionsList.appendChild(item);
 		});
-		wrapper.appendChild(optionsList);
+		// Move optionsList to body so it escapes any stacking context (backdrop-filter, overflow)
+		document.body.appendChild(optionsList);
+		optionsList.style.maxHeight = '0';
+		optionsList.style.overflowY = 'hidden';
+		optionsList.style.opacity = '0';
+		optionsList.style.transition = 'max-height 0.25s ease, opacity 0.15s ease';
+		optionsList.style.display = 'block';
+
+		function positionOptions() {
+			var rect = trigger.getBoundingClientRect();
+			optionsList.style.top = (rect.bottom + 4) + 'px';
+			optionsList.style.left = rect.left + 'px';
+			optionsList.style.width = rect.width + 'px';
+		}
+
+		function openOptions() {
+			optionsList.style.position = 'fixed';
+			optionsList.style.right = 'auto';
+			optionsList.style.zIndex = '99999';
+			positionOptions();
+			optionsList.style.maxHeight = '240px';
+			optionsList.style.overflowY = 'auto';
+			optionsList.style.opacity = '1';
+		}
+
+		function closeOptions() {
+			optionsList.style.maxHeight = '0';
+			optionsList.style.overflowY = 'hidden';
+			optionsList.style.opacity = '0';
+		}
+
+		// Reposition on scroll/resize while open
+		window.addEventListener('scroll', function () { if (wrapper.classList.contains('open')) positionOptions(); }, true);
+		window.addEventListener('resize', function () { if (wrapper.classList.contains('open')) positionOptions(); });
 
 		// Toggle open/close
 		trigger.addEventListener('click', function (e) {
 			e.stopPropagation();
 			document.querySelectorAll('.custom-select.open').forEach(function (cs) {
-				if (cs !== wrapper) cs.classList.remove('open');
+				if (cs !== wrapper) {
+					cs.classList.remove('open');
+					if (cs._optionsList) { cs._optionsList.style.maxHeight = '0'; cs._optionsList.style.opacity = '0'; }
+				}
 			});
+			var isOpen = wrapper.classList.contains('open');
 			wrapper.classList.toggle('open');
+			if (!isOpen) openOptions(); else closeOptions();
 		});
+		wrapper._optionsList = optionsList;
 
 		// Hide original select
 		select.style.position = 'absolute';
@@ -1032,9 +1072,10 @@ window.initCustomSelects = function () {
 	// Close on outside click (register once)
 	if (!window._customSelectOutsideClickBound) {
 		document.addEventListener('click', function (e) {
-			if (!e.target.closest('.custom-select')) {
+			if (!e.target.closest('.custom-select') && !e.target.closest('.custom-select__options')) {
 				document.querySelectorAll('.custom-select.open').forEach(function (cs) {
 					cs.classList.remove('open');
+					if (cs._optionsList) cs._optionsList.style.display = 'none';
 				});
 			}
 		});

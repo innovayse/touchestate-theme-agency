@@ -20,9 +20,9 @@
     "file": "icons/breadcrumb-bg.jpg",
     "src": "resources/img/bg/breadcrumb-bg.jpg"
   },
-  "resources/img/home-3/banner-bg.jpg": {
-    "file": "icons/banner-bg.jpg",
-    "src": "resources/img/home-3/banner-bg.jpg"
+  "resources/img/home-3/banner-bg-home3.jpg": {
+    "file": "icons/banner-bg-home3.jpg",
+    "src": "resources/img/home-3/banner-bg-home3.jpg"
   },
   "resources/img/home-3/bg/sec-bg-02.png": {
     "file": "icons/sec-bg-02.png",
@@ -33,7 +33,7 @@
     "src": "resources/img/home-3/bg/section-bg.jpg"
   },
   "resources/img/home/bg/banner-bg.jpg": {
-    "file": "icons/banner-bg2.jpg",
+    "file": "icons/banner-bg.jpg",
     "src": "resources/img/home/bg/banner-bg.jpg"
   },
   "resources/img/home/bg/testimonial-bg.png": {
