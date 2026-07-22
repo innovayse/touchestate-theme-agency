@@ -22,10 +22,10 @@ use Illuminate\Support\Facades\Storage;
  */
 class ExchangeRateService
 {
-    private const STORE        = 'exchange-rates.json';
+    private const STORE = 'exchange-rates.json';
     private const COOLDOWN_KEY = 'cba_fetch_cooldown';
 
-    /** @var array<string, float>|null Per-request memo: a single request resolves rates at most once. */
+    /** Per-request memo: a single request resolves rates at most once. */
     private static ?array $memo = null;
 
     /**
@@ -38,7 +38,6 @@ class ExchangeRateService
         return self::$memo ??= $this->resolveRates();
     }
 
-    /** @return array<string, float> */
     private function resolveRates(): array
     {
         $store = $this->readStore();
@@ -77,20 +76,17 @@ class ExchangeRateService
         $this->store($fetched);
         self::$memo = null; // let the next rates() call pick up the fresh values
         Cache::forget(self::COOLDOWN_KEY);
-
         return true;
     }
 
-    /**
-     * @param array<string, float> $rates
-     * @return array<string, float>
-     */
+    /** @return array<string, float> */
     private function store(array $rates): array
     {
         $rates['AMD'] = 1.0;
-        $json = json_encode(['rates' => $rates, 'fetched_at' => time()]);
-        Storage::disk('local')->put(self::STORE, $json !== false ? $json : '{}');
-
+        Storage::disk('local')->put(self::STORE, json_encode([
+            'rates'      => $rates,
+            'fetched_at' => time(),
+        ]));
         return $rates;
     }
 
@@ -101,8 +97,7 @@ class ExchangeRateService
             if (!Storage::disk('local')->exists(self::STORE)) {
                 return null;
             }
-            $raw = Storage::disk('local')->get(self::STORE);
-            $data = json_decode($raw ?? '', true);
+            $data = json_decode(Storage::disk('local')->get(self::STORE), true);
         } catch (\Throwable $e) {
             return null;
         }
@@ -124,7 +119,6 @@ class ExchangeRateService
                 $rates[$iso] = $rate;
             }
         }
-
         return $rates;
     }
 

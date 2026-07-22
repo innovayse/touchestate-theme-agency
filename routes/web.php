@@ -241,7 +241,6 @@ Route::get('/currency/{currency}', function (\Illuminate\Http\Request $request, 
     if ($request->ajax() || $request->wantsJson()) {
         return response()->noContent();
     }
-
     return redirect()->back();
 })->where('currency', 'USD|AMD|RUB|EUR')->name('currency.switch');
 
@@ -283,7 +282,7 @@ Route::group(
         Route::get('/', [HomeController::class, 'index'])->name('index');
 
         // Property listing + single (API-driven)
-        Route::get('/property', [PropertyController::class, 'index'])->name('property');
+        Route::get('/property',        [PropertyController::class, 'index'])->name('property');
         Route::get('/property/load-more', [PropertyController::class, 'loadMore'])->name('property.loadmore'); // must precede /property/{slug}
         Route::get('/property/{slug}', [PropertyController::class, 'show'])->name('property.single');
         Route::get('/property/{slug}/extras', [PropertyController::class, 'extras'])->name('property.extras'); // skeleton-first: similar + comments

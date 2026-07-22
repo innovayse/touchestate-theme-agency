@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class SetCurrency
 {
-    public function handle(Request $request, Closure $next): mixed
+    public function handle(Request $request, Closure $next)
     {
         // Ensure the session always holds a valid display currency (defaults to config).
         $supported = config('currency.supported', []);
