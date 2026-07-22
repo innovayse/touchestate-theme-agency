@@ -34,7 +34,7 @@ if (!function_exists('convert_price')) {
      *
      * @return array{amount: float, currency: string, converted: bool}
      */
-    function convert_price($amount, ?string $from): array
+    function convert_price(float|int $amount, ?string $from): array
     {
         $to     = display_currency();
         $from   = $from ?: $to;
@@ -58,7 +58,7 @@ if (!function_exists('format_price')) {
      * Format an amount in the visitor's display currency, e.g. "1,234,000 USD".
      * Keeps the project's existing "<number> <ISO code>" rendering.
      */
-    function format_price($amount, ?string $from): string
+    function format_price(float|int $amount, ?string $from): string
     {
         $price = convert_price($amount, $from);
 
@@ -74,7 +74,7 @@ if (!function_exists('all_currency_prices')) {
      *
      * @return array<int, array{currency: string, amount: float, formatted: string}>
      */
-    function all_currency_prices($amount, ?string $from): array
+    function all_currency_prices(float|int $amount, ?string $from): array
     {
         $display   = display_currency();
         $from      = $from ?: $display;
@@ -107,7 +107,7 @@ if (!function_exists('property_is_showable')) {
      * sometimes answered with a blank "ghost" stub (no id/title) instead of a 404 —
      * such stubs must be kept OUT of the shared `te_prop:{slug}` cache.
      *
-     * @param  mixed  $p
+     * @param mixed $p
      */
     function property_is_showable($p): bool
     {
@@ -126,7 +126,7 @@ if (!function_exists('normalize_property')) {
      * the cached shape must be identical no matter which request fills it first (else a
      * card read from a page-populated cache would miss primaryImageUrl → no image).
      *
-     * @param  array<string, mixed>  $p
+     * @param  array<string, mixed> $p
      * @return array<string, mixed>
      */
     function normalize_property(array $p, string $slug): array

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
@@ -45,9 +44,6 @@ class FavoritesController extends Controller
         $pendingSlugs = [];
 
         foreach ($slugs as $slug) {
-            if (!is_string($slug) || $slug === '') {
-                continue;
-            }
 
             try {
                 $prop = Cache::remember('te_prop:' . $slug, 3600, function () use ($slug) {

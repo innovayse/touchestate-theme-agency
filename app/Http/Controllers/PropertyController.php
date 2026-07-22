@@ -216,7 +216,7 @@ class PropertyController extends Controller
         $this->validateFilters();
 
         $properties = $this->fetchPage();
-        $html = view('partials.property-cards', [
+        $html       = view('partials.property-cards', [
             'properties' => ['items' => $properties['items']],
         ])->render();
 
@@ -242,6 +242,7 @@ class PropertyController extends Controller
      *  - No price range → single query (all API pages), API sort order preserved.
      *  - Price range    → multi-currency search, merged + globally re-sorted.
      */
+    /** @return array{items: array<int, array<string, mixed>>, totalCount: int, hasNextPage: bool} */
     private function fetchPage(): array
     {
         $base   = $this->buildFilters();
@@ -269,10 +270,14 @@ class PropertyController extends Controller
                 if (!in_array($searchCurrency, $supported, true)) {
                     $searchCurrency = config('currency.default');
                 }
-                $params = $base;
+                $params             = $base;
                 $params['currency'] = $searchCurrency;
-                if ($hasMin) { $params['minPrice'] = (int) request('minPrice'); }
-                if ($hasMax) { $params['maxPrice'] = (int) request('maxPrice'); }
+                if ($hasMin) {
+                    $params['minPrice'] = (int) request('minPrice');
+                }
+                if ($hasMax) {
+                    $params['maxPrice'] = (int) request('maxPrice');
+                }
                 $all = $this->fetchAll($params);
             }
         }
@@ -291,25 +296,33 @@ class PropertyController extends Controller
      * Fetch the FULL result set for a single query (all API pages, largest page size),
      * deduplicated by id, preserving the API's own sort order. Each page is cached.
      */
+    /**
+     * @param array<string, mixed> $base
+     * @return array<int, array<string, mixed>>
+     */
     private function fetchAll(array $base): array
     {
-        $params = $base;
+        $params             = $base;
         $params['pageSize'] = 100; // largest allowed page → fewest boundary seams
 
         $all  = [];
         $seen = [];
         for ($p = 1; $p <= 20; $p++) { // cap as a runaway safety net
             $params['pageNumber'] = $p;
-            $result = $this->cachedList($params);
+            $result               = $this->cachedList($params);
             foreach ($result['items'] ?? [] as $item) {
                 $id = $item['id'] ?? null;
                 if ($id !== null) {
-                    if (isset($seen[$id])) { continue; }
+                    if (isset($seen[$id])) {
+                        continue;
+                    }
                     $seen[$id] = true;
                 }
                 $all[] = $item;
             }
-            if (!($result['hasNextPage'] ?? false)) { break; }
+            if (!($result['hasNextPage'] ?? false)) {
+                break;
+            }
         }
 
         return $all;
@@ -319,6 +332,10 @@ class PropertyController extends Controller
      * Multi-currency price search: fetch the FULL matched set across every supported
      * currency (all API pages), merged into one flat array. Returns null if exchange
      * rates are unavailable (caller falls back to a single-currency query).
+     */
+    /**
+     * @param array<string, mixed> $base
+     * @return array<int, array<string, mixed>>|null
      */
     private function fetchMergedAll(array $base, bool $hasMin, bool $hasMax): ?array
     {
@@ -337,34 +354,42 @@ class PropertyController extends Controller
         $merged = [];
         $seen   = [];
         foreach ($supported as $currency) {
-            $params = $base;
+            $params             = $base;
             $params['currency'] = $currency;
             $params['pageSize'] = 100; // fetch in the largest allowed pages
 
             if ($minInput !== null) {
                 $converted = $rates->convert($minInput, $searchCurrency, $currency);
-                if ($converted === null) { return null; }
+                if ($converted === null) {
+                    return null;
+                }
                 $params['minPrice'] = (int) floor($converted);
             }
             if ($maxInput !== null) {
                 $converted = $rates->convert($maxInput, $searchCurrency, $currency);
-                if ($converted === null) { return null; }
+                if ($converted === null) {
+                    return null;
+                }
                 $params['maxPrice'] = (int) ceil($converted);
             }
 
             // Walk every page for this currency (cap as a runaway safety net).
             for ($p = 1; $p <= 20; $p++) {
                 $params['pageNumber'] = $p;
-                $result = $this->cachedList($params);
+                $result               = $this->cachedList($params);
                 foreach ($result['items'] ?? [] as $item) {
                     $id = $item['id'] ?? null;
                     if ($id !== null) {
-                        if (isset($seen[$id])) { continue; }
+                        if (isset($seen[$id])) {
+                            continue;
+                        }
                         $seen[$id] = true;
                     }
                     $merged[] = $item;
                 }
-                if (!($result['hasNextPage'] ?? false)) { break; }
+                if (!($result['hasNextPage'] ?? false)) {
+                    break;
+                }
             }
         }
 
@@ -374,6 +399,10 @@ class PropertyController extends Controller
     /**
      * Fetch a property list for the given filters, cached 1h (no admin panel).
      * On API failure returns an empty result instead of throwing.
+     */
+    /**
+     * @param array<string, mixed> $filters
+     * @return array<string, mixed>
      */
     private function cachedList(array $filters): array
     {
@@ -391,6 +420,10 @@ class PropertyController extends Controller
      * query, so the concatenation must be globally re-sorted. Price sort compares values
      * converted into the display currency; otherwise newest-first by createdAt.
      */
+    /**
+     * @param array<int, array<string, mixed>> $items
+     * @return array<int, array<string, mixed>>
+     */
     private function sortMerged(array $items): array
     {
         $descending = request('sortOrder') !== 'asc'; // default: descending
@@ -401,6 +434,7 @@ class PropertyController extends Controller
             usort($items, function ($a, $b) use ($svc, $display, $descending) {
                 $pa = $svc->convert((float) ($a['price'] ?? 0), $a['currency'] ?? $display, $display) ?? ($a['price'] ?? 0);
                 $pb = $svc->convert((float) ($b['price'] ?? 0), $b['currency'] ?? $display, $display) ?? ($b['price'] ?? 0);
+
                 return $descending ? $pb <=> $pa : $pa <=> $pb;
             });
         } else {
