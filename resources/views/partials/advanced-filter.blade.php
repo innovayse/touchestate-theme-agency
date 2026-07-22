@@ -264,16 +264,16 @@ html[data-theme="light"] {
 .afv2-group .afv2-sublabel { margin: 0 0 8px; }
 
 /* ── Chips ── */
-.afv2-chips { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; min-width: 0; }
-.afv2-chip-label { cursor: pointer; }
+.afv2-chips { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; min-width: 0; }
+.afv2-chip-label { cursor: pointer; display: flex; height: 100%; }
 .afv2-chip-label input[type=checkbox] { display: none; }
 .afv2-chip {
-    display: inline-flex; align-items: center; gap: 4px;
+    display: flex; align-items: center; gap: 4px;
     padding: 5px 10px; border-radius: 20px;
     border: 1px solid var(--afv2-chip-border);
     background: var(--afv2-chip-bg); color: var(--afv2-chip-text);
     font-size: .78rem; white-space: normal; user-select: none;
-    width: 100%;
+    width: 100%; height: 100%;
     transition: border-color .18s, color .18s, background .18s, box-shadow .18s;
 }
 .afv2-chip svg { flex-shrink: 0; }
@@ -805,20 +805,20 @@ html[data-theme="light"] {
                     </div>
                 </div>
 
-                <!-- Window view -->
+                <!-- Appliances -->
                 <div class="afv2-group">
                     <div class="afv2-group-header">
-                        <span class="afv2-sublabel">{{ __('map.window_view') }}</span>
+                        <span class="afv2-sublabel">{{ __('map.appliances') }}</span>
                         <div class="afv2-group-header-right">
                             <button type="button" class="afv2-select-all-btn" data-label-select="{{ __('map.select_all_short') }}" data-label-deselect="{{ __('map.deselect_all_short') }}">{{ __('map.select_all_short') }}</button>
                         </div>
                     </div>
                     <div class="afv2-group-body">
                         <div class="afv2-chips">
-                            @foreach([['Garden','yard'],['City','apartment'],['Street','location_on'],['Yard','home']] as [$val,$icon])
+                            @foreach([['Washer','local_laundry_service'],['Fridge','kitchen'],['Stove','outdoor_grill'],['Microwave','microwave'],['WaterHeater','water_heater'],['Dishwasher','dishwasher'],['CoffeeMaker','coffee']] as [$val,$icon])
                             <label class="afv2-chip-label">
-                                <input type="checkbox" name="windowView[]" value="{{ $val }}" @checked(in_array($val, request('windowView', [])))>
-                                <span class="afv2-chip"><x-icon name="{{ $icon }}" size="14"/>{{ __('map.view_'.$val) }}</span>
+                                <input type="checkbox" name="appliances[]" value="{{ $val }}" @checked(in_array($val, request('appliances', [])))>
+                                <span class="afv2-chip"><x-icon name="{{ $icon }}" size="14"/>{{ __('map.appliance_'.strtolower($val)) }}</span>
                             </label>
                             @endforeach
                         </div>
@@ -845,20 +845,20 @@ html[data-theme="light"] {
                     </div>
                 </div>
 
-                <!-- Appliances -->
+                <!-- Window view -->
                 <div class="afv2-group">
                     <div class="afv2-group-header">
-                        <span class="afv2-sublabel">{{ __('map.appliances') }}</span>
+                        <span class="afv2-sublabel">{{ __('map.window_view') }}</span>
                         <div class="afv2-group-header-right">
                             <button type="button" class="afv2-select-all-btn" data-label-select="{{ __('map.select_all_short') }}" data-label-deselect="{{ __('map.deselect_all_short') }}">{{ __('map.select_all_short') }}</button>
                         </div>
                     </div>
                     <div class="afv2-group-body">
                         <div class="afv2-chips">
-                            @foreach([['Washer','local_laundry_service'],['Fridge','kitchen'],['Stove','outdoor_grill'],['Microwave','microwave'],['WaterHeater','water_heater'],['Dishwasher','dishwasher'],['CoffeeMaker','coffee']] as [$val,$icon])
+                            @foreach([['Garden','yard'],['City','apartment'],['Street','location_on'],['Yard','home']] as [$val,$icon])
                             <label class="afv2-chip-label">
-                                <input type="checkbox" name="appliances[]" value="{{ $val }}" @checked(in_array($val, request('appliances', [])))>
-                                <span class="afv2-chip"><x-icon name="{{ $icon }}" size="14"/>{{ __('map.appliance_'.strtolower($val)) }}</span>
+                                <input type="checkbox" name="windowView[]" value="{{ $val }}" @checked(in_array($val, request('windowView', [])))>
+                                <span class="afv2-chip"><x-icon name="{{ $icon }}" size="14"/>{{ __('map.view_'.$val) }}</span>
                             </label>
                             @endforeach
                         </div>
