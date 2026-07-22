@@ -300,7 +300,12 @@
             });
         }
 
-        function apply() { applyPrices(); applyAltBlocks(); applySymbols(); applyHeader(); }
+        function applyFilterCurrency() {
+            var inp = document.getElementById('afv2-currency-input');
+            if (inp) inp.value = current;
+        }
+
+        function apply() { applyPrices(); applyAltBlocks(); applySymbols(); applyHeader(); applyFilterCurrency(); }
 
         // Fire-and-forget: keep the server session in sync for the next full page load.
         function persist(c) {

@@ -60,7 +60,7 @@ html[data-theme="light"] {
 }
 
 /* ── Wrapper ── */
-.adv-filter-v2 { position: relative; overflow-x: hidden; max-width: 100%; }
+.adv-filter-v2 { position: relative; max-width: 100%; }
 
 /* ── Group cards min-width ── */
 .afv2-group { min-width: 0; }
@@ -258,7 +258,7 @@ html[data-theme="light"] {
     border-radius: 10px;
     padding: 10px 12px 12px;
     margin-bottom: 8px;
-    overflow: hidden;
+    overflow: visible;
     min-width: 0;
 }
 .afv2-group .afv2-sublabel { margin: 0 0 8px; }
@@ -585,28 +585,18 @@ html[data-theme="light"] {
             <div class="afv2-range-group">
                 <label class="afv2-label">{{ __('map.price') }} (<span class="js-currency-symbol">{{ currency_symbol(display_currency()) }}</span>)</label>
                 <div class="afv2-range-pair">
-                    <input type="number" name="minPrice" value="{{ request('minPrice') }}" placeholder="{{ __('map.price_from') }}" min="0" class="afv2-num-input">
+                    <input type="number" name="minPrice" value="{{ request('minPrice') }}" placeholder="{{ __('map.range_from') }}" min="0" class="afv2-num-input">
                     <span class="afv2-range-dash">—</span>
-                    <input type="number" name="maxPrice" value="{{ request('maxPrice') }}" placeholder="{{ __('map.price_to') }}" min="0" class="afv2-num-input">
+                    <input type="number" name="maxPrice" value="{{ request('maxPrice') }}" placeholder="{{ __('map.range_to') }}" min="0" class="afv2-num-input">
                 </div>
             </div>
-            <div class="afv2-range-group">
-                <label class="afv2-label">{{ __('map.currency') }}</label>
-                @php $selectedCurrency = request('currency', display_currency()); @endphp
-                <select name="currency" class="filter-select">
-                    <option value="">{{ __('map.any') }}</option>
-                    <option value="USD" @selected($selectedCurrency === 'USD')>USD ($)</option>
-                    <option value="AMD" @selected($selectedCurrency === 'AMD')>AMD (֏)</option>
-                    <option value="RUB" @selected($selectedCurrency === 'RUB')>RUB (₽)</option>
-                    <option value="EUR" @selected($selectedCurrency === 'EUR')>EUR (€)</option>
-                </select>
-            </div>
+            <input type="hidden" name="currency" id="afv2-currency-input" value="{{ display_currency() }}">
             <div class="afv2-range-group">
                 <label class="afv2-label">{{ __('map.area') }} (м²)</label>
                 <div class="afv2-range-pair">
-                    <input type="number" name="minArea" value="{{ request('minArea') }}" placeholder="{{ __('map.area_from') }}" min="0" class="afv2-num-input">
+                    <input type="number" name="minArea" value="{{ request('minArea') }}" placeholder="{{ __('map.range_from') }}" min="0" class="afv2-num-input">
                     <span class="afv2-range-dash">—</span>
-                    <input type="number" name="maxArea" value="{{ request('maxArea') }}" placeholder="{{ __('map.area_to') }}" min="0" class="afv2-num-input">
+                    <input type="number" name="maxArea" value="{{ request('maxArea') }}" placeholder="{{ __('map.range_to') }}" min="0" class="afv2-num-input">
                 </div>
             </div>
             <div class="afv2-range-group" id="landAreaRow"@if(!$showLand) style="display:none"@endif>
