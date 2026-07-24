@@ -5,6 +5,12 @@
     "description": "The skeleton application for the Laravel framework.",
     "keywords": ["laravel", "framework"],
     "license": "MIT",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/innovayse-admin/touchestate-php-sdk"
+        }
+    ],
     "require": {
         "php": "^8.2",
         "laravel/framework": "^12.20.0",

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a46183c402113721ba17a4044018a64c",
+    "content-hash": "65ce38f0bcb66cf9ff519f3d95244c6d",
     "packages": [
         {
             "name": "brick/math",
@@ -5994,22 +5994,19 @@
             "version": "v1.1.0",
             "source": {
                 "type": "git",
-                "url": "https://gitlab.com/edgar2031/touchestate-php-sdk.git",
-                "reference": "d56bc2dd00003f1089332908b22e120b6ee7d153"
+                "url": "https://github.com/innovayse-admin/touchestate-php-sdk.git",
+                "reference": "3f8f0f443e34f50390178a166d92c33206296013"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://gitlab.com/api/v4/projects/edgar2031%2Ftouchestate-php-sdk/repository/archive.zip?sha=d56bc2dd00003f1089332908b22e120b6ee7d153",
-                "reference": "d56bc2dd00003f1089332908b22e120b6ee7d153",
+                "url": "https://api.github.com/repos/innovayse-admin/touchestate-php-sdk/zipball/3f8f0f443e34f50390178a166d92c33206296013",
+                "reference": "3f8f0f443e34f50390178a166d92c33206296013",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "^7.0",
                 "illuminate/support": "^10.0|^11.0|^12.0",
                 "php": "^8.1"
-            },
-            "replace": {
-                "touchestate/php-sdk": "self.version"
             },
             "require-dev": {
                 "orchestra/testbench": "^8.0|^9.0|^10.0",
@@ -6018,12 +6015,12 @@
             "type": "library",
             "extra": {
                 "laravel": {
-                    "aliases": {
-                        "TouchEstate": "TouchEstate\\Sdk\\Facades\\TouchEstate"
-                    },
                     "providers": [
                         "TouchEstate\\Sdk\\TouchEstateServiceProvider"
-                    ]
+                    ],
+                    "aliases": {
+                        "TouchEstate": "TouchEstate\\Sdk\\Facades\\TouchEstate"
+                    }
                 }
             },
             "autoload": {
@@ -6031,28 +6028,46 @@
                     "TouchEstate\\Sdk\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "TouchEstate\\Sdk\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "phpunit"
+                ],
+                "test:coverage": [
+                    "phpunit --coverage-html coverage"
+                ],
+                "test:unit": [
+                    "phpunit --testsuite unit"
+                ],
+                "test:integration": [
+                    "phpunit --testsuite integration"
+                ]
+            },
             "license": [
                 "MIT"
             ],
             "authors": [
                 {
                     "name": "TouchEstate",
-                    "email": "support@touchestate.io"
+                    "email": "support@touchestate.am"
                 }
             ],
             "description": "Official PHP SDK for TouchEstate API - works with Laravel and standalone PHP",
-            "homepage": "https://touchestate.io",
+            "homepage": "https://touchestate.am",
             "keywords": [
-                "API-Client",
-                "Authentication",
-                "Guzzle",
+                "api-client",
                 "api-wrapper",
                 "appointments",
+                "authentication",
                 "calendar",
                 "contacts",
                 "crm",
                 "deals",
+                "guzzle",
                 "hmac",
                 "innovayse",
                 "laravel",
@@ -6069,11 +6084,11 @@
                 "touchestate"
             ],
             "support": {
-                "docs": "https://docs.touchestate.io",
-                "issues": "https://github.com/innovayse/touchestate-php-sdk/issues",
-                "source": "https://github.com/innovayse/touchestate-php-sdk"
+                "issues": "https://github.com/innovayse-admin/touchestate-php-sdk/issues",
+                "source": "https://github.com/innovayse-admin/touchestate-php-sdk",
+                "docs": "https://docs.touchestate.am"
             },
-            "time": "2026-05-20T18:17:12+00:00"
+            "time": "2026-07-24T08:44:23+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
