@@ -35,6 +35,9 @@ npm install && npm run build
 
 cp .env.example .env
 php artisan key:generate
+
+touch database/database.sqlite
+php artisan migrate
 ```
 
 ## Configuration
@@ -47,9 +50,13 @@ TOUCHESTATE_PUBLIC_KEY=your_public_key
 TOUCHESTATE_SECRET_KEY=your_secret_key
 
 YANDEX_MAPS_API_KEY=your_yandex_maps_api_key
+YANDEX_SUGGEST_KEY=your_yandex_suggest_key
+YANDEX_PLACES_KEY=your_yandex_places_key
 ```
 
 TouchEstate API credentials can be obtained from your workspace settings at [touchestate.io](https://touchestate.io).
+
+Yandex Maps keys can be obtained from the [Yandex Developer Console](https://developer.tech.yandex.ru).
 
 ## Built With
 
