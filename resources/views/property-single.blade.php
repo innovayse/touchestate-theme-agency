@@ -1784,34 +1784,7 @@
     });
 }());
 
-// ── Share button ──────────────────────────────────────────
-document.getElementById('sharePropertyBtn')?.addEventListener('click', async function() {
-    var url   = window.location.href;
-    var title = document.title;
-    if (navigator.share) {
-        try { await navigator.share({ title: title, url: url }); } catch (e) { /* cancelled */ }
-        return;
-    }
-    if (navigator.clipboard && window.isSecureContext) {
-        try {
-            await navigator.clipboard.writeText(url);
-            showToast('{{ __("property-single.link_copied") }}', 'success');
-            return;
-        } catch (e) { /* fall through */ }
-    }
-    // Fallback: execCommand for HTTP / old Safari
-    try {
-        var ta = document.createElement('textarea');
-        ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
-        document.body.appendChild(ta); ta.focus(); ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        showToast('{{ __("property-single.link_copied") }}', 'success');
-    } catch (e) {
-        showToast('{{ __("property-single.copy_error") }}', 'danger');
-    }
-});
-
+// Share button — handled by the global handler in footer-scripts.blade.php
 // Favorites button — handled by the global delegated handler in footer-scripts.blade.php
 </script>
 

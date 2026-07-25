@@ -1,6 +1,4 @@
 @php
-    $orgName = $workspace['name'] ?? null;
-
     // Messengers come as raw phone numbers (+374…), not URLs — build proper deep-links
     $waNumber    = !empty($workspace['messengers']['whatsApp']) ? preg_replace('/\D+/', '', $workspace['messengers']['whatsApp']) : null;
     $viberNumber = !empty($workspace['messengers']['viber'])    ? preg_replace('/\D+/', '', $workspace['messengers']['viber'])    : null;

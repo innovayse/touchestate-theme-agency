@@ -2,15 +2,7 @@
 document.querySelector("html").setAttribute("data-theme", localStorage.getItem('darkMode') === 'enabled' ? 'dark' : 'light');
 
 document.addEventListener("DOMContentLoaded", function () {
-    // Ensure themesettings is defined before inserting
-    if (typeof themesettings !== "undefined" && themesettings) {
-        document.body.insertAdjacentHTML("beforeend", themesettings);
-    }
-
-    // Get the HTML element and ID-based toggle buttons (legacy)
     const htmlElement = document.documentElement;
-    const darkModeToggle = document.getElementById("dark-mode-toggle");
-    const lightModeToggle = document.getElementById("light-mode-toggle");
 
     let darkMode;
     try {
@@ -42,7 +34,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Function to enable dark mode
     function enableDarkMode() {
         htmlElement.setAttribute("data-theme", "dark");
         try {
@@ -50,12 +41,9 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (e) {
             console.warn("Failed to save to LocalStorage:", e);
         }
-        if (darkModeToggle) darkModeToggle.classList.add("active");
-        if (lightModeToggle) lightModeToggle.classList.remove("active");
         syncThemeButtons(true);
     }
 
-    // Function to disable dark mode
     function disableDarkMode() {
         htmlElement.setAttribute("data-theme", "light");
         try {
@@ -63,8 +51,6 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (e) {
             console.warn("Failed to save to LocalStorage:", e);
         }
-        if (lightModeToggle) lightModeToggle.classList.add("active");
-        if (darkModeToggle) darkModeToggle.classList.remove("active");
         syncThemeButtons(false);
     }
 
@@ -75,24 +61,14 @@ document.addEventListener("DOMContentLoaded", function () {
         disableDarkMode();
     }
 
-    // ID-based buttons (legacy)
-    if (darkModeToggle) darkModeToggle.addEventListener("click", enableDarkMode);
-    if (lightModeToggle) lightModeToggle.addEventListener("click", disableDarkMode);
-
-    // Class-based buttons in header dropdowns (event delegation)
+    // Class-based buttons in header dropdowns + single topbar/mobile toggle (event delegation)
     document.addEventListener('click', function(e) {
         if (e.target.closest('.theme-dark-toggle')) {
             enableDarkMode();
         } else if (e.target.closest('.theme-light-toggle')) {
             disableDarkMode();
         } else if (e.target.closest('.theme-toggle-single')) {
-            // Single toggle button — switch between dark/light
-            var current = localStorage.getItem('darkMode');
-            if (current === 'enabled') {
-                disableDarkMode();
-            } else {
-                enableDarkMode();
-            }
+            localStorage.getItem('darkMode') === 'enabled' ? disableDarkMode() : enableDarkMode();
         }
     });
 });

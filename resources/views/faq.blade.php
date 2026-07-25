@@ -414,8 +414,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // Set first as active initially
     sections[0].link.classList.add('active');
 
-    var headerOffset = 100;
-
     function onScroll() {
         var midScreen = window.scrollY + window.innerHeight / 2;
         var current = sections[0];

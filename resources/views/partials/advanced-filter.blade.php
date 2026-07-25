@@ -1,7 +1,13 @@
 @php
     $filterCount = 0;
-    foreach(['propertyType','transactionType','city','district','currency','minPrice','maxPrice','minArea','maxArea','minRooms','maxRooms','minBedrooms','maxBedrooms','minBathrooms','maxBathrooms','minFloor','maxFloor','yearBuiltFrom','yearBuiltTo','minLandArea','maxLandArea','renovationType','constructionType','furnitureType','petsPolicy','childrenPolicy','balconyType','terraceType','code','search'] as $f) {
-        if(request($f) !== null && request($f) !== '') $filterCount++;
+    $hasVal = fn($f) => request($f) !== null && request($f) !== '';
+    // Single-value filters — each counts once
+    foreach(['propertyType','transactionType','city','district','renovationType','constructionType','furnitureType','petsPolicy','childrenPolicy','balconyType','terraceType','code','search'] as $f) {
+        if($hasVal($f)) $filterCount++;
+    }
+    // Range pairs (min/max) — count once if either bound is set
+    foreach([['minPrice','maxPrice'],['minArea','maxArea'],['minRooms','maxRooms'],['minBedrooms','maxBedrooms'],['minBathrooms','maxBathrooms'],['minFloor','maxFloor'],['yearBuiltFrom','yearBuiltTo'],['minLandArea','maxLandArea']] as [$lo,$hi]) {
+        if($hasVal($lo) || $hasVal($hi)) $filterCount++;
     }
     foreach(['amenities','features','appliances','utilities','heatingType','parkingType','windowView'] as $f) {
         if(request($f)) $filterCount += count(request($f));
@@ -554,7 +560,8 @@ html[data-theme="light"] {
             <div class="afv2-basic-field">
                 <label class="afv2-label">{{ __('map.district') }}</label>
                 <div style="position:relative">
-                    <input type="text" id="districtInput" name="district" value="{{ request('district') }}" placeholder="{{ __('map.enter_district') }}" class="afv2-text-input" autocomplete="off">
+                    <input type="text" id="districtInput" value="{{ request('district') }}" placeholder="{{ __('map.enter_district') }}" class="afv2-text-input" autocomplete="off">
+                    <input type="hidden" name="district" id="districtHidden" value="{{ request('district') }}">
                     <button type="button" id="districtClearBtn" class="city-clear-btn"><x-icon name="close" size="16"/></button>
                     <ul id="districtSuggestions" class="city-suggestions"></ul>
                 </div>
@@ -985,23 +992,6 @@ html[data-theme="light"] {
 </form>
 
 <script>
-// ── City resolve on load ────────────────────────────────────────────────────
-(function () {
-    var h    = document.getElementById('cityHidden');
-    var lang = '{{ app()->getLocale() }}';
-    if (!h || !h.value || lang === 'en') return;
-    var localCity = h.value;
-    fetch('https://suggest-maps.yandex.ru/suggest-geo?apikey={{ config('services.yandex.maps_key') }}&text=' + encodeURIComponent(localCity) + '&lang=en_US&results=1&highlight=0&v=9')
-        .then(function (r) { return r.text(); })
-        .then(function (body) {
-            var m = body.trim().match(/suggest\.apply\(([\s\S]+)\)/);
-            if (!m) return;
-            var data = JSON.parse(m[1]);
-            var first = (data.results || [])[0];
-            if (first) h.value = (first.title || {}).text || localCity;
-        }).catch(function () {});
-}());
-
 // ── City autocomplete ───────────────────────────────────────────────────────
 (function () {
     var input    = document.getElementById('cityInput');
@@ -1011,11 +1001,16 @@ html[data-theme="light"] {
     var spinner  = document.getElementById('citySpinner');
     if (!input || !list) return;
     document.body.appendChild(list);
-    var timer = null, lang = '{{ app()->getLocale() }}', shown = {}, districtAutoFilled = false;
-    (function () {
-        var d = document.querySelector('[name="district"]');
-        if (d) d.addEventListener('input', function () { districtAutoFilled = false; });
-    }());
+
+    var timer = null;
+    var lang  = '{{ app()->getLocale() }}';
+    var yLang = lang === 'en' ? 'en_US' : lang === 'hy' ? 'hy_AM' : 'ru_RU';
+    var shown = {};
+
+    var YANDEX_KEY = '{{ config('services.yandex.maps_key') }}';
+    var YANDEX_BASE = 'https://suggest-maps.yandex.ru/suggest-geo?apikey=' + YANDEX_KEY + '&highlight=0&v=9';
+
+    // Keep only results whose title matches where.title (local language → filters out noise)
     function parseYandex(body) {
         var m = (body || '').trim().match(/suggest\.apply\(([\s\S]+)\)/);
         if (!m) return [];
@@ -1029,116 +1024,52 @@ html[data-theme="light"] {
             return { name: title, desc: desc };
         }).filter(Boolean);
     }
-    function makeLi(name, desc, enName) {
+
+    function makeLi(localName, desc) {
         var li = document.createElement('li');
-        li.innerHTML = '<span class="city-item-text"><span class="city-item-name">' + name + '</span>' + (desc ? '<span class="city-item-desc">' + desc + '</span>' : '') + '</span>';
+        var wrap = document.createElement('span'); wrap.className = 'city-item-text';
+        var n = document.createElement('span'); n.className = 'city-item-name'; n.textContent = localName;
+        wrap.appendChild(n);
+        if (desc) { var d = document.createElement('span'); d.className = 'city-item-desc'; d.textContent = desc; wrap.appendChild(d); }
+        li.appendChild(wrap);
         li.addEventListener('mousedown', function (e) {
             e.preventDefault();
-            input.value = name;
-            var cityEn = enName || name;
-            if (hidden) hidden.value = cityEn;
-            if (typeof window.panMapToLocation === 'function') window.panMapToLocation(name);
+            input.value = localName;
+            if (hidden) hidden.value = localName; // temp fallback until EN resolved
+            list.style.display = 'none'; list.innerHTML = ''; shown = {};
             if (clearBtn) clearBtn.style.display = 'none';
             if (spinner)  spinner.style.display  = 'block';
-            list.style.display = 'none'; list.innerHTML = ''; shown = {};
-            var districtEl = document.querySelector('[name="district"]');
-            if (districtEl) districtEl.value = '';
-            fetch('/api/central-district?city=' + encodeURIComponent(cityEn) + '&lang=' + encodeURIComponent(lang))
+            // Clear district when city changes
+            var districtInput  = document.getElementById('districtInput');
+            var districtHidden = document.getElementById('districtHidden');
+            if (districtInput)  districtInput.value  = '';
+            if (districtHidden) districtHidden.value = '';
+            var districtClearBtn = document.getElementById('districtClearBtn');
+            if (districtClearBtn) districtClearBtn.style.display = 'none';
+            var applyBtn = document.querySelector('.afv2-btn-apply');
+            if (applyBtn) applyBtn.disabled = true;
+            fetch('/api/city-en?name=' + encodeURIComponent(localName))
                 .then(function (r) { return r.json(); })
-                .then(function (data) { if (data.district && districtEl) { districtEl.value = data.district; districtAutoFilled = true; } })
+                .then(function (data) { if (hidden) hidden.value = data.en || localName; })
                 .catch(function () {})
-                .finally(function () { if (spinner) spinner.style.display = 'none'; if (clearBtn) clearBtn.style.display = 'flex'; });
+                .then(function () {
+                    if (spinner)  spinner.style.display  = 'none';
+                    if (clearBtn) clearBtn.style.display = 'flex';
+                    if (applyBtn) applyBtn.disabled = false;
+                    if (typeof window.panMapToLocation === 'function') window.panMapToLocation(localName);
+                });
         });
         return li;
     }
-    function positionList() {
-        var rect = input.getBoundingClientRect();
-        list.style.top   = (rect.bottom + window.scrollY) + 'px';
-        list.style.left  = (rect.left   + window.scrollX) + 'px';
-        list.style.width = rect.width + 'px';
-    }
-    function showSuggestions(items) {
-        list.innerHTML = ''; shown = {};
-        if (!items.length) { list.style.display = 'none'; return; }
-        positionList();
-        items.forEach(function (it) {
-            if (shown[it.name]) return;
-            shown[it.name] = true;
-            list.appendChild(makeLi(it.name, it.desc, it.enName));
-        });
-        list.style.display = 'block';
-    }
-    function updateClearBtn() { if (clearBtn) clearBtn.style.display = input.value ? 'flex' : 'none'; }
-    input.addEventListener('input', function () {
-        updateClearBtn(); clearTimeout(timer);
-        var q = input.value.trim();
-        if (q.length < 2) { list.style.display = 'none'; list.innerHTML = ''; shown = {}; return; }
-        timer = setTimeout(function () {
-            var yLang = lang === 'en' ? 'en_US' : lang === 'hy' ? 'hy_AM' : 'ru_RU';
-            var base  = 'https://suggest-maps.yandex.ru/suggest-geo?apikey={{ config('services.yandex.maps_key') }}&text=' + encodeURIComponent(q) + '&results=7&highlight=0&v=9';
-            var pLocal = fetch(base + '&lang=' + yLang).then(function (r) { return r.text(); }).catch(function () { return ''; });
-            var pEn    = lang === 'en' ? Promise.resolve(null) : fetch(base + '&lang=en_US').then(function (r) { return r.text(); }).catch(function () { return ''; });
-            Promise.all([pLocal, pEn]).then(function (texts) {
-                var local = parseYandex(texts[0]);
-                var en    = texts[1] !== null ? parseYandex(texts[1]) : local;
-                showSuggestions(local.map(function (it, i) { return { name: it.name, desc: it.desc, enName: (en[i] || {}).name || it.name }; }));
-            }).catch(function () { list.style.display = 'none'; });
-        }, 150);
-    });
-    if (clearBtn) {
-        clearBtn.addEventListener('click', function () {
-            input.value = ''; if (hidden) hidden.value = ''; clearBtn.style.display = 'none';
-            list.style.display = 'none'; list.innerHTML = ''; shown = {};
-            if (districtAutoFilled) {
-                var d = document.querySelector('[name="district"]');
-                if (d) d.value = '';
-                districtAutoFilled = false;
-            }
-            input.focus();
-        });
-    }
-    input.addEventListener('blur', function () { setTimeout(function () { list.style.display = 'none'; }, 200); });
-    updateClearBtn();
-}());
 
-// ── District autocomplete ───────────────────────────────────────────────────
-(function () {
-    var input    = document.getElementById('districtInput');
-    var list     = document.getElementById('districtSuggestions');
-    var clearBtn = document.getElementById('districtClearBtn');
-    if (!input || !list) return;
-    document.body.appendChild(list);
-    var timer = null, lang = '{{ app()->getLocale() }}', shown = {};
-    function parseYandex(body) {
-        var m = (body || '').trim().match(/suggest\.apply\(([\s\S]+)\)/);
-        if (!m) return [];
-        try { var data = JSON.parse(m[1]); } catch (e) { return []; }
-        return (data.results || []).map(function (item) {
-            var title = (item.title || {}).text || '';
-            var where = ((item.log_id || {}).where) || {};
-            if (!title) return null;
-            var parts = (where.name || '').split(',').map(function (p) { return p.trim(); }).filter(Boolean);
-            var desc  = parts.filter(function (p) { return p !== title; }).join(', ');
-            return { name: title, desc: desc };
-        }).filter(Boolean);
-    }
-    function makeLi(name, desc) {
-        var li = document.createElement('li');
-        li.innerHTML = '<span class="city-item-text"><span class="city-item-name">' + name + '</span>' + (desc ? '<span class="city-item-desc">' + desc + '</span>' : '') + '</span>';
-        li.addEventListener('mousedown', function (e) {
-            e.preventDefault();
-            input.value = name;
-            if (clearBtn) clearBtn.style.display = 'flex';
-            list.style.display = 'none'; list.innerHTML = ''; shown = {};
-        });
-        return li;
-    }
     function positionList() {
         var rect = input.getBoundingClientRect();
-        list.style.top   = (rect.bottom + window.scrollY) + 'px';
-        list.style.left  = (rect.left   + window.scrollX) + 'px';
+        list.style.position = 'fixed';
+        list.style.top   = rect.bottom + 'px';
+        list.style.left  = rect.left + 'px';
         list.style.width = rect.width + 'px';
     }
+
     function showSuggestions(items) {
         list.innerHTML = ''; shown = {};
         if (!items.length) { list.style.display = 'none'; return; }
@@ -1150,29 +1081,136 @@ html[data-theme="light"] {
         });
         list.style.display = 'block';
     }
+
     function updateClearBtn() { if (clearBtn) clearBtn.style.display = input.value ? 'flex' : 'none'; }
+
     input.addEventListener('input', function () {
         updateClearBtn(); clearTimeout(timer);
         var q = input.value.trim();
         if (q.length < 2) { list.style.display = 'none'; list.innerHTML = ''; shown = {}; return; }
         timer = setTimeout(function () {
-            var cityCtx = (document.getElementById('cityInput') || {}).value || '';
-            var query   = cityCtx ? cityCtx + ' ' + q : q;
-            var yLang   = lang === 'en' ? 'en_US' : lang === 'hy' ? 'hy_AM' : 'ru_RU';
-            var url = 'https://suggest-maps.yandex.ru/suggest-geo?apikey={{ config('services.yandex.maps_key') }}&text=' + encodeURIComponent(query) + '&types=district&results=7&highlight=0&v=9&lang=' + yLang;
-            fetch(url).then(function (r) { return r.text(); }).then(function (body) {
-                showSuggestions(parseYandex(body));
-            }).catch(function () { list.style.display = 'none'; });
+            // English city name is resolved server-side via /api/city-en on selection,
+            // so here we only need the local-language suggestion list.
+            fetch(YANDEX_BASE + '&text=' + encodeURIComponent(q) + '&results=7&lang=' + yLang)
+                .then(function (r) { return r.text(); })
+                .then(function (body) { showSuggestions(parseYandex(body)); })
+                .catch(function () { list.style.display = 'none'; });
         }, 150);
     });
+
+    window.addEventListener('scroll', function () { if (list.style.display !== 'none') positionList(); }, true);
+    window.addEventListener('resize', function () { if (list.style.display !== 'none') positionList(); });
+
     if (clearBtn) {
         clearBtn.addEventListener('click', function () {
-            input.value = ''; clearBtn.style.display = 'none';
+            input.value = ''; if (hidden) hidden.value = ''; clearBtn.style.display = 'none';
             list.style.display = 'none'; list.innerHTML = ''; shown = {};
             input.focus();
         });
     }
-    input.addEventListener('blur', function () { setTimeout(function () { list.style.display = 'none'; }, 200); });
+
+    input.addEventListener('blur', function () { setTimeout(function () { list.style.display = 'none'; }, 250); });
+    updateClearBtn();
+}());
+
+
+// ── District autocomplete ───────────────────────────────────────────────────
+(function () {
+    var input    = document.getElementById('districtInput');
+    var hidden   = document.getElementById('districtHidden');
+    var list     = document.getElementById('districtSuggestions');
+    var clearBtn = document.getElementById('districtClearBtn');
+    if (!input || !list) return;
+    document.body.appendChild(list);
+
+    var timer = null;
+    var lang  = '{{ app()->getLocale() }}';
+    var yLang = lang === 'en' ? 'en_US' : lang === 'hy' ? 'hy_AM' : 'ru_RU';
+    var shown = {};
+
+    var YANDEX_KEY2  = '{{ config('services.yandex.maps_key') }}';
+    var YANDEX_BASE2 = 'https://suggest-maps.yandex.ru/suggest-geo?apikey=' + YANDEX_KEY2 + '&highlight=0&v=9&types=district';
+
+    function parseYandex(body) {
+        var m = (body || '').trim().match(/suggest\.apply\(([\s\S]+)\)/);
+        if (!m) return [];
+        try { var data = JSON.parse(m[1]); } catch (e) { return []; }
+        return (data.results || []).map(function (item) {
+            var title = (item.title || {}).text || '';
+            var where = ((item.log_id || {}).where) || {};
+            if (!title || title !== (where.title || '')) return null;
+            var parts = (where.name || '').split(',').map(function (p) { return p.trim(); }).filter(Boolean);
+            var desc  = parts.filter(function (p) { return p !== title; }).join(', ');
+            return { name: title, desc: desc };
+        }).filter(Boolean);
+    }
+
+    function makeLi(localName, desc) {
+        var li = document.createElement('li');
+        var wrap = document.createElement('span'); wrap.className = 'city-item-text';
+        var n = document.createElement('span'); n.className = 'city-item-name'; n.textContent = localName;
+        wrap.appendChild(n);
+        if (desc) { var d = document.createElement('span'); d.className = 'city-item-desc'; d.textContent = desc; wrap.appendChild(d); }
+        li.appendChild(wrap);
+        li.addEventListener('mousedown', function (e) {
+            e.preventDefault();
+            input.value = localName;
+            if (hidden) hidden.value = localName;
+            list.style.display = 'none'; list.innerHTML = ''; shown = {};
+            if (clearBtn) clearBtn.style.display = 'flex';
+        });
+        return li;
+    }
+
+    function positionList() {
+        var rect = input.getBoundingClientRect();
+        list.style.position = 'fixed';
+        list.style.top   = rect.bottom + 'px';
+        list.style.left  = rect.left + 'px';
+        list.style.width = rect.width + 'px';
+    }
+
+    function showSuggestions(items) {
+        list.innerHTML = ''; shown = {};
+        if (!items.length) { list.style.display = 'none'; return; }
+        positionList();
+        items.forEach(function (it) {
+            if (shown[it.name]) return;
+            shown[it.name] = true;
+            list.appendChild(makeLi(it.name, it.desc));
+        });
+        list.style.display = 'block';
+    }
+
+    function updateClearBtn() { if (clearBtn) clearBtn.style.display = input.value ? 'flex' : 'none'; }
+
+    input.addEventListener('input', function () {
+        updateClearBtn(); clearTimeout(timer);
+        var q = input.value.trim();
+        if (q.length < 2) { list.style.display = 'none'; list.innerHTML = ''; shown = {}; return; }
+        timer = setTimeout(function () {
+            var cityHidden = document.getElementById('cityHidden');
+            var cityEn = (cityHidden && cityHidden.value) || '';
+            var query  = cityEn ? cityEn + ' ' + q : q;
+            fetch(YANDEX_BASE2 + '&text=' + encodeURIComponent(query) + '&results=7&lang=' + yLang)
+                .then(function (r) { return r.text(); })
+                .then(function (body) { showSuggestions(parseYandex(body)); })
+                .catch(function () { list.style.display = 'none'; });
+        }, 150);
+    });
+
+    window.addEventListener('scroll', function () { if (list.style.display !== 'none') positionList(); }, true);
+    window.addEventListener('resize', function () { if (list.style.display !== 'none') positionList(); });
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+            input.value = ''; if (hidden) hidden.value = ''; clearBtn.style.display = 'none';
+            list.style.display = 'none'; list.innerHTML = ''; shown = {};
+            input.focus();
+        });
+    }
+
+    input.addEventListener('blur', function () { setTimeout(function () { list.style.display = 'none'; }, 250); });
     updateClearBtn();
 }());
 
@@ -1393,6 +1431,91 @@ document.addEventListener('DOMContentLoaded', function () {
                 cb.dispatchEvent(new Event('change'));
             });
             syncBtn(btn);
+        });
+    });
+}());
+
+// ── Reset button ────────────────────────────────────────────────────────────
+(function () {
+    var btn = document.getElementById('btnReset');
+    var form = document.getElementById('filterForm');
+    if (!btn || !form) return;
+    btn.addEventListener('click', function () {
+        // Clear all text/number inputs and selects (keep sortBy/sortOrder/currency)
+        var KEEP = ['sortBy', 'sortOrder', 'currency'];
+        Array.from(form.elements).forEach(function (el) {
+            if (KEEP.indexOf(el.name) !== -1) return;
+            if (el.type === 'checkbox' || el.type === 'radio') { el.checked = false; }
+            else if (el.tagName === 'INPUT' || el.tagName === 'SELECT') { el.value = ''; }
+        });
+        // Clear city/district display inputs
+        var cityInput = document.getElementById('cityInput');
+        var cityClear = document.getElementById('cityClearBtn');
+        if (cityInput) cityInput.value = '';
+        if (cityClear) cityClear.style.display = 'none';
+        var districtInput  = document.getElementById('districtInput');
+        var districtClear  = document.getElementById('districtClearBtn');
+        if (districtInput) districtInput.value = '';
+        if (districtClear) districtClear.style.display = 'none';
+        // Deactivate num chips
+        document.querySelectorAll('.afv2-num-chip.active').forEach(function (c) { c.classList.remove('active'); });
+        // Submit via requestSubmit so the "clean empty params" submit handler fires
+        // (form.submit() bypasses the submit event → dirty URL with empty params)
+        if (form.requestSubmit) { form.requestSubmit(); } else { form.submit(); }
+    });
+}());
+
+// ── City: always submit in English, keep the label in the typed language ─────
+// The API stores city only in English ("Yerevan"), so whatever the user typed
+// (Ереван / Yerevan / Երևան) is resolved to English on submit. The original
+// wording is remembered in localStorage and restored on the next page load, so
+// the field keeps showing the user's language while the request stays English.
+(function () {
+    var form   = document.getElementById('filterForm');
+    var input  = document.getElementById('cityInput');
+    var hidden = document.getElementById('cityHidden');
+    if (!form || !input || !hidden) return;
+
+    var resolving = false;
+    form.addEventListener('submit', function (e) {
+        var typed = input.value.trim();
+        if (resolving || !typed) return;   // nothing typed, or already resolved → let it submit
+        e.preventDefault();
+        fetch('/api/city-en?name=' + encodeURIComponent(typed))
+            .then(function (r) { return r.json(); })
+            .then(function (d) { hidden.value = (d && d.en) || typed; })
+            .catch(function () { hidden.value = typed; })
+            .then(function () {
+                hidden.disabled = false;   // undo the clean-handler pass from this same submit
+                try { localStorage.setItem('cityLabel:' + hidden.value.toLowerCase(), typed); } catch (err) {}
+                resolving = true;
+                if (form.requestSubmit) { form.requestSubmit(); } else { form.submit(); }
+            });
+    });
+
+    // Restore the user's original wording after reload (URL only carries English)
+    var current = (hidden.value || '').trim();
+    if (current) {
+        try {
+            var label = localStorage.getItem('cityLabel:' + current.toLowerCase());
+            if (label) input.value = label;
+        } catch (err) {}
+    }
+}());
+
+// ── Clean empty params before form submit ───────────────────────────────────
+(function () {
+    var form = document.getElementById('filterForm');
+    if (!form) return;
+    var SKIP_CLEAN = ['currency', 'sortBy', 'sortOrder'];
+    form.addEventListener('submit', function () {
+        Array.from(form.elements).forEach(function (el) {
+            if (SKIP_CLEAN.indexOf(el.name) !== -1) return;
+            if (el.type === 'checkbox' || el.type === 'radio') {
+                if (!el.checked) el.disabled = true;
+            } else if ((el.tagName === 'INPUT' || el.tagName === 'SELECT') && !el.value) {
+                el.disabled = true;
+            }
         });
     });
 }());
