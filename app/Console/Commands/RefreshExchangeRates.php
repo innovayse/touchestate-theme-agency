@@ -17,10 +17,12 @@ class RefreshExchangeRates extends Command
     {
         if ($rates->refresh()) {
             $this->info('Exchange rates refreshed from CBA.');
+
             return self::SUCCESS;
         }
 
         $this->warn('CBA fetch failed — previous stored rates kept.');
+
         return self::FAILURE;
     }
 }
