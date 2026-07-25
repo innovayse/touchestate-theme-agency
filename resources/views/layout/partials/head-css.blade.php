@@ -1,8 +1,10 @@
-    <!-- Favicon -->
-    <link rel="shortcut icon" href="{{URL::asset('build/img/favicon.png')}}">
+    <!-- Favicon — company logo from the API (validated; falls back to bundled icon) -->
+    @php($faviconSrc = !empty($faviconUrl) ? $faviconUrl : URL::asset('build/img/favicon.png'))
+    <link rel="icon" href="{{ $faviconSrc }}">
+    <link rel="shortcut icon" href="{{ $faviconSrc }}">
 
     <!-- Apple Icon -->
-    <link rel="apple-touch-icon" href="{{URL::asset('build/img/apple-icon.png')}}">
+    <link rel="apple-touch-icon" href="{{ $faviconSrc }}">
 
 	<!-- Theme Settings Js -->
 	<script src="{{URL::asset('build/js/theme-script.js')}}"></script>
@@ -59,12 +61,6 @@
 @if (Route::is(['agent-details', 'index-2', 'index-3']))
 	<!-- Swiper CSS -->
 	<link rel="stylesheet" href="{{URL::asset('build/plugins/swiper/swiper-bundle.min.css')}}">
-@endif
-
-@if (Route::is(['property-sidebar', 'buy-property-list-sidebar', 'rent-property-grid-sidebar', 'rent-property-list-sidebar']))
-    <!-- Rangeslider CSS -->
-	<link rel="stylesheet" href="{{URL::asset('build/plugins/ion-rangeslider/css/ion.rangeSlider.css')}}">
-	<link rel="stylesheet" href="{{URL::asset('build/plugins/ion-rangeslider/css/ion.rangeSlider.min.css')}}">
 @endif
 
 @if (Route::is(['gallery', 'privacy-policy', 'terms-condition']))

@@ -1,26 +1,4 @@
 
-@if (Route::is(['rental-payment']))
-    <!-- Start Success Modal  -->
-    <div class="modal fade" id="payment-success">
-        <div class="modal-dialog modal-dialog-centered modal-md">
-            <div class="modal-content payment">
-                <div class="modal-body text-center">
-                    <div class="mb-3">
-                        <span class="avatar avatar-lg bg-success rounded-circle text-white"><x-icon name="done_all" class="fs-24"/></span>
-                    </div>
-                    <h6 class="mb-2">Payment Successful</h6>
-                    <p class="mb-2">You Payment has been successfully done.</p>
-                    <p class="mb-4">Trasaction Id : #5064164454</p>
-                    <div class="d-flex justify-content-center">
-                        <a href="{{url('index')}}" class="btn btn-lg btn-dark">Back to Home</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- End Success Modal  -->
-@endif
-
 @if (Route::is(['checkout']))
 	<!-- Start Add Modal -->
 	<div id="add_card" class="modal fade">
@@ -132,7 +110,7 @@
 					</div>
 					<h6 class="mb-2">Payment Successful</h6>
 					<p class="mb-2">You Payment has been successfully done.</p>
-					<p class="mb-4">Trasaction Id : #5064164454</p>
+					<p class="mb-4">Transaction Id : #5064164454</p>
 					<div class="d-flex justify-content-center">
 						<a href="{{url('index')}}" class="btn btn-lg btn-dark">Back to Home</a>
 					</div>

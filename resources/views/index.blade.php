@@ -744,14 +744,6 @@ document.addEventListener('DOMContentLoaded', function () {
             if (e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault();
         });
     });
-    document.querySelectorAll('[data-price-step]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var target = document.querySelector('[name="' + btn.dataset.target + '"]');
-            if (!target) return;
-            var step = parseInt(btn.dataset.priceStep, 10);
-            target.value = Math.max(0, (parseInt(target.value, 10) || 0) + step);
-        });
-    });
     // Strip negative values before submit
     document.querySelector('.home-search-2 form') && document.querySelector('.home-search-2 form').addEventListener('submit', function () {
         ['minPriceIndex', 'maxPriceIndex'].forEach(function (id) {

@@ -120,7 +120,7 @@ class PropertyController extends Controller
         }
 
         // Numeric range filters (price handled separately — see index())
-        foreach (['minRooms', 'maxRooms', 'minBedrooms', 'maxBedrooms', 'minBathrooms', 'maxBathrooms', 'minFloor', 'maxFloor', 'minLandArea', 'maxLandArea', 'minYearBuilt', 'maxYearBuilt'] as $key) {
+        foreach (['minRooms', 'maxRooms', 'minBedrooms', 'maxBedrooms', 'minBathrooms', 'maxBathrooms', 'minFloor', 'maxFloor', 'minLandArea', 'maxLandArea'] as $key) {
             if (request()->filled($key)) {
                 $params[$key] = (int) request($key);
             }
@@ -620,24 +620,31 @@ class PropertyController extends Controller
         return $items;
     }
 
+    /**
+     * Retrieve + normalize a property, cached 30 min under the shared te_prop:{slug} key.
+     * Ghost stubs (no id/title) throw UnexpectedValueException so they never enter the cache
+     * and callers can 404 or fall back. Used by both show() and extras().
+     */
+    private function cachedProperty(string $slug): array
+    {
+        return Cache::remember('te_prop:' . $slug, 1800, function () use ($slug) {
+            $p = $this->client->properties()->retrieve($slug);
+
+            if (!property_is_showable($p)) {
+                throw new \UnexpectedValueException('Empty property for slug ' . $slug);
+            }
+
+            return normalize_property($p, $slug);
+        });
+    }
+
     public function show(string $slug): \Illuminate\View\View
     {
         set_time_limit(60);
 
-        // Cached 30 min (no admin panel — property data changes rarely). Cache the fully-built
-        // array; on API failure the exception propagates out of remember() → not cached → 404.
+        // On API failure / ghost stub the exception propagates out → not cached → 404.
         try {
-            $property = Cache::remember('te_prop:' . $slug, 1800, function () use ($slug) {
-                $p = $this->client->properties()->retrieve($slug);
-
-                // Keep ghost stubs (no id/title) out of the shared cache — throwing both
-                // aborts to 404 here and prevents FavoritesController reading a blank object.
-                if (!property_is_showable($p)) {
-                    throw new \UnexpectedValueException('Empty property for slug ' . $slug);
-                }
-
-                return normalize_property($p, $slug);
-            });
+            $property = $this->cachedProperty($slug);
         } catch (\Exception $e) {
             abort(404);
         }
@@ -655,15 +662,7 @@ class PropertyController extends Controller
     public function extras(string $slug): \Illuminate\Http\JsonResponse
     {
         try {
-            $property = Cache::remember('te_prop:' . $slug, 1800, function () use ($slug) {
-                $p = $this->client->properties()->retrieve($slug);
-
-                if (!property_is_showable($p)) {
-                    throw new \UnexpectedValueException('Empty property for slug ' . $slug);
-                }
-
-                return normalize_property($p, $slug);
-            });
+            $property = $this->cachedProperty($slug);
         } catch (\Exception $e) {
             $property = ['slug' => $slug];
         }

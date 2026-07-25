@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\CompareController;
-use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FavoritesController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PropertyController;
@@ -62,6 +61,45 @@ Route::get('/api/suggest', function (\Illuminate\Http\Request $request) {
     }
 });
 
+
+Route::get('/api/city-en', function (\Illuminate\Http\Request $request) {
+    $name = trim($request->query('name', ''));
+    if (!$name) return response()->json(['en' => '']);
+    try {
+        $results = Http::withHeaders(['User-Agent' => 'RealEstateSite/1.0', 'Accept-Language' => 'en'])
+            ->withoutVerifying()->timeout(5)
+            ->get('https://nominatim.openstreetmap.org/search', [
+                'q'              => $name,
+                'format'         => 'json',
+                'limit'          => 5,
+                'namedetails'    => 1,
+                'addressdetails' => 1,
+            ])
+            ->json();
+        if (empty($results)) return response()->json(['en' => $name]);
+
+        // Prefer an actual populated place (city/town/village) over other matches
+        // like border crossings that Nominatim may rank first for some queries.
+        $places = ['city', 'town', 'village', 'municipality', 'hamlet'];
+        $r = collect($results)->first(function ($item) use ($places) {
+            return ($item['class'] ?? '') === 'place' && in_array($item['type'] ?? '', $places, true);
+        }) ?? $results[0];
+
+        // Prefer the explicit English name, then the address' city/town/village,
+        // and only fall back to the first segment of display_name.
+        $address = $r['address'] ?? [];
+        $enName = $r['namedetails']['name:en']
+            ?? $address['city']
+            ?? $address['town']
+            ?? $address['village']
+            ?? $address['municipality']
+            ?? (isset($r['display_name']) ? trim(explode(',', $r['display_name'])[0]) : $name);
+
+        return response()->json(['en' => trim($enName) ?: $name]);
+    } catch (\Throwable $e) {
+        return response()->json(['en' => $name]);
+    }
+});
 
 Route::get('/api/central-district', function (\Illuminate\Http\Request $request) {
     $city = trim($request->query('city', ''));
@@ -220,12 +258,6 @@ Route::get('/api/nearby', function (\Illuminate\Http\Request $request) {
 });
 
 
-// ─────────────────────────────────────────────
-// Contacts API
-// ─────────────────────────────────────────────
-Route::get('/api/contacts', [ContactController::class, 'index']);
-Route::get('/api/contacts/{id}', [ContactController::class, 'show']);
-
 
 // ─────────────────────────────────────────────
 // Default routes (no locale prefix) → Armenian
@@ -262,8 +294,9 @@ Route::get('/map', [PropertyController::class, 'map']);
 // All simple static pages (default to Armenian locale)
 $defaultRoutes = [
     'contact-us', // 'about-us' temporarily disabled (page kept); 'our-team' removed
-    'faq', 'privacy-policy', 'terms-condition', 'testimonial',
-    'cart', 'checkout',
+    'faq', 'privacy-policy', 'terms-condition', // 'testimonial' disabled — demo page, access closed
+
+    // 'cart', 'checkout' disabled — broken demo pages, access closed
     'maintenance', 'error-404', 'error-500',
 ];
 
@@ -305,9 +338,9 @@ Route::group(
         Route::get('/faq', fn () => view('faq'))->name('faq');
         Route::get('/privacy-policy', fn () => view('privacy-policy'))->name('privacy-policy');
         Route::get('/terms-condition', fn () => view('terms-condition'))->name('terms-condition');
-        Route::get('/testimonial', fn () => view('testimonial'))->name('testimonial');
-        Route::get('/cart', fn () => view('cart'))->name('cart');
-        Route::get('/checkout', fn () => view('checkout'))->name('checkout');
+        // Route::get('/testimonial', fn () => view('testimonial'))->name('testimonial'); // disabled — demo page, access closed
+        // Route::get('/cart', fn () => view('cart'))->name('cart'); // disabled — broken demo page, access closed
+        // Route::get('/checkout', fn () => view('checkout'))->name('checkout'); // disabled — broken demo page, access closed
 
         // Error / utility pages
         Route::get('/maintenance', fn () => view('maintenance'))->name('maintenance');

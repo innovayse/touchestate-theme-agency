@@ -91,16 +91,12 @@ function geocodeViaNominatim(city, callback) {
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data && data.length > 0) {
-        var coords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
-        console.warn('[map-grid] nominatim geocoded "' + city + '" \u2192 [' + coords[0] + ', ' + coords[1] + ']');
-        callback(coords);
+        callback([parseFloat(data[0].lat), parseFloat(data[0].lon)]);
       } else {
-        console.warn('[map-grid] nominatim "' + city + '" \u2192 no results');
         callback(null);
       }
     })
-    .catch(function(err) {
-      console.warn('[map-grid] nominatim "' + city + '" \u2192 error:', err);
+    .catch(function() {
       callback(null);
     });
 }
@@ -109,7 +105,6 @@ function geocodeViaNominatim(city, callback) {
 function geocodeCity(city, callback) {
   // Try exact match
   if (knownCities[city]) {
-    console.warn('[map-grid] known city "' + city + '" \u2192 [' + knownCities[city][0] + ', ' + knownCities[city][1] + ']');
     callback(knownCities[city]);
     return;
   }
@@ -118,13 +113,11 @@ function geocodeCity(city, callback) {
   var keys = Object.keys(knownCities);
   for (var i = 0; i < keys.length; i++) {
     if (keys[i].toLowerCase() === lower) {
-      console.warn('[map-grid] known city "' + city + '" (ci) \u2192 [' + knownCities[keys[i]][0] + ', ' + knownCities[keys[i]][1] + ']');
       callback(knownCities[keys[i]]);
       return;
     }
   }
   // Fallback to Nominatim
-  console.warn('[map-grid] "' + city + '" not in knownCities, trying Nominatim...');
   geocodeViaNominatim(city, callback);
 }
 
@@ -712,13 +705,6 @@ function addMarkersFromLocations(apiLocations) {
 
 // ─── Initialize with API locations ───────────────────────────────────────────
 function initializeWithApiLocations(apiLocations) {
-  // Diagnostic: check if API provides coordinates
-  var withCoords = apiLocations.filter(function(l) { return l.lat && l.lng; });
-  console.warn('[map-grid] ' + apiLocations.length + ' properties, ' + withCoords.length + ' with lat/lng from API');
-  if (apiLocations.length > 0 && withCoords.length === 0) {
-    console.warn('[map-grid] API does not provide coordinates — falling back to city geocoding + random scatter');
-  }
-
   ymaps.ready(function () {
     createLayouts();
 

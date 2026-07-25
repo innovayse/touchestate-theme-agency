@@ -38,13 +38,6 @@
 	<script src="{{URL::asset('build/plugins/swiper/swiper-bundle.min.js')}}"></script>
 @endif
 
-@if (Route::is(['property-sidebar', 'buy-property-list-sidebar', 'rent-property-grid-sidebar', 'rent-property-list-sidebar']))
-    <!-- Rangeslider JS -->
-	<script src="{{URL::asset('build/plugins/ion-rangeslider/js/ion.rangeSlider.js')}}"></script>
-	<script src="{{URL::asset('build/plugins/ion-rangeslider/js/custom-rangeslider.js')}}"></script>
-	<script src="{{URL::asset('build/plugins/ion-rangeslider/js/ion.rangeSlider.min.js')}}"></script>
-@endif
-
 @if (Route::is(['gallery', 'privacy-policy', 'terms-condition']))
     <!-- Lightbox JS -->
     <script src="{{URL::asset('build/plugins/lightbox/glightbox.min.js')}}"></script>
@@ -98,11 +91,6 @@
 	<script src="{{URL::asset('build/plugins/theia-sticky-sidebar/theia-sticky-sidebar.js')}}"></script>
 @endif
 
-@if (Route::is(['coming-soon']))
-    <!-- Custom JS -->
-    <script src="{{URL::asset('build/js/coming-soon.js')}}"></script>
-@endif
-
     <!-- Main JS -->
     <script src="{{URL::asset('build/js/script.js')}}?v={{ filemtime(public_path('build/js/script.js')) }}"></script>
 
@@ -113,6 +101,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const shareBtn = document.getElementById('sharePropertyBtn');
+            if (!shareBtn) return;
             const __shareMsgs = {
                 copied: @json(__('property-single.link_copied')),
                 copyFail: @json(__('property-single.copy_failed')),
@@ -120,57 +109,28 @@
                 shareText: @json(__('property-single.share_text')),
             };
 
-            if (shareBtn) {
-                shareBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    console.log('Share button clicked');
-
-                    const url = window.location.href;
-                    const shareData = {
-                        title: document.title,
-                        text: __shareMsgs.shareText,
-                        url: url
-                    };
-
-                    // Try native share first (mobile)
-                    if (navigator.share) {
-                        console.log('Using Web Share API');
-                        navigator.share(shareData)
-                            .then(() => console.log('Share successful'))
-                            .catch((err) => {
-                                if (err.name !== 'AbortError') {
-                                    console.log('Share failed:', err);
-                                    fallbackCopy(url);
-                                }
-                            });
-                        return;
-                    }
-
-                    // Desktop: just copy to clipboard
-                    console.log('Using fallback copy');
-                    fallbackCopy(url);
-                });
-            }
+            shareBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = window.location.href;
+                if (navigator.share) {
+                    navigator.share({ title: document.title, text: __shareMsgs.shareText, url: url })
+                        .catch(function (err) { if (err.name !== 'AbortError') fallbackCopy(url); });
+                    return;
+                }
+                fallbackCopy(url);
+            });
 
             function fallbackCopy(url) {
-                // Try modern clipboard API
                 if (navigator.clipboard && window.isSecureContext) {
                     navigator.clipboard.writeText(url)
-                        .then(() => {
-                            console.log('Copied via Clipboard API');
-                            showToast(__shareMsgs.copied);
-                        })
-                        .catch(err => {
-                            console.log('Clipboard API failed:', err);
-                            oldSchoolCopy(url);
-                        });
+                        .then(function () { showToast(__shareMsgs.copied); })
+                        .catch(function () { oldSchoolCopy(url); });
                 } else {
                     oldSchoolCopy(url);
                 }
             }
 
             function oldSchoolCopy(url) {
-                console.log('Using execCommand copy');
                 const tempInput = document.createElement('textarea');
                 tempInput.value = url;
                 tempInput.style.position = 'fixed';
@@ -179,38 +139,23 @@
                 document.body.appendChild(tempInput);
                 tempInput.focus();
                 tempInput.select();
-
                 try {
-                    const successful = document.execCommand('copy');
-                    console.log('execCommand result:', successful);
-                    if (successful) {
-                        showToast(__shareMsgs.copied);
-                    } else {
-                        showToast(__shareMsgs.copyFail);
-                    }
+                    showToast(document.execCommand('copy') ? __shareMsgs.copied : __shareMsgs.copyFail);
                 } catch (err) {
-                    console.error('execCommand failed:', err);
                     showToast(__shareMsgs.copyError);
                 }
-
                 document.body.removeChild(tempInput);
             }
 
             function showToast(message) {
-                console.log('Showing toast:', message);
                 const toast = document.createElement('div');
                 toast.textContent = message;
                 toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#323232;color:white;padding:12px 24px;border-radius:25px;z-index:10000;font-size:14px;box-shadow:0 3px 6px rgba(0,0,0,0.3);';
                 document.body.appendChild(toast);
-
-                setTimeout(() => {
+                setTimeout(function () {
                     toast.style.transition = 'opacity 0.3s';
                     toast.style.opacity = '0';
-                    setTimeout(() => {
-                        if (toast.parentNode) {
-                            document.body.removeChild(toast);
-                        }
-                    }, 300);
+                    setTimeout(function () { if (toast.parentNode) document.body.removeChild(toast); }, 300);
                 }, 2000);
             }
         });
@@ -420,18 +365,6 @@
             updateHeaderCompare();
             applyCompareIcons();
         });
-
-        function showCompareToast(msg) {
-            var toast = document.createElement('div');
-            toast.textContent = msg;
-            toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#323232;color:#fff;padding:10px 22px;border-radius:25px;z-index:10000;font-size:14px;box-shadow:0 3px 8px rgba(0,0,0,.3);';
-            document.body.appendChild(toast);
-            setTimeout(function () {
-                toast.style.transition = 'opacity 0.3s';
-                toast.style.opacity = '0';
-                setTimeout(function () { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
-            }, 2000);
-        }
 
         document.addEventListener('DOMContentLoaded', function () {
             applyCompareIcons();
