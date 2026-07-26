@@ -1227,13 +1227,13 @@
                                 @if($property['country'] ?? null)
                                 <div class="d-flex justify-content-between align-items-center gap-4 py-2 border-bottom">
                                     <span class="text-muted">{{ __('property-single.country') }}</span>
-                                    <span class="fw-semibold fs-14">{{ $property['country'] }}</span>
+                                    <span class="fw-semibold fs-14">{{ localized_country($property['country']) }}</span>
                                 </div>
                                 @endif
                                 @if($property['city'] ?? null)
                                 <div class="d-flex justify-content-between align-items-center gap-4 py-2 border-bottom">
                                     <span class="text-muted">{{ __('property-single.city') }}</span>
-                                    <span class="fw-semibold fs-14">{{ $property['city'] }}</span>
+                                    <span class="fw-semibold fs-14">{{ localized_city($property['city']) }}</span>
                                 </div>
                                 @endif
                                 @if($property['street'] ?? null)

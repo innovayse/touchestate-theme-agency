@@ -124,8 +124,8 @@
 $mapLocations = array_map(function($p) {
     return [
         'title'    => $p['title'] ?? '',
-        'address'  => $p['fullAddress'] ?? ($p['city'] ?? ''),
-        'city'     => $p['city'] ?? '',
+        'address'  => localized_address($p),   // shown in the balloon (localized)
+        'city'     => $p['city'] ?? '',         // English — used for marker geocoding, do NOT localize
         'district' => $p['district'] ?? '',
         'price'         => format_price($p['price'] ?? 0, $p['currency'] ?? null),
         'priceAmount'   => (float) ($p['price'] ?? 0),

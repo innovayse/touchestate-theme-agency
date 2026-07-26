@@ -325,7 +325,7 @@
                                 <div class="d-flex align-items-center justify-content-between">
                                     <p class="featured-main-address mb-0">
                                         <x-icon name="location_on" size="14"/>
-                                        {{ $featuredMain['city'] ?? '' }}
+                                        {{ localized_city($featuredMain['city'] ?? '') }}
                                     </p>
                                     <span class="featured-main-price">
                                         <x-price :amount="$featuredMain['price'] ?? 0" :currency="$featuredMain['currency'] ?? null" />
@@ -430,7 +430,7 @@
                                 @endif
                                 <div class="city-card-overlay"></div>
                                 <div class="city-card-body">
-                                    <h5 class="city-card-name">{{ $city }}</h5>
+                                    <h5 class="city-card-name">{{ localized_city($city) }}</h5>
                                     <span class="city-card-count">{{ $count }} {{ __('index.properties') }}</span>
                                 </div>
                             </div>
