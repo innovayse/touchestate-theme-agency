@@ -44,7 +44,7 @@
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <span class="badge bg-secondary">{{ $ptLabel }}</span>
                     @if($prop['city'])
-                    <span class="ms-1 fs-14 text-muted">{{ $prop['city'] }}</span>
+                    <span class="ms-1 fs-14 text-muted">{{ localized_city($prop['city']) }}</span>
                     @endif
                 </div>
                 <div class="d-flex align-items-center justify-content-between mb-3">
@@ -52,7 +52,7 @@
                         <h6 class="title mb-1">
                             <a href="/{{ app()->getLocale() }}/property/{{ $prop['slug'] }}">{{ $prop['title'] }}</a>
                         </h6>
-                        <p class="d-flex align-items-center fs-14 mb-0"><i class="material-icons-outlined me-1 ms-0">location_on</i>{{ $prop['fullAddress'] ?? $prop['city'] }}</p>
+                        <p class="d-flex align-items-center fs-14 mb-0"><i class="material-icons-outlined me-1 ms-0">location_on</i>{{ localized_address($prop) }}</p>
                     </div>
                 </div>
                 @if($prop['bedrooms'] || $prop['bathrooms'] || $prop['areaTotal'])

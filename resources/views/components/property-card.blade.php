@@ -72,7 +72,7 @@
 
             {{-- City badge bottom --}}
             <div class="position-absolute bottom-0 start-0 p-3">
-                <span class="badge bg-light text-dark">{{ $prop['city'] ?? '' }}</span>
+                <span class="badge bg-light text-dark">{{ localized_city($prop['city'] ?? '') }}</span>
             </div>
         </div>
 
@@ -89,7 +89,7 @@
                 </div>
                 <p class="fs-14 mb-0 text-muted d-flex align-items-center" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                     <x-icon name="location_on" size="14" class="me-1" style="flex-shrink:0"/>
-                    <span style="overflow:hidden;text-overflow:ellipsis;">{{ $prop['fullAddress'] ?? $prop['city'] ?? '' }}</span>
+                    <span style="overflow:hidden;text-overflow:ellipsis;">{{ localized_address($prop) }}</span>
                 </p>
             </div>
 

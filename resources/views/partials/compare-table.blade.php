@@ -53,7 +53,7 @@ foreach ($properties as $pi => $prop) {
                     $cKey = 'compare.construction_' . strtolower((string) $ct);
                     $val = $ct ? (__($cKey) !== $cKey ? __($cKey) : $ct) : '—'; break;
                 case 'address':
-                    $val = $prop['fullAddress'] ?? '—'; break;
+                    $val = !empty($prop['fullAddress']) ? localized_address($prop) : '—'; break;
             }
         } elseif (!empty($row['key'])) {
             $v = $prop[$row['key']] ?? null;
