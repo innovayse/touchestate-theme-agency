@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Support\TeCache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
@@ -46,7 +47,7 @@ class FavoritesController extends Controller
         foreach ($slugs as $slug) {
 
             try {
-                $prop = Cache::remember('te_prop:' . $slug, 3600, function () use ($slug) {
+                $prop = Cache::remember(TeCache::prop($slug), 3600, function () use ($slug) {
                     $p = $this->retrieveWithRetry($slug);
 
                     // Empty/ghost stub: an unknown or incomplete listing the API answers with a
@@ -76,7 +77,7 @@ class FavoritesController extends Controller
 
             // Guard against a previously-cached empty result (from before this check existed).
             if (!property_is_showable($prop)) {
-                Cache::forget('te_prop:' . $slug);
+                Cache::forget(TeCache::prop($slug));
                 continue;
             }
 

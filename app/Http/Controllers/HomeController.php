@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Support\TeCache;
 use Illuminate\Support\Facades\Cache;
 use TouchEstate\Sdk\TouchEstateClient;
 
@@ -20,7 +21,7 @@ class HomeController extends Controller
 
         // Cached 30 min (no admin panel — listings change rarely). Fixed query, no params.
         try {
-            $allItems = Cache::remember('te_home_100', 1800, function () {
+            $allItems = Cache::remember(TeCache::key('te_home_100'), 1800, function () {
                 return $this->client->properties()->list([
                     'pageSize'  => 100,
                     'sortBy'    => 'viewCount',

@@ -4,16 +4,48 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Psr\Http\Message\RequestInterface;
+use TouchEstate\Sdk\HttpClient\GuzzleClient;
 use TouchEstate\Sdk\TouchEstateClient;
 
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // Override the SDK's default client binding so every API request carries the
+        // active UI language via the X-Language header (CRM-441). The header selects
+        // the content language: the catalogue is filtered/localized to it, so listing
+        // and detail Title/Description come back translated. Applied globally here to
+        // avoid threading RequestOptions::language() through every call site.
+        $this->app->singleton(TouchEstateClient::class, function ($app) {
+            $config = $app['config']['touchestate'];
+
+            $stack = HandlerStack::create();
+            $stack->push(Middleware::mapRequest(
+                fn (RequestInterface $request) => $request->withHeader('X-Language', App::getLocale())
+            ));
+
+            return new TouchEstateClient([
+                'public_key'      => $config['public_key'],
+                'secret_key'      => $config['secret_key'],
+                'base_url'        => $config['base_url'],
+                'timeout'         => $config['timeout'] ?? 30,
+                'connect_timeout' => $config['connect_timeout'] ?? 10,
+                'http_client'     => new GuzzleClient([
+                    'verify'          => $config['verify_ssl'] ?? true,
+                    'timeout'         => $config['timeout'] ?? 30,
+                    'connect_timeout' => $config['connect_timeout'] ?? 10,
+                    'handler'         => $stack,
+                ]),
+            ]);
+        });
     }
 
     public function boot(): void
