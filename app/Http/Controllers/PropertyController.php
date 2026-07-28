@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Services\ExchangeRateService;
+use App\Support\TeCache;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 use TouchEstate\Sdk\Signer\SignatureV4Signer;
@@ -407,7 +408,7 @@ class PropertyController extends Controller
     private function cachedList(array $filters): array
     {
         try {
-            return Cache::remember('te_list:' . md5(serialize($filters)), 1800, function () use ($filters) {
+            return Cache::remember(TeCache::key('te_list:' . md5(serialize($filters))), 1800, function () use ($filters) {
                 return $this->client->properties()->list($filters);
             });
         } catch (\Exception $e) {
@@ -627,7 +628,7 @@ class PropertyController extends Controller
      */
     private function cachedProperty(string $slug): array
     {
-        return Cache::remember('te_prop:' . $slug, 1800, function () use ($slug) {
+        return Cache::remember(TeCache::prop($slug), 1800, function () use ($slug) {
             $p = $this->client->properties()->retrieve($slug);
 
             if (!property_is_showable($p)) {
@@ -670,7 +671,7 @@ class PropertyController extends Controller
         // Similar = our own Active listings (cached globally 30 min — identical for every page),
         // scored/filtered per-property in PHP.
         try {
-            $items = Cache::remember('te_active_50', 1800, function () {
+            $items = Cache::remember(TeCache::key('te_active_50'), 1800, function () {
                 return $this->client->properties()->list(['pageSize' => 50, 'status' => 'Active'])['items'] ?? [];
             });
             /** @var array<int, array<string, mixed>> $items */
