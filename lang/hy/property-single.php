@@ -233,9 +233,9 @@ return [
     'utilities_not_included'  => 'Չի ընդգրկված',
 
     // Renovation types
-    'renovation_capital'      => 'Կապիտալ',
+    'renovation_capital'      => 'Հիմնանորոգված',
     'renovation_designer'     => 'Դիզայներական',
-    'renovation_euro'         => 'Եվրոնորոգում',
+    'renovation_euro'         => 'Եվրովերանորոգված',
     'renovation_cosmetic'     => 'Կոսմետիկ',
     'renovation_partial'      => 'Մասնակի',
     'renovation_old'          => 'Հին',
@@ -246,7 +246,7 @@ return [
     'construction_wood'        => 'Փայտե',
     'construction_strip'       => 'Ժապավենային',
     'construction_brick'       => 'Աղյուս',
-    'construction_monolithic'  => 'Մենալիտ',
+    'construction_monolithic'  => 'Մոնոլիտ',
     'construction_panel'       => 'Պանել',
     'construction_stone'       => 'Քար',
     'construction_type'        => 'Կառուցապատման տեսակ',
@@ -290,7 +290,7 @@ return [
     'parking_open'    => 'Բաց',
     'parking_covered' => 'Ծածկ',
     'parking_garage'  => 'Ավտոտնակ',
-    'parking_barrier' => 'Ավտոմատ դարպաս',
+    'parking_barrier' => 'Ուղեփակոց',
     'parking_type'    => 'Կայանատեղու տեսակ',
 
     // Window view (multi-select)
@@ -314,19 +314,19 @@ return [
     'feature_panoramic_windows'  => 'Պանորամային պատուհաններ',
     'feature_sauna'             => 'Սաունա',
     'feature_fireplace'         => 'Բուխարի',
-    'feature_gazebo'            => 'Беседка',
-    'feature_barbecue_area'      => 'BBQ գոտի',
+    'feature_gazebo'            => 'Տաղավար',
+    'feature_barbecue_area'      => 'Բարբեքյուի գոտի',
     'feature_sports_court'       => 'Մարզադաշտ',
 
     // Appliances (array)
     'appliance_washer'        => 'Լվացքի մեքենա',
-    'appliance_dryer'         => 'Չորացնող',
+    'appliance_dryer'         => 'Չորանոց',
     'appliance_fridge'        => 'Սառնարան',
-    'appliance_stove'         => 'Բուխարի',
+    'appliance_stove'         => 'Սալօջախ',
     'appliance_microwave'     => 'Միկրոալիք',
     'appliance_coffee_maker'   => 'Սուրճի մեքենա',
     'appliance_water_heater'   => 'Ջրատաքացուցիչ',
-    'appliance_hair_dryer'     => 'Ֆեն',
+    'appliance_hair_dryer'     => 'Վարսահարդարիչ',
     'appliance_iron'          => 'Արդուկ',
     'appliance_dishwasher'    => 'Ամանլվացող',
     'appliance_vacuum_cleaner' => 'Փոշեկուլ',
@@ -362,7 +362,7 @@ return [
     'amenity_waterrights'           => 'Ջրային իրավունք',
     'amenity_mineralrights'         => 'Հանքային իրավունք',
     'amenity_sauna'                 => 'Սաունա',
-    'amenity_barbecuearea'          => 'Խորովածի գոտի',
+    'amenity_barbecuearea'          => 'Բարբեքյուի գոտի',
 
     // Amenities (list.am appliances + features)
     'amenity_air_conditioner' => 'Կոնդիցիոներ',
@@ -373,7 +373,7 @@ return [
     'amenity_dishwasher'      => 'Սպասք լվացող մեքենա',
     'amenity_washing_machine' => 'Լվացքի մեքենա',
     'amenity_iron'            => 'Արդուկ',
-    'amenity_hair_dryer'      => 'Ֆեն',
+    'amenity_hair_dryer'      => 'Վարսահարդարիչ',
     'amenity_water_heater'    => 'Ջրատաքացուցիչ',
     'amenity_coffee_maker'    => 'Սրճեփ',
     'amenity_drying_machine'  => 'Չորացնող մեքենա',
