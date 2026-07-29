@@ -15514,3 +15514,24 @@ header .header-items .topbar-currency .topbar-link,
 /* Currency switcher: active-item check is toggled client-side (JS adds .active) */
 .topbar-currency .dropdown-item .currency-check { display: none; }
 .topbar-currency .dropdown-item.active .currency-check { display: inline-flex; }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Favourite / Compare buttons — unified interaction
+   Active states (♥ red via .is-favorited, ⚖ blue via .is-compared) are defined
+   above and apply on cards / header / property-single alike. Here we only unify
+   the click reaction and fix the property-single hover-lift.
+   ═══════════════════════════════════════════════════════════════════════ */
+.favourite, .compare-btn {
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s ease, background 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+}
+/* Uniform, non-sticky press feedback everywhere (releases on pointerup) */
+.favourite:active, .compare-btn:active { transform: scale(0.9); }
+
+/* Property-single action bar lift: only on true pointer (mouse) devices.
+   On touch/trackpad the :hover state sticks after a tap until the user taps
+   elsewhere — the reported "lifts and won't come back down" bug. Disable the
+   lift there, which also removes it on mobile as requested. */
+@media (hover: none), (pointer: coarse) {
+  .breadcrumb-bar .breadcrumb-icons a:hover { transform: none !important; }
+}
