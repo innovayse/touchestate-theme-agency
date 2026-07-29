@@ -1239,7 +1239,11 @@
                                 @if($property['street'] ?? null)
                                 <div class="d-flex justify-content-between align-items-center gap-4 py-2 border-bottom">
                                     <span class="text-muted">{{ __('property-single.street') }}</span>
-                                    <span class="fw-semibold text-end fs-14">{{ $property['street'] }}{{ !empty($property['buildingNumber']) ? ', ' . $property['buildingNumber'] : '' }}</span>
+                                    @php
+                                        $__bn = trim((string) ($property['buildingNumber'] ?? ''));
+                                        $__bn = in_array($__bn, ['', '—', '-'], true) ? '' : $__bn;
+                                    @endphp
+                                    <span class="fw-semibold text-end fs-14">{{ $property['street'] }}{{ $__bn !== '' ? ', ' . $__bn : '' }}</span>
                                 </div>
                                 @endif
 
@@ -1433,9 +1437,19 @@
     var goHomeBtn   = document.getElementById('mapGoHome');
     var controlBtns = document.getElementById('mapControlBtns');
 
+    // Run cb once the Yandex Maps API is ready. The API script is loaded in the
+    // footer — i.e. AFTER this inline script — so `ymaps` may be undefined on the
+    // first call (e.g. the `lat && lng → boot()` path below runs synchronously).
+    function whenYmapsReady(cb) {
+        if (typeof ymaps !== 'undefined') { ymaps.ready(cb); return; }
+        window.addEventListener('load', function () {
+            if (typeof ymaps !== 'undefined') ymaps.ready(cb);
+        });
+    }
+
     // ── main map ──
     function initMap() {
-        ymaps.ready(function () {
+        whenYmapsReady(function () {
             mainMap = new ymaps.Map(mapEl, { center: [lat, lng], zoom: 16, controls: ['zoomControl'] });
             if (window.enableMapPinchZoom) window.enableMapPinchZoom(mainMap, mapEl);
             mainMap.geoObjects.add(homePlacemark());
