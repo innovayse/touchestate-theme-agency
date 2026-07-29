@@ -42,6 +42,12 @@
         background: var(--primary);
         transform: translateY(-5px);
       }
+      // On touch/trackpad the :hover state sticks after a tap; drop the lift there
+      // (also removes it on mobile). Mouse devices keep the lift.
+      @media (hover: none), (pointer: coarse) {
+        &:hover { transform: none; }
+      }
+      &:active { transform: scale(0.9); }
     }
   }
   .fa-circle {

@@ -32,9 +32,9 @@ return [
     'rent_daily' => 'Օրավարձ',
 
     // Renovation types
-    'renovation_capital'      => 'Կապիտալ',
+    'renovation_capital'      => 'Հիմնանորոգված',
     'renovation_designer'     => 'Դիզայներական',
-    'renovation_euro'         => 'Եվրո',
+    'renovation_euro'         => 'Եվրովերանորոգված',
     'renovation_cosmetic'     => 'Կոսմետիկ',
     'renovation_partial'      => 'Մասնակի',
     'renovation_old'          => 'Հին',
