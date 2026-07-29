@@ -14276,34 +14276,41 @@ html[data-theme="dark"] [class*="ymaps-"][class*="zoom__button"] {
   color: #555 !important;
 }
 
+/* Active compare on cards: keep the white pill, just recolor the icon blue
+   (mirrors the favourite behaviour where only the heart turns red). The
+   property-single breadcrumb keeps its blue-fill via the more specific rule below. */
 .compare-btn.is-compared {
-  background: #1565c0 !important;
-  box-shadow: 0 2px 8px rgba(21, 101, 192, 0.35) !important;
+  background: #fff !important;
 }
 
 .compare-btn.is-compared i,
 .compare-btn.is-compared .i-icon {
-  color: #fff !important;
+  color: #1565c0 !important;
 }
 
-/* On the property-single breadcrumb, match the compare button to its siblings (heart/share teal) */
+/* Property-single action buttons (compare / favourite / share): same white pill +
+   dark icon as the listing cards (was a teal button). Only the icon recolors on
+   active — favorited → red, in-compare → blue. Hover keeps the pill white; the
+   lift stays (mouse only, handled above). */
+.breadcrumb-bar .breadcrumb-icons a,
+.breadcrumb-bar .breadcrumb-icons a:hover,
 .breadcrumb-bar .breadcrumb-icons .compare-btn {
-  background: rgba(3, 189, 157, 0.3490196078) !important;
+  background: #fff !important;
 }
-
-.breadcrumb-bar .breadcrumb-icons .compare-btn .i-icon {
-  color: #fff !important;
+.breadcrumb-bar .breadcrumb-icons a {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
-
-/* Match the heart to the sibling compare/share icons (white on the teal button) instead of
-   the dull global grey; favorited state shows as a filled white heart via the sprite swap. */
-.breadcrumb-bar .breadcrumb-icons .favourite .i-icon {
-  color: #fff !important;
+.breadcrumb-bar .breadcrumb-icons .compare-btn .i-icon,
+.breadcrumb-bar .breadcrumb-icons .favourite .i-icon,
+.breadcrumb-bar .breadcrumb-icons .share-btn .i-icon {
+  color: #555 !important;
 }
-
-/* Keep the "in compare" blue state winning over the scoped teal above */
-.breadcrumb-bar .breadcrumb-icons .compare-btn.is-compared {
-  background: #1565c0 !important;
+.breadcrumb-bar .breadcrumb-icons .favourite.is-favorited .i-icon,
+.breadcrumb-bar .breadcrumb-icons .favourite .i-icon.filled {
+  color: #e53935 !important;
+}
+.breadcrumb-bar .breadcrumb-icons .compare-btn.is-compared .i-icon {
+  color: #1565c0 !important;
 }
 
 .compare-btn[disabled] {
