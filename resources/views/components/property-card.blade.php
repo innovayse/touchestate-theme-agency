@@ -69,25 +69,24 @@
                 </div>
             </div>
 
-            {{-- City badge bottom --}}
-            <div class="position-absolute bottom-0 start-0 p-3">
+            {{-- City + property-type badges bottom --}}
+            <div class="position-absolute bottom-0 start-0 p-3 d-flex align-items-center gap-1">
                 <span class="badge bg-light text-dark">{{ localized_city($prop['city'] ?? '') }}</span>
+                <span class="badge bg-secondary">{{ __($ptKey) !== $ptKey ? __($ptKey) : ($prop['propertyType'] ?? '') }}</span>
             </div>
         </div>
 
         {{-- Content --}}
         <div class="d-flex flex-column flex-fill p-3">
 
-            {{-- Title + address + type --}}
+            {{-- Title + address --}}
             <div class="mb-3">
-                <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
+                <div class="mb-1">
                     <h6 class="mb-0"
-                        style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4;min-width:0;flex:1;">
+                        style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4;">
                         <a href="/{{ $locale }}/property/{{ $prop['slug'] ?? '' }}"
                             class="text-dark text-decoration-none">{{ $prop['title'] ?? '' }}</a>
                     </h6>
-                    <span
-                        class="badge bg-secondary flex-shrink-0">{{ __($ptKey) !== $ptKey ? __($ptKey) : ($prop['propertyType'] ?? '') }}</span>
                 </div>
                 <p class="fs-14 mb-0 text-muted d-flex align-items-center"
                     style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">

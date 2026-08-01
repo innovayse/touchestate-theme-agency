@@ -77,12 +77,8 @@
                             @endfor
                         </div>
 
-                        <!-- Property cards -->
-                        <div class="row mb-4" id="prop-grid" style="display:none;opacity:0;transition:opacity 0.35s ease">
-                            @foreach($properties['items'] ?? [] as $prop)
-                                <x-property-card :prop="$prop" col="col-xl-6" />
-                            @endforeach
-                        </div>
+                        <!-- Property cards — injected via AJAX (GET /map/cards) -->
+                        <div class="row mb-4" id="prop-grid" style="display:none;opacity:0;transition:opacity 0.35s ease"></div>
 
                         <!-- Load More / Show Less -->
                         <div class="text-center mb-4 d-flex align-items-center justify-content-center gap-3" id="grid-controls">
@@ -103,8 +99,8 @@
                     <div class="col-lg-7 map-col-right" style="align-self:flex-start;">
                         <div class="buy-grid-map-item-04" style="position:relative;">
                             <div id="map" class="map-listing" style="height:100%;"></div>
-                            <!-- Property card overlay on marker click -->
-                            <div id="map-card-overlay" style="display:none;position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:500;pointer-events:auto;"></div>
+                            <!-- Hover/tap mini-card tooltip; left/top are set to the marker in JS -->
+                            <div id="map-card-overlay" style="display:none;position:absolute;left:0;top:0;transform:translate(-50%,calc(-100% - 64px));z-index:500;pointer-events:auto;"></div>
                         </div>
                     </div><!-- end col right -->
 
@@ -119,25 +115,6 @@
     <!-- ========================
         End Page Content
     ========================= -->
-
-@php
-$mapLocations = array_map(function($p) {
-    return [
-        'title'    => $p['title'] ?? '',
-        'address'  => localized_address($p),   // shown in the balloon (localized)
-        'city'     => $p['city'] ?? '',         // English — used for marker geocoding, do NOT localize
-        'district' => $p['district'] ?? '',
-        'price'         => format_price($p['price'] ?? 0, $p['currency'] ?? null),
-        'priceAmount'   => (float) ($p['price'] ?? 0),
-        'priceCurrency' => ($p['currency'] ?? null) ?: display_currency(),
-        'image'    => $p['primaryImageUrl'] ?? '',
-        'slug'     => $p['slug'] ?? '',
-        'category' => $p['propertyType'] ?? '',
-        'lat'      => $p['latitude'] ?? null,
-        'lng'      => $p['longitude'] ?? null,
-    ];
-}, $properties['items'] ?? []);
-@endphp
 
 {{-- Global SVG gradient definitions for custom Yandex map markers --}}
 <svg width="0" height="0" style="position:absolute;overflow:hidden">
@@ -156,7 +133,6 @@ $mapLocations = array_map(function($p) {
 </svg>
 
 <script>
-    window.apiPropertyLocations = @json($mapLocations);
     window.propertyBaseUrl = '/{{ app()->getLocale() }}/property/';
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -164,17 +140,40 @@ $mapLocations = array_map(function($p) {
         // ── Custom select dropdowns ─────────────────────────────────────
         if (typeof initCustomSelects === 'function') initCustomSelects();
 
-        // ── Reveal real grid, hide skeleton ────────────────────────────────
+        // ── Load cards + map markers via AJAX (page shell paints instantly) ──
         var skeletonGrid = document.getElementById('prop-grid-skeleton');
         var realGrid     = document.getElementById('prop-grid');
-        if (realGrid) {
-            // Hide all cards initially — filterCardsByBounds will show the right ones
-            Array.prototype.forEach.call(realGrid.children, function(c) {
-                c.classList.add('map-card-hidden');
-            });
+        var localePrefix = '/{{ app()->getLocale() }}';
+        var cardsReady = false, locationsReady = false, locationsData = [];
+
+        // Markers are applied only once BOTH the cards (in the DOM) and the coords are
+        // ready — the bounds filter matches cards to markers by slug, so cards come first.
+        function applyWhenReady() {
+            if (cardsReady && locationsReady && typeof window.applyMapLocations === 'function') {
+                window.applyMapLocations(locationsData);
+            }
         }
-        if (skeletonGrid) skeletonGrid.style.display = 'none';
-        if (realGrid)    { realGrid.style.display = ''; requestAnimationFrame(function() { realGrid.style.opacity = '1'; }); }
+
+        // 1) Cards (fast — list is cached) → replace the skeleton with the real grid.
+        fetch(localePrefix + '/map/cards', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (realGrid) {
+                    realGrid.innerHTML = data.html || '';
+                    Array.prototype.forEach.call(realGrid.children, function (c) { c.classList.add('map-card-hidden'); });
+                }
+                if (skeletonGrid) skeletonGrid.style.display = 'none';
+                if (realGrid) { realGrid.style.display = ''; requestAnimationFrame(function () { realGrid.style.opacity = '1'; }); }
+                cardsReady = true;
+                applyWhenReady();
+            })
+            .catch(function () { if (skeletonGrid) skeletonGrid.style.display = 'none'; });
+
+        // 2) Marker coordinates (slow — enrichWithCoordinates) → placed when they arrive.
+        fetch(localePrefix + '/map/locations', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (r) { return r.json(); })
+            .then(function (data) { locationsData = data.locations || []; window.apiPropertyLocations = locationsData; locationsReady = true; applyWhenReady(); })
+            .catch(function () { locationsReady = true; applyWhenReady(); });
 
 
         // Load More / Show Less — integrated with map bounds filter

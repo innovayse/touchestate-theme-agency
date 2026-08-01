@@ -447,19 +447,93 @@ class PropertyController extends Controller
 
     public function map(): \Illuminate\View\View
     {
-        try {
-            $result = $this->client->properties()->list([
-                'pageNumber' => 1,
-                'pageSize'   => 100,
-                'status'     => 'Active',
-            ]);
-            $items      = $this->enrichWithCoordinates($result['items'] ?? []);
-            $properties = array_merge($result, ['items' => $items]);
-        } catch (\Exception $e) {
-            $properties = ['items' => [], 'totalCount' => 0, 'hasNextPage' => false];
+        // The page shell renders instantly; the property cards and map markers are loaded
+        // via AJAX (mapCards / mapLocations) so the slow coordinate fetch never blocks
+        // first paint — and the skeleton is actually visible while they load.
+        return view('map');
+    }
+
+    /**
+     * The map's property list (100 Active), cached 30 min and shared across locales —
+     * the raw API payload is locale-independent; localization happens at render time.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function cachedMapItems(): array
+    {
+        return Cache::remember('te_map_items', 1800, function () {
+            try {
+                $result = $this->client->properties()->list([
+                    'pageNumber' => 1,
+                    'pageSize'   => 100,
+                    'status'     => 'Active',
+                ]);
+
+                return $result['items'] ?? [];
+            } catch (\Exception $e) {
+                return [];
+            }
+        });
+    }
+
+    /** AJAX: rendered property cards for the map's left column (fast — list is cached). */
+    public function mapCards(): \Illuminate\Http\JsonResponse
+    {
+        $html = '';
+        foreach ($this->cachedMapItems() as $prop) {
+            $html .= view('components.property-card', ['prop' => $prop, 'col' => 'col-xl-6'])->render();
         }
 
-        return view('map', compact('properties'));
+        return response()->json(['html' => $html]);
+    }
+
+    /** AJAX: marker coordinates for the map (slow path — enrichWithCoordinates). */
+    public function mapLocations(): \Illuminate\Http\JsonResponse
+    {
+        $items     = $this->enrichWithCoordinates($this->cachedMapItems());
+        $locations = array_map(function ($p) {
+            $ptKey = 'property.' . strtolower($p['propertyType'] ?? '');
+
+            // Deal badge — status (sold/rented) takes precedence, else the transaction type.
+            $txType = strtolower($p['transactionType'] ?? '');
+            $status = strtolower($p['status'] ?? '');
+            if ($status === 'sold') {
+                $deal = __('property.status_sold');
+                $dealBg = '#212529';
+            } elseif ($status === 'rented') {
+                $deal = __('property.status_rented');
+                $dealBg = '#212529';
+            } elseif ($txType === 'rentdaily') {
+                $deal = __('index.popular_rent_daily');
+                $dealBg = '#dc3545';
+            } elseif (str_starts_with($txType, 'rent')) {
+                $deal = __('index.popular_rent_monthly');
+                $dealBg = '#0d6efd';
+            } else {
+                $deal = __('index.popular_for_sale');
+                $dealBg = '#198754';
+            }
+
+            return [
+                'title'         => $p['title'] ?? '',
+                'address'       => localized_address($p),   // shown in the balloon (localized)
+                'city'          => $p['city'] ?? '',         // English — used for marker geocoding
+                'district'      => $p['district'] ?? '',
+                'price'         => format_price($p['price'] ?? 0, $p['currency'] ?? null),
+                'priceAmount'   => (float) ($p['price'] ?? 0),
+                'priceCurrency' => ($p['currency'] ?? null) ?: display_currency(),
+                'image'         => $p['primaryImageUrl'] ?? '',
+                'slug'          => $p['slug'] ?? '',
+                'category'      => $p['propertyType'] ?? '',
+                'type'          => __($ptKey) !== $ptKey ? __($ptKey) : ($p['propertyType'] ?? ''), // localized type (for the hover card)
+                'deal'          => $deal,   // localized transaction/status label
+                'dealBg'        => $dealBg, // badge colour for the deal
+                'lat'           => $p['latitude'] ?? null,
+                'lng'           => $p['longitude'] ?? null,
+            ];
+        }, $items);
+
+        return response()->json(['locations' => $locations]);
     }
 
     /**

@@ -323,6 +323,8 @@ Route::group(
 
         // Map
         Route::get('/map', [PropertyController::class, 'map'])->name('map');
+        Route::get('/map/cards', [PropertyController::class, 'mapCards'])->name('map.cards');         // AJAX: left-column cards
+        Route::get('/map/locations', [PropertyController::class, 'mapLocations'])->name('map.locations'); // AJAX: marker coords
 
         // Favorites
         Route::get('/favorites', [FavoritesController::class, 'index'])->name('favorites');
