@@ -82,7 +82,7 @@
     </script>
 @endif
 @if (Route::is(['map']) || request()->is('map') || request()->is('*/map'))
-    <script src="{{URL::asset('build/js/map-grid.js')}}"></script>
+    <script src="{{URL::asset('build/js/map-grid.js')}}?v={{ filemtime(public_path('build/js/map-grid.js')) }}"></script>
 @endif
 
 @if (Route::is(['agent-details', 'agent.single', 'agent-grid-sidebar', 'agent-list-sidebar', 'property-sidebar', 'buy-property-list-sidebar', 'cart', 'checkout', 'rent-details', 'rent-property-grid-sidebar', 'rent-property-list-sidebar', 'property.single', 'map']) || request()->is('property/*') || request()->is('*/property/*') || request()->is('map') || request()->is('*/map') || request()->is('agent/*') || request()->is('*/agent/*'))

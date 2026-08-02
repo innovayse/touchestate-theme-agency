@@ -10884,14 +10884,6 @@ span.select2-container.select2-container--default.select2-container--open {
   overflow: hidden;
 }
 
-@media (max-width: 424px) {
-  .buy-grid-map-item-04 .map-listing {
-    position: relative;
-    top: 0;
-    height: 600px;
-    margin-top: 35px;
-  }
-}
 
 .buy-grid-map-item-04 .gm-style img {
   max-width: 100%;
@@ -13961,15 +13953,18 @@ html[data-theme="dark"] [class*="ymaps-"][class*="zoom__button"] {
 }
 
 @media (min-width: 992px) {
+  /* A 81px header is fixed at the top, so the usable area is (100vh - 81px).
+     The map is 95% of that, vertically centered in it → equal 2.5% gaps above/below
+     the map within the visible (below-header) region. */
   .map-col-right {
     position: sticky;
-    top: 80px;
+    top: calc(81px + (100vh - 81px) * 0.025);
     bottom: 0;
     align-self: flex-start;
   }
 
   .buy-grid-map-item-04 {
-    height: calc(100vh - 80px);
+    height: calc((100vh - 81px) * 0.95);
   }
 
   #map.map-listing {
@@ -13984,11 +13979,14 @@ html[data-theme="dark"] [class*="ymaps-"][class*="zoom__button"] {
     flex-direction: column;
     margin-left: 0;
     margin-right: 0;
+    margin-top: -10px; /* pull the map up closer to the filter */
   }
 
   .map-col-right {
     order: 1;
-    width: 100%;
+    width: 100%;         /* fills the row width → symmetric, centred */
+    padding-left: 0;     /* drop the column gutter so the map is a bit wider */
+    padding-right: 0;
     margin-bottom: 24px;
   }
 
@@ -13997,19 +13995,20 @@ html[data-theme="dark"] [class*="ymaps-"][class*="zoom__button"] {
   }
 
   .map-col-right .buy-grid-map-item-04 {
-    height: 350px;
+    height: 58vh;
   }
 
   .map-col-right .buy-grid-map-item-04 .map-listing {
     position: relative;
     top: 0;
     height: 100%;
+    border-radius: 0; /* edge-to-edge, no rounded corners on mobile */
   }
 }
 
 @media (max-width: 575px) {
   .map-col-right .buy-grid-map-item-04 {
-    height: 400px;
+    height: 62vh;
   }
 
   .map-section-grid {
