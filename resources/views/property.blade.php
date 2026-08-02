@@ -6,6 +6,16 @@
 @extends('layout.mainlayout')
 @section('content')
 
+    {{-- On mobile the listing defaults to the map view (filters carried over).
+         location.replace → no history entry, so no back-button loop. --}}
+    <script>
+        (function () {
+            if (window.matchMedia && window.matchMedia('(max-width: 991px)').matches) {
+                window.location.replace('/{{ app()->getLocale() }}/map' + window.location.search);
+            }
+        })();
+    </script>
+
     <div class="page-wrapper">
 
         @component('components.breadcrumb')
@@ -64,17 +74,8 @@
                     @include('partials.property-cards', ['properties' => $properties])
                 </div>
 
-                <!-- Load More / Show Less -->
-                <div class="text-center mb-4 align-items-center justify-content-center gap-3" id="grid-controls">
-                    <button type="button" class="btn btn-dark d-inline-flex align-items-center gap-1" id="btnShowLess" style="display:none!important; border-radius:10px">
-                        <i class="material-icons-outlined" style="font-size:18px">expand_less</i>
-                        {{ __('property.show_less') }}
-                    </button>
-                    <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-1" id="btnLoadMore" style="display:none!important; border-radius:10px">
-                        {{ __('property.load_more') }}
-                        <i class="material-icons-outlined" style="font-size:18px">expand_more</i>
-                    </button>
-                </div>
+                <!-- Numbered pagination -->
+                <nav id="listPagination" class="tp-pagination" aria-label="Pagination"></nav>
 
             </div>
         </div>
@@ -82,113 +83,47 @@
     </div>
 
 <script>
-    // ── Load More / Show Less — real server-side pagination ─────────────────
-    // Each "Load More" fetches the next page from the server (same filters, +1 page)
-    // and appends the rendered cards. "Show Less" collapses back to the first page.
-    var LM = { page: 1, hasNext: false, initialCount: 0, shown: 0, loading: false };
+    // ── Numbered pagination (AJAX loads the chosen page and replaces the grid) ──
+    var PAGE_SIZE = 21;
+    var curPage = (function () {
+        var p = parseInt(new URLSearchParams(window.location.search).get('page'), 10);
+        return p > 0 ? p : 1;
+    })();
 
-    function lmEndpoint() {
+    function pgTotal() {
+        var t = document.getElementById('result-total');
+        return t ? (parseInt(t.textContent, 10) || 0) : 0;
+    }
+    function pgEndpoint() {
         return window.location.pathname.replace(/\/+$/, '') + '/load-more';
     }
-
-    // Toggle a Bootstrap `d-inline-flex` button. Its display utility is `!important`,
-    // so a plain inline `display` can't hide it — force `none !important`, and reveal
-    // by removing the inline rule so the class takes over.
-    function lmSetVisible(el, visible) {
-        if (!el) return;
-        if (visible) el.style.removeProperty('display');
-        else el.style.setProperty('display', 'none', 'important');
+    function drawPager() {
+        var box = document.getElementById('listPagination');
+        if (box && typeof window.renderPagination === 'function') {
+            window.renderPagination(box, curPage, Math.ceil(pgTotal() / PAGE_SIZE), goToPage);
+        }
     }
-
-    function lmSyncButtons() {
-        lmSetVisible(document.getElementById('btnLoadMore'), LM.hasNext);
-        lmSetVisible(document.getElementById('btnShowLess'), LM.page > 1);
-    }
-
-    // (Re)initialise pagination state from the current DOM. Called on first load and
-    // after a filter swap replaces the grid.
-    function reinitLoadMore() {
+    function goToPage(n) {
         var grid = document.getElementById('prop-grid');
-        var resultLoaded = document.getElementById('result-loaded');
         if (!grid) return;
-        LM.page = 1;
-        LM.hasNext = grid.dataset.hasNext === '1';
-        LM.initialCount = grid.children.length;
-        LM.shown = LM.initialCount;
-        LM.loading = false;
-        if (resultLoaded) resultLoaded.textContent = LM.shown;
-        lmSyncButtons();
-    }
-
-    function lmLoadMore() {
-        var grid = document.getElementById('prop-grid');
-        var btnMore = document.getElementById('btnLoadMore');
-        var resultLoaded = document.getElementById('result-loaded');
-        if (!grid || !btnMore || LM.loading || !LM.hasNext) return;
-
-        LM.loading = true;
-        btnMore.disabled = true;
-        btnMore.style.opacity = '0.6';
-
         var params = new URLSearchParams(window.location.search);
-        params.set('page', String(LM.page + 1));
-
-        fetch(lmEndpoint() + '?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        params.set('page', String(n));
+        grid.style.opacity = '0.5';
+        fetch(pgEndpoint() + '?' + params.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then(function (r) { return r.json(); })
             .then(function (data) {
-                var tmp = document.createElement('div');
-                tmp.innerHTML = data.html;
-                var added = Array.prototype.slice.call(tmp.children);
-                var firstNewIndex = grid.children.length;
-
-                added.forEach(function (el, i) {
-                    el.style.opacity = '0';
-                    el.style.transform = 'translateY(20px)';
-                    el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-                    grid.appendChild(el);
-                    (function (node, delay) {
-                        setTimeout(function () { node.style.opacity = '1'; node.style.transform = 'translateY(0)'; }, delay);
-                    })(el, i * 60);
-                });
-
-                LM.page += 1;
-                LM.hasNext = !!data.hasNextPage;
-                LM.shown += added.length;
-                if (resultLoaded) resultLoaded.textContent = LM.shown;
-                lmSyncButtons();
-
-                var anchor = grid.children[firstNewIndex];
-                if (anchor) setTimeout(function () { anchor.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120);
+                grid.innerHTML = data.html || '';
+                grid.style.opacity = '1';
+                curPage = n;
+                var rl = document.getElementById('result-loaded'); if (rl) rl.textContent = data.count;
+                var rt = document.getElementById('result-total');  if (rt) rt.textContent = data.total;
+                history.pushState(null, '', window.location.pathname + '?' + params.toString());
+                drawPager();
+                var top = document.getElementById('prop-grid');
+                if (top) window.scrollTo({ top: top.getBoundingClientRect().top + window.pageYOffset - 90, behavior: 'smooth' });
             })
-            .catch(function () { /* leave button enabled so the user can retry */ })
-            .finally(function () {
-                LM.loading = false;
-                btnMore.disabled = false;
-                btnMore.style.opacity = '';
-            });
+            .catch(function () { grid.style.opacity = '1'; });
     }
-
-    function lmShowLess() {
-        var grid = document.getElementById('prop-grid');
-        var resultLoaded = document.getElementById('result-loaded');
-        if (!grid) return;
-        while (grid.children.length > LM.initialCount) {
-            grid.removeChild(grid.lastElementChild);
-        }
-        LM.page = 1;
-        LM.hasNext = grid.dataset.hasNext === '1';
-        LM.shown = LM.initialCount;
-        if (resultLoaded) resultLoaded.textContent = LM.shown;
-        lmSyncButtons();
-        if (grid.firstElementChild) grid.firstElementChild.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    // Event delegation — survives grid/button swaps without re-binding.
-    document.addEventListener('click', function (e) {
-        if (!e.target.closest) return;
-        if (e.target.closest('#btnLoadMore')) { e.preventDefault(); lmLoadMore(); }
-        else if (e.target.closest('#btnShowLess')) { e.preventDefault(); lmShowLess(); }
-    });
 
     document.addEventListener('DOMContentLoaded', function () {
 
@@ -244,8 +179,8 @@
         if (skeletonGrid) skeletonGrid.style.display = 'none';
         if (realGrid)    { realGrid.style.display = ''; requestAnimationFrame(function() { realGrid.style.opacity = '1'; }); }
 
-        // Load More / Show Less
-        reinitLoadMore();
+        // Pagination
+        drawPager();
 
         // ── AJAX filter submit ──────────────────────────────────────────────
         var filterFormEl = document.getElementById('filterForm');
@@ -291,7 +226,7 @@
                                 requestAnimationFrame(function () { grid.style.opacity = '1'; });
                             }
 
-                            reinitLoadMore();
+                            curPage = 1; drawPager();
                         })
                         .catch(function () {
                             filterFormEl.submit();

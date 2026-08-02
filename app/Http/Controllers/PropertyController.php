@@ -104,9 +104,10 @@ class PropertyController extends Controller
             $params['search'] = request('search');
         }
 
-        // Code search
+        // Code search — the API stores codes without the leading '#' (e.g. "APT-123"),
+        // but users often type it with the '#' shown in the UI. Normalize both forms.
         if (request()->filled('code')) {
-            $params['code'] = request('code');
+            $params['code'] = ltrim(trim((string) request('code')), '#');
         }
 
         // Basic filters
@@ -461,30 +462,25 @@ class PropertyController extends Controller
      */
     private function cachedMapItems(): array
     {
-        return Cache::remember('te_map_items', 1800, function () {
-            try {
-                $result = $this->client->properties()->list([
-                    'pageNumber' => 1,
-                    'pageSize'   => 100,
-                    'status'     => 'Active',
-                ]);
+        // Respect the same filters as the listing (search, type, city, rooms, …) so the
+        // filter modal actually narrows the map. cachedList() caches per filter-hash+locale.
+        $filters               = $this->buildFilters();
+        $filters['pageNumber'] = 1;
+        $filters['pageSize']   = 100;
 
-                return $result['items'] ?? [];
-            } catch (\Exception $e) {
-                return [];
-            }
-        });
+        return $this->cachedList($filters)['items'] ?? [];
     }
 
-    /** AJAX: rendered property cards for the map's left column (fast — list is cached). */
+    /** AJAX: rendered property cards for the map panel/sheet (fast — list is cached). */
     public function mapCards(): \Illuminate\Http\JsonResponse
     {
-        $html = '';
-        foreach ($this->cachedMapItems() as $prop) {
-            $html .= view('components.property-card', ['prop' => $prop, 'col' => 'col-xl-6'])->render();
+        $items = $this->cachedMapItems();
+        $html  = '';
+        foreach ($items as $prop) {
+            $html .= view('components.property-card', ['prop' => $prop, 'col' => 'col-12'])->render();
         }
 
-        return response()->json(['html' => $html]);
+        return response()->json(['html' => $html, 'count' => count($items)]);
     }
 
     /** AJAX: marker coordinates for the map (slow path — enrichWithCoordinates). */

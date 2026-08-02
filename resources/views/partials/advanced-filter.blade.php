@@ -74,7 +74,8 @@ html[data-theme="light"] {
 
 /* ── Topbar ── */
 .afv2-topbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 0; }
-.afv2-result  { font-size: .82rem; opacity: .55; margin: 0 0 6px; white-space: nowrap; }
+.afv2-result  { font-size: .82rem; color: var(--afv2-text-muted); margin: 0 0 6px; white-space: nowrap; }
+.adv-filter-v2 input::placeholder, .adv-filter-v2 textarea::placeholder { color: var(--afv2-text-muted); opacity: 1; }
 .afv2-topbar-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1; }
 .afv2-input-wrap.afv2-search { flex: 1 1 100%; }
 .afv2-input-wrap {
@@ -435,12 +436,13 @@ html[data-theme="light"] {
 /* ≤ 767px: mobile */
 @media (max-width: 767px) {
     .afv2-topbar { flex-direction: column; align-items: stretch; gap: 6px; padding: 8px 0; }
-    .afv2-result { font-size: .74rem; order: 2; opacity: .4; }
+    .afv2-result { font-size: .74rem; order: 2; }
 
-    /* Controls: 3-row grid
-       Row 1: [search input.........] [search btn]
-       Row 2: [code input...............(full width)]
-       Row 3: [filter btn..........] [view switch] */
+    /* Controls: 3-row grid (mobile). The view switcher (grid/map) is dropped here —
+       the search button takes its spot instead.
+       Row 1: [search input.........(full width)]
+       Row 2: [code input...........(full width)]
+       Row 3: [filter btn..........] [search btn] */
     .afv2-topbar-controls {
         display: grid;
         grid-template-columns: 1fr auto;
@@ -448,10 +450,10 @@ html[data-theme="light"] {
         order: 1;
     }
     .afv2-input-wrap.afv2-search { grid-column: 1 / -1; grid-row: 1; min-width: 0; }
-    .afv2-input-wrap.afv2-code   { grid-column: 1; grid-row: 2; display: flex; }
-    .afv2-btn-search              { grid-column: 2; grid-row: 2; padding: 0 16px; }
+    .afv2-input-wrap.afv2-code   { grid-column: 1 / -1; grid-row: 2; display: flex; }
     .afv2-btn-filter              { grid-column: 1; grid-row: 3; justify-content: center; }
-    .afv2-view-switch             { grid-column: 2; grid-row: 3; flex-shrink: 0; }
+    .afv2-btn-search             { grid-column: 2; grid-row: 3; padding: 0 18px; }
+    .afv2-view-switch            { display: none; }
 
 
     /* Panel */
@@ -472,8 +474,9 @@ html[data-theme="light"] {
 
 /* ≤ 480px: small mobile */
 @media (max-width: 480px) {
-    .afv2-btn-search-label { display: none; }
-    .afv2-btn-search { padding: 0; justify-content: center; }
+    /* Search button keeps its label here (it now sits in row 3 with room) so it reads
+       as a proper "search" button instead of a bare green circle. */
+    .afv2-btn-search { padding: 0 16px; justify-content: center; }
 
     /* Basic row → 1 column */
     .afv2-basic-row { grid-template-columns: 1fr; }
