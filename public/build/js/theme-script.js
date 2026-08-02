@@ -72,3 +72,39 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+
+// ─── Shared numbered pagination renderer ─────────────────────────────────────
+// renderPagination(containerEl, currentPage, totalPages, onGo) → draws ‹ 1 … n › and
+// calls onGo(page) on click. Used by the property listing and the map panel/sheet.
+window.renderPagination = function (container, current, totalPages, onGo) {
+    if (!container) return;
+    totalPages = parseInt(totalPages, 10) || 0;
+    if (totalPages <= 1) { container.innerHTML = ''; return; }
+    current = Math.min(Math.max(1, parseInt(current, 10) || 1), totalPages);
+
+    var seq = [], i;
+    if (totalPages <= 7) { for (i = 1; i <= totalPages; i++) seq.push(i); }
+    else {
+        seq.push(1);
+        var start = Math.max(2, current - 1), end = Math.min(totalPages - 1, current + 1);
+        if (start > 2) seq.push('…');
+        for (i = start; i <= end; i++) seq.push(i);
+        if (end < totalPages - 1) seq.push('…');
+        seq.push(totalPages);
+    }
+
+    var html = '<button class="tp-pg-btn tp-pg-nav" data-pg="' + (current - 1) + '"' + (current <= 1 ? ' disabled' : '') + ' aria-label="Prev">‹</button>';
+    seq.forEach(function (v) {
+        if (v === '…') html += '<span class="tp-pg-ellipsis">…</span>';
+        else html += '<button class="tp-pg-btn' + (v === current ? ' is-active' : '') + '" data-pg="' + v + '">' + v + '</button>';
+    });
+    html += '<button class="tp-pg-btn tp-pg-nav" data-pg="' + (current + 1) + '"' + (current >= totalPages ? ' disabled' : '') + ' aria-label="Next">›</button>';
+    container.innerHTML = html;
+
+    container.querySelectorAll('.tp-pg-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var n = parseInt(btn.getAttribute('data-pg'), 10);
+            if (!isNaN(n) && n >= 1 && n <= totalPages && n !== current && !btn.disabled) onGo(n);
+        });
+    });
+};

@@ -103,6 +103,10 @@ function geocodeCity(city, callback) {
 
 // markerCoordsBySlug: slug → [lat,lng] — actual marker position per property
 var markerCoordsBySlug = {};
+// locBySlug: slug → location object (for card→marker highlight)
+var locBySlug = {};
+// placemarkBySlug: slug → placemark (to highlight the pin element on card hover)
+var placemarkBySlug = {};
 
 // Locations are loaded via AJAX after the map inits (see map.blade.php). If they arrive
 // before the Yandex map is ready, stash them here and apply once init finishes.
@@ -129,16 +133,17 @@ function getMiniCardHtml(loc) {
       'padding:2px 7px;border-radius:20px;line-height:1.25;white-space:nowrap;">' + text + '</span>';
   };
   var badges = (type ? badge(type, '#6842EF') : '') + (loc.deal ? badge(loc.deal, loc.dealBg || '#198754') : '');
-  return '<a href="' + url + '" style="display:block;width:212px;background:#fff;border-radius:12px;' +
-    'overflow:hidden;box-shadow:0 10px 28px rgba(0,0,0,.28);font-family:Inter,system-ui,sans-serif;' +
-    'text-decoration:none;color:inherit;cursor:pointer;border:1px solid rgba(0,0,0,.06);">' +
-    '<div style="position:relative;width:100%;aspect-ratio:2/1;background:#eef0f4;">' +
+  // Colours use theme CSS variables so the card follows dark/light mode.
+  return '<a href="' + url + '" style="display:block;width:212px;background:var(--white,#fff);border-radius:12px;' +
+    'overflow:hidden;box-shadow:0 10px 28px rgba(0,0,0,.35);font-family:Inter,system-ui,sans-serif;' +
+    'text-decoration:none;color:inherit;cursor:pointer;border:1px solid var(--gray-200,rgba(0,0,0,.06));">' +
+    '<div style="position:relative;width:100%;aspect-ratio:2/1;background:var(--gray-100,#eef0f4);">' +
       '<img src="' + imgSrc + '" alt="" style="width:100%;height:100%;object-fit:cover;display:block;">' +
       (badges ? '<div style="position:absolute;top:8px;left:8px;display:flex;gap:4px;flex-wrap:wrap;">' + badges + '</div>' : '') +
     '</div>' +
     '<div style="padding:9px 11px;">' +
-      '<div style="font-size:15px;font-weight:700;color:#0e7d63;margin-bottom:3px;">' + _locPrice(loc) + '</div>' +
-      '<div style="font-size:12px;font-weight:500;color:#222;line-height:1.35;' +
+      '<div style="font-size:15px;font-weight:700;color:var(--primary,#0e7d63);margin-bottom:3px;">' + _locPrice(loc) + '</div>' +
+      '<div style="font-size:12px;font-weight:500;color:var(--dark,#222);line-height:1.35;' +
         'display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">' + (loc.title || '') + '</div>' +
     '</div>' +
   '</a>';
@@ -166,14 +171,16 @@ function createLayouts() {
   // placemark's iconShape, so native DOM listeners on the marker element never receive
   // the pointer — the geoObject's own events are the only reliable channel.
   PropertyIconLayout = ymaps.templateLayoutFactory.createClass(
-    '<div style="width:46px;height:60px;cursor:pointer;' +
-    'filter:drop-shadow(1px 4px 7px rgba(0,0,0,.38))">' +
-    '<svg width="46" height="60" viewBox="0 0 46 60" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+    '<div class="tp-pin-wrap" style="position:relative;width:46px;height:60px;cursor:pointer;">' +
+    '<svg width="46" height="60" viewBox="0 0 46 60" fill="none" xmlns="http://www.w3.org/2000/svg" ' +
+      'style="filter:drop-shadow(1px 4px 7px rgba(0,0,0,.38))">' +
       '<path d="M23,57 C17,47 2,36 2,22 A21,21 0 1,1 44,22 C44,36 29,47 23,57Z" fill="#E8443C"/>' +
       '<circle cx="23" cy="22" r="13" fill="#C0312A"/>' +
       '<circle cx="23" cy="22" r="9" fill="#FFFFFF"/>' +
       '<path d="M23,16 L18,21 L18,27 L21.5,27 L21.5,24 L24.5,24 L24.5,27 L28,27 L28,21 Z" fill="#C0312A"/>' +
     '</svg>' +
+    // Price label shown under the pin when zoomed in (toggled by .map-show-prices on #map).
+    '<div class="tp-pin-price">{{ properties.price }}</div>' +
     '</div>'
   );
 
@@ -194,45 +201,90 @@ function createLayouts() {
   );
 }
 
-// ─── Pagination state for Load More / Show Less ──────────────────────────────
-var GRID_PAGE_SIZE = 20;
-var GRID_STEP = 10;
-var gridLimit = GRID_PAGE_SIZE; // how many in-bounds cards to show
+// ─── Numbered pagination over the in-bounds cards ────────────────────────────
+var MAP_PAGE_SIZE = 12;
+var mapPage = 1;
 
-// ─── Filter cards by the current map bounds, paginated with Load More ────────
+// Show the price label under each (non-clustered) marker from this zoom level up
+// (higher zoom = closer; 15 ≈ street level).
+var PRICE_ZOOM = 15;
+function _syncPriceLabels() {
+  if (!map) return;
+  var el = document.getElementById('map');
+  if (el) el.classList.toggle('map-show-prices', map.getZoom() >= PRICE_ZOOM);
+}
+
+// ─── Filter cards by the current map bounds, then paginate them by page number ─
 function filterCardsByBounds(bounds) {
   if (!bounds || geocodingState !== 'ready') return;
 
   var cards = document.querySelectorAll('#prop-grid > div[data-slug]');
-  var inBoundsCount = 0;
+  var inBounds = [];
 
   cards.forEach(function(card) {
     var slug = card.dataset.slug || '';
     var coords = slug ? markerCoordsBySlug[slug] : null;
-    var inBounds = coords &&
+    var ok = coords &&
       coords[0] >= bounds[0][0] && coords[0] <= bounds[1][0] &&
       coords[1] >= bounds[0][1] && coords[1] <= bounds[1][1];
+    if (ok) { inBounds.push(card); }
+    else { card.classList.add('map-card-hidden'); card.classList.remove('d-none'); }
+  });
 
-    if (inBounds) {
-      inBoundsCount++;
-      // In bounds: shown if within the current page limit, else collapsed with d-none.
-      card.classList.remove('map-card-hidden');
-      card.classList.toggle('d-none', inBoundsCount > gridLimit);
-    } else {
-      // Out of bounds (or no marker): hidden.
-      card.classList.add('map-card-hidden');
-      card.classList.remove('d-none');
-    }
+  var totalPages = Math.max(1, Math.ceil(inBounds.length / MAP_PAGE_SIZE));
+  if (mapPage > totalPages) mapPage = totalPages;
+  var startIdx = (mapPage - 1) * MAP_PAGE_SIZE;
+
+  inBounds.forEach(function(card, i) {
+    card.classList.remove('map-card-hidden');
+    card.classList.toggle('d-none', i < startIdx || i >= startIdx + MAP_PAGE_SIZE);
   });
 
   var el = document.getElementById('result-loaded');
-  if (el) el.textContent = inBoundsCount;
+  if (el) el.textContent = inBounds.length;
+  var el2 = document.getElementById('map-count-num');       // always-visible panel/sheet count
+  if (el2) el2.textContent = inBounds.length;
 
-  var btnMore = document.getElementById('btnLoadMore');
-  var btnLess = document.getElementById('btnShowLess');
-  if (btnMore) btnMore.style.display = inBoundsCount > gridLimit ? '' : 'none';
-  if (btnLess) btnLess.style.display = gridLimit > GRID_PAGE_SIZE ? '' : 'none';
+  var empty = document.getElementById('map-empty');
+  if (empty) empty.style.display = (inBounds.length === 0 && cards.length > 0) ? 'block' : 'none';
+
+  var pg = document.getElementById('mapPagination');
+  if (pg && typeof window.renderPagination === 'function') {
+    window.renderPagination(pg, mapPage, totalPages, function(n) {
+      mapPage = n;
+      if (map) filterCardsByBounds(map.getBounds());
+      var body = document.getElementById('mapPanelBody');
+      if (body) body.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
 }
+
+// ─── Card → marker highlight (hovering a card focuses its pin) ────────────────
+var _hlSlug = null;
+window.mapHighlightSlug = function (slug) {
+  if (!map || !slug || slug === _hlSlug) return;
+  window.mapClearHighlight();
+  _hlSlug = slug;
+  var pm = placemarkBySlug[slug];
+  var coords = markerCoordsBySlug[slug];
+  var loc = locBySlug[slug];
+  if (pm) pm.options.set('zIndex', 10000);
+  // Bring the marker into view and show its card if the map has real hover capability off.
+  if (coords && loc) {
+    var b = map.getBounds();
+    var inView = b && coords[0] >= b[0][0] && coords[0] <= b[1][0] && coords[1] >= b[0][1] && coords[1] <= b[1][1];
+    if (!inView) map.panTo(coords, { flying: true, duration: 350 });
+    _cancelHide(); _showCard(loc, coords);
+  }
+};
+window.mapClearHighlight = function () {
+  if (_hlSlug && placemarkBySlug[_hlSlug]) placemarkBySlug[_hlSlug].options.set('zIndex', undefined);
+  _hlSlug = null;
+  if (!_pinnedMark) _scheduleHide();
+};
+
+// ─── Zoom the map out one step (empty-state helper) ──────────────────────────
+window.mapZoomOut = function () { if (map) map.setZoom(Math.max(3, map.getZoom() - 2), { duration: 300 }); };
 
 // ─── Place a single marker ───────────────────────────────────────────────────
 function placeMarkerForLoc(loc, cityCenter) {
@@ -244,11 +296,11 @@ function placeMarkerForLoc(loc, cityCenter) {
     var off = _slugOffset(loc.slug, 0.008);
     coords = [cityCenter[0] + off[0], cityCenter[1] + off[1]];
   }
-  if (loc.slug) markerCoordsBySlug[loc.slug] = coords;
+  if (loc.slug) { markerCoordsBySlug[loc.slug] = coords; locBySlug[loc.slug] = loc; }
 
   var placemark = new ymaps.Placemark(
     coords,
-    { slug: loc.slug },
+    { slug: loc.slug, price: _locPrice(loc) },
     {
       iconLayout: PropertyIconLayout,
       iconOffset: [-23, -57],
@@ -277,6 +329,7 @@ function placeMarkerForLoc(loc, cityCenter) {
     if (_pinnedMark === placemark) { _pinnedMark = null; _hideCard(); }
     else { _pinnedMark = placemark; _cancelHide(); _showCard(loc, coords); }
   });
+  if (loc.slug) placemarkBySlug[loc.slug] = placemark;
   clusterer.add(placemark);
 }
 
@@ -331,10 +384,12 @@ function initializeWithApiLocations(apiLocations) {
   ymaps.ready(function () {
     createLayouts();
 
+    // No default Yandex controls (no fullscreen, no Layers/typeSelector, no zoom +/- —
+    // pinch/scroll to zoom).
     map = new ymaps.Map('map', {
       center: [40.1872, 44.5152],
       zoom: 10,
-      controls: ['zoomControl', 'typeSelector', 'fullscreenControl']
+      controls: []
     }, {
       minZoom: 3
     });
@@ -349,16 +404,30 @@ function initializeWithApiLocations(apiLocations) {
     });
     map.geoObjects.add(clusterer);
 
-    // Re-filter the grid every time the user finishes panning/zooming.
+    // Re-filter the grid every time the user finishes panning/zooming (back to page 1).
     map.events.add('actionend', function() {
+      mapPage = 1;
       filterCardsByBounds(map.getBounds());
+      _syncPriceLabels();
       if (_shownCoords) _positionCard(); // keep a pinned tooltip glued to its marker
     });
+    _syncPriceLabels();
 
     // Click on the map (not a marker) closes the pinned overlay.
     map.events.add('click', function() {
       if (_suppressMapClick) { _suppressMapClick = false; return; }
       if (_pinnedMark) { _pinnedMark = null; _hideCard(); }
+    });
+
+    // Tap ANYWHERE outside the map / marker / card also closes the pinned mini-card.
+    // Clicks inside #map are handled by the map/placemark handlers above; clicks on the
+    // card itself are ignored (let its link work).
+    document.addEventListener('click', function (e) {
+      if (!_pinnedMark) return;
+      var o = _overlayEl();
+      if (o && o.contains(e.target)) return;
+      if (e.target.closest && e.target.closest('#map')) return;
+      _pinnedMark = null; _hideCard();
     });
 
     // Keep the hover card open while the cursor is over it (mouse devices).
@@ -393,7 +462,9 @@ window.resetMapWithLocations = function(newLocations) {
   clusterer.removeAll();
   cityCoords = {};
   markerCoordsBySlug = {};
-  gridLimit = GRID_PAGE_SIZE;
+  locBySlug = {};
+  placemarkBySlug = {};
+  mapPage = 1;
 
   // Hide every card — filterCardsByBounds re-shows the in-bounds ones after geocoding.
   document.querySelectorAll('#prop-grid > div[data-slug]').forEach(function(card) {

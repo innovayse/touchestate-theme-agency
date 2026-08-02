@@ -4895,6 +4895,12 @@ select.form-control-sm:not([size]):not([multiple]) {
   right: 0;
 }
 
+/* Action icons (compare/favourite/share) on the property page — outside the dark hero
+   bar they inherited the static grey body colour; use a theme-aware colour instead.
+   (The .breadcrumb-bar rules below are more specific, so the hero bar is unaffected.) */
+.breadcrumb-icons a { color: var(--gray-700); transition: color .2s; }
+.breadcrumb-icons a:hover { color: var(--primary); }
+
 .breadcrumb-bar .breadcrumb-icons a {
   width: 40px;
   height: 40px;
@@ -10869,28 +10875,6 @@ span.select2-container.select2-container--default.select2-container--open {
   }
 }
 
-.buy-grid-map-item-04 {
-  z-index: 1029;
-  width: 100%;
-  height: 100%;
-}
-
-.buy-grid-map-item-04 .map-listing {
-  width: 100%;
-  position: sticky;
-  top: 63px;
-  height: calc(100vh - 65px);
-  border-radius: 14px;
-  overflow: hidden;
-}
-
-
-.buy-grid-map-item-04 .gm-style img {
-  max-width: 100%;
-  height: 207px;
-  object-fit: cover;
-}
-
 /* Map property card overlay — centered over map on marker click */
 #map-card-overlay {
   overflow: hidden;
@@ -13952,70 +13936,6 @@ html[data-theme="dark"] [class*="ymaps-"][class*="zoom__button"] {
   }
 }
 
-@media (min-width: 992px) {
-  /* A 81px header is fixed at the top, so the usable area is (100vh - 81px).
-     The map is 95% of that, vertically centered in it → equal 2.5% gaps above/below
-     the map within the visible (below-header) region. */
-  .map-col-right {
-    position: sticky;
-    top: calc(81px + (100vh - 81px) * 0.025);
-    bottom: 0;
-    align-self: flex-start;
-  }
-
-  .buy-grid-map-item-04 {
-    height: calc((100vh - 81px) * 0.95);
-  }
-
-  #map.map-listing {
-    height: 100% !important;
-    width: 100%;
-  }
-}
-
-@media (max-width: 991px) {
-  .map-page-row {
-    display: flex;
-    flex-direction: column;
-    margin-left: 0;
-    margin-right: 0;
-    margin-top: -10px; /* pull the map up closer to the filter */
-  }
-
-  .map-col-right {
-    order: 1;
-    width: 100%;         /* fills the row width → symmetric, centred */
-    padding-left: 0;     /* drop the column gutter so the map is a bit wider */
-    padding-right: 0;
-    margin-bottom: 24px;
-  }
-
-  .map-col-left {
-    order: 2;
-  }
-
-  .map-col-right .buy-grid-map-item-04 {
-    height: 58vh;
-  }
-
-  .map-col-right .buy-grid-map-item-04 .map-listing {
-    position: relative;
-    top: 0;
-    height: 100%;
-    border-radius: 0; /* edge-to-edge, no rounded corners on mobile */
-  }
-}
-
-@media (max-width: 575px) {
-  .map-col-right .buy-grid-map-item-04 {
-    height: 62vh;
-  }
-
-  .map-section-grid {
-    padding: 0 calc(var(--bs-gutter-x) * 0.5);
-  }
-}
-
 /* ── property-single: feature items 1 col on mobile ─────── */
 @media (max-width: 575px) {
   .accordion-body .feature-item {
@@ -14041,6 +13961,25 @@ html[data-theme="dark"] [class*="ymaps-"][class*="zoom__button"] {
 .favourite.is-favorited svg {
   color: #e53935;
 }
+
+/* Dark theme: grid-card action buttons (compare/favourite) had a hardcoded white pill +
+   #555 icon (visible but not theme-aware). Give them a dark glass pill + light icons,
+   keeping the favourited (red) / compared (blue) states. */
+html[data-theme="dark"] .pc-card .favourite,
+html[data-theme="dark"] .pc-card .compare-btn {
+  background: rgba(18, 20, 26, 0.72) !important;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+}
+html[data-theme="dark"] .pc-card .favourite i,
+html[data-theme="dark"] .pc-card .favourite svg,
+html[data-theme="dark"] .pc-card .compare-btn i,
+html[data-theme="dark"] .pc-card .compare-btn .i-icon {
+  color: #f0f2f5 !important;
+}
+html[data-theme="dark"] .pc-card .favourite.is-favorited i,
+html[data-theme="dark"] .pc-card .favourite.is-favorited svg { color: #ff5b5b !important; }
+html[data-theme="dark"] .pc-card .compare-btn.is-compared i,
+html[data-theme="dark"] .pc-card .compare-btn.is-compared .i-icon { color: #4a90ff !important; }
 
 /* ── Mobile floating CTA ─────────────────────────────────── */
 .mobile-cta {
@@ -14310,6 +14249,27 @@ html[data-theme="dark"] [class*="ymaps-"][class*="zoom__button"] {
 }
 .breadcrumb-bar .breadcrumb-icons .compare-btn.is-compared .i-icon {
   color: #1565c0 !important;
+}
+
+/* Dark theme: the hero action icons used a hardcoded white box + #555 icon (not theme-
+   aware). Give them a dark glass box + light icons; keep favourited/compared state colours. */
+html[data-theme="dark"] .breadcrumb-bar .breadcrumb-icons a,
+html[data-theme="dark"] .breadcrumb-bar .breadcrumb-icons a:hover,
+html[data-theme="dark"] .breadcrumb-bar .breadcrumb-icons .compare-btn {
+  background: rgba(20, 22, 28, 0.7) !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+html[data-theme="dark"] .breadcrumb-bar .breadcrumb-icons .compare-btn .i-icon,
+html[data-theme="dark"] .breadcrumb-bar .breadcrumb-icons .favourite .i-icon,
+html[data-theme="dark"] .breadcrumb-bar .breadcrumb-icons .share-btn .i-icon {
+  color: #f0f2f5 !important;
+}
+html[data-theme="dark"] .breadcrumb-bar .breadcrumb-icons .favourite.is-favorited .i-icon,
+html[data-theme="dark"] .breadcrumb-bar .breadcrumb-icons .favourite .i-icon.filled {
+  color: #ff5b5b !important;
+}
+html[data-theme="dark"] .breadcrumb-bar .breadcrumb-icons .compare-btn.is-compared .i-icon {
+  color: #4a90ff !important;
 }
 
 .compare-btn[disabled] {
@@ -15037,6 +14997,9 @@ html[data-theme="dark"] .ps-page .feature-item {
 .ps-page .feature-item > svg.i-icon {
   align-self: center;
 }
+/* Amenity/feature tiles (check + a single label span) → vertically centre the text,
+   instead of the top-align used for the two-line stat tiles (icon + label/value). */
+.ps-page .feature-item:has(> span) { align-items: center !important; }
 
 /* 2. Boolean features: pill badges */
 .ps-page .bool-pill {
@@ -15392,6 +15355,132 @@ html[data-theme="dark"] .ps-page .bool-pill {
 }
 
 .map-listing { border-radius: 14px; overflow: hidden; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Map page — full-screen (desktop: side panel + canvas; mobile: bottom-sheet)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.map-fullscreen { padding-top: 81px; }               /* clear the fixed 81px header */
+body:has(.map-fullscreen) footer { display: none; }  /* full-screen app feel */
+
+.map-page {
+  position: relative;
+  display: flex;
+  height: calc(100vh - 81px);
+  overflow: hidden;
+  background: var(--gray-100, #eef0f4);
+}
+
+.map-canvas { position: relative; flex: 1 1 auto; min-width: 0; }
+.map-canvas .map-listing { width: 100%; height: 100%; border-radius: 0; }
+
+/* Desktop side panel */
+.map-panel {
+  flex: 0 0 420px; width: 420px;
+  display: flex; flex-direction: column;
+  background: var(--white, #fff);
+  box-shadow: 2px 0 16px rgba(0, 0, 0, .06);
+  z-index: 10;
+}
+.map-panel-handle { display: none; }
+.map-panel-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 16px; border-bottom: 1px solid var(--gray-100, #eef0f4); flex: 0 0 auto;
+}
+.map-filter-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--gray-200, #e2e6ee); background: var(--white, #fff); color: var(--dark, #1b2431);
+  border-radius: 10px; padding: 9px 16px; font-weight: 600; cursor: pointer; transition: .2s;
+}
+.map-filter-btn:hover { background: var(--gray-100, #f3f5f9); }
+.map-count { font-size: 14px; color: var(--gray-600, #6b7280); white-space: nowrap; }
+.map-count strong { color: var(--dark, #1b2431); }
+.map-panel-body { flex: 1 1 auto; overflow-y: auto; padding: 14px 16px; }
+/* Modern thin scrollbar for the panel/sheet card list (theme-aware) */
+.map-panel-body { scrollbar-width: thin; scrollbar-color: var(--gray-300, #cbd2dc) transparent; }
+.map-panel-body::-webkit-scrollbar { width: 8px; }
+.map-panel-body::-webkit-scrollbar-track { background: transparent; }
+.map-panel-body::-webkit-scrollbar-thumb {
+  background: var(--gray-300, #cbd2dc); border-radius: 8px;
+  border: 2px solid transparent; background-clip: content-box;
+}
+.map-panel-body::-webkit-scrollbar-thumb:hover { background: var(--gray-400, #9aa0b0); background-clip: content-box; }
+.map-panel-body #prop-grid > [data-slug] { width: 100%; }
+
+.map-fab { display: none; }
+.map-empty { text-align: center; padding: 40px 16px; color: var(--gray-600, #6b7280); }
+
+/* The site header is z-index:10001 (fixed) — lift the filter modal above it so its
+   title/close aren't hidden behind the navbar. */
+.map-filter-modal { z-index: 10050; }
+
+/* marker highlighted from a card hover */
+.map-pin-active { filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .45)); transform: scale(1.18); transition: transform .15s ease; z-index: 999 !important; }
+
+/* Price label under a marker (shown from a zoom level up via .map-show-prices on #map) */
+.tp-pin-price {
+  display: none; position: absolute; top: 57px; left: 50%; transform: translateX(-50%);
+  background: var(--white, #fff); color: var(--dark, #1b2431);
+  font-size: 11px; font-weight: 700; line-height: 1.5; white-space: nowrap;
+  padding: 1px 8px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, .28);
+  border: 1px solid rgba(0, 0, 0, .08); pointer-events: none;
+}
+.map-show-prices .tp-pin-price { display: block; }
+
+/* ── Numbered pagination (shared: property listing + map) ── */
+.tp-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; margin: 10px 0 20px; }
+.tp-pg-btn {
+  min-width: 38px; height: 38px; padding: 0 11px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--gray-200, #e2e6ee); background: var(--white, #fff); color: var(--dark, #1b2431);
+  border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; transition: .15s;
+}
+.tp-pg-btn:hover:not(:disabled):not(.is-active) { border-color: var(--primary); color: var(--primary); }
+.tp-pg-btn.is-active { background: var(--primary); border-color: var(--primary); color: #fff; cursor: default; }
+.tp-pg-btn:disabled { opacity: .4; cursor: default; }
+.tp-pg-nav { font-size: 18px; line-height: 1; }
+.tp-pg-ellipsis { padding: 0 2px; color: var(--gray-500, #929292); }
+
+/* Mobile: bottom-sheet */
+@media (max-width: 991px) {
+  .map-canvas { position: absolute; inset: 0; }
+
+  .map-panel {
+    position: absolute; left: 0; right: 0; bottom: 0; width: auto; flex: none;
+    height: 100%; border-radius: 18px 18px 0 0;      /* height of .map-page (already below the header) */
+    box-shadow: 0 -6px 24px rgba(0, 0, 0, .18); will-change: transform;
+  }
+  .map-panel-handle { display: flex; justify-content: center; padding: 9px 0 3px; cursor: grab; flex: 0 0 auto; touch-action: none; }
+  .map-panel-handle span { width: 42px; height: 5px; border-radius: 3px; background: var(--gray-300, #cbd2dc); }
+  .map-panel-head { padding: 2px 16px 10px; }
+  .map-panel-head .map-filter-btn { display: none; }
+  .map-count { font-size: 15px; }
+
+  /* peek AND half: horizontal ribbon (vertical grid only at full) */
+  .map-panel.is-peek .map-panel-body,
+  .map-panel.is-half .map-panel-body { overflow: hidden; }
+  .map-panel.is-peek #prop-grid,
+  .map-panel.is-half #prop-grid {
+    display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 12px;
+    -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; padding-bottom: 4px;
+  }
+  .map-panel.is-peek #prop-grid > [data-slug],
+  .map-panel.is-half #prop-grid > [data-slug] { flex: 0 0 82%; max-width: 82%; scroll-snap-align: center; }
+  .map-panel.is-peek #mapPagination, .map-panel.is-peek #map-empty,
+  .map-panel.is-half #mapPagination, .map-panel.is-half #map-empty { display: none !important; }
+
+  .map-fab {
+    display: inline-flex; align-items: center; gap: 6px; position: absolute; z-index: 20;
+    background: var(--white, #fff); border: none; border-radius: 999px; box-shadow: 0 3px 12px rgba(0, 0, 0, .2);
+    cursor: pointer; font-weight: 600; color: var(--dark, #1b2431);
+  }
+  /* Both FABs top-right; Yandex fullscreen is moved to the top-left (see map-grid.js). */
+  .map-fab-filter { top: 14px; right: 14px; left: auto; width: 46px; height: 46px; justify-content: center; }
+  .map-list-toggle { top: 14px; right: 68px; left: auto; padding: 11px 16px; }
+  .map-list-toggle .mlt-list, .map-list-toggle .mlt-map { display: none; align-items: center; gap: 6px; }
+  .map-list-toggle .mlt-map { display: inline-flex; }
+  .map-list-toggle.showing-map .mlt-list { display: inline-flex; }
+  .map-list-toggle.showing-map .mlt-map { display: none; }
+}
 
 /* Let Yandex Maps handle pinch-zoom/drag on touch, instead of the browser zooming the whole page */
 #map, #propertyJsMap, #mapFullscreenJsMap, #contact-map { touch-action: none; }
