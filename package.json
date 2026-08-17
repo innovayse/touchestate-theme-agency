@@ -16,6 +16,6 @@
         "vite-plugin-static-copy": "^3.1.5"
     },
     "dependencies": {
-        "run": "^1.5.0"
+        "run": "^2.0.0"
     }
 }
